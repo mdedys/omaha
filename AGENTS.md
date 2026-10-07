@@ -44,7 +44,7 @@ The decisions table in `design/README.md` is settled for UX; raise a question in
 ## Code conventions
 
 - TypeScript, React 19 and SVG. Don't add a game engine or canvas library.
-- Formatting is oxfmt with an 80-column print width; `design/`, `public/` and `.impeccable/` are excluded from formatting.
+- Formatting is oxfmt with an 80-column print width; `docs/`, `design/`, `public/` and `.impeccable/` are excluded from formatting.
 - Lint is oxlint with the `react`, `typescript` and `oxc` plugins.
 - Don't edit files in `design/` unless the task is a design change.
 
