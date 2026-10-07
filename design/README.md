@@ -1,6 +1,6 @@
 # Omaha design
 
-The visual spec for Omaha. Start with [DESIGN.md](DESIGN.md) (tokens, type, components, field-art rules), then the folder for the screen you are building. [TASKS.md](TASKS.md) is the implementation queue.
+The visual spec for Omaha. Start with [DESIGN.md](DESIGN.md) (tokens, type, components, field-art rules), then the folder for the screen you are building.
 
 Product context lives in [../PRODUCT.md](../PRODUCT.md) and [../GAME_CONCEPT.md](../GAME_CONCEPT.md).
 
@@ -48,7 +48,7 @@ Protect → Routes → Read + Snap → Live play ──(auto)──> Result
 
 ## Decisions
 
-These are settled. Specs assume them.
+These are settled for the UX, and specs assume them. Game rules in this table (protection, routes, reps, interceptions, when the coverage name shows) are proposals; the game engine work owns them and may change them.
 
 | Topic | Decision |
 |---|---|
@@ -67,7 +67,9 @@ These are settled. Specs assume them.
 | Themes | Light (cream) and dark (charcoal). The field and the share card are identical in both. |
 | Sharing | One tile per rep: orange incomplete/sack/interception, gold short, green converted. |
 
-## Open questions (owned by the game-engine session)
+## Open questions (owned by the game engine work)
+
+Tracked on the game engine's `wayfinder:map` issue on GitHub.
 
 - **Read progression after the first read.** Leaning toward the player setting a 1-2-3 order in the Read step. If adopted, the Read step and the vision cone need an update.
 - **Touchdown result.** A converted rep that also scores needs its own headline and bonus display.
