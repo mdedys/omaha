@@ -24,7 +24,7 @@ The coverage and pressure the defense actually runs, hidden from the player.
 _Avoid_: "the defense" on its own
 
 **Pros' call**:
-What the real team ran on this play, and what happened.
+What the real team ran on this play, and what happened. It always failed to convert.
 _Avoid_: real call
 
 ### The field
@@ -74,3 +74,22 @@ The play outcome judged against the goal: converted when a completion reaches th
 
 **Receiver feedback**:
 The open, contested or covered mark each route runner gets after a rep.
+
+**Yards gained**:
+Whole yards from the line of scrimmage to where the play ends, with any fraction dropped, so 9.6 yards counts as 9. Rep verdicts, the bonus and every stat use it.
+
+### Scoring
+
+**Solved**:
+A puzzle in which a rep converted. Players see it as beating the pros.
+_Avoid_: won, beat
+
+**Out of reps**:
+A puzzle in which all four reps failed to convert.
+
+**Score**:
+A puzzle's points: 100, 75, 50 or 25 for solving it on rep 1, 2, 3 or 4, plus the bonus, or 0 when out of reps.
+
+**Bonus**:
+Points the converting rep adds to the score: 20 for a touchdown when the goal is a first down, otherwise 1 per yard gained past the line to gain, up to 10.
+_Avoid_: quality bonus
