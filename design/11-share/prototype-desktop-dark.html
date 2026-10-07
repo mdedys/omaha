@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Desktop: share (dark)</title>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@500;600;700;800;900&amp;display=swap" rel="stylesheet">
+<style>
+
+body{margin:0;background:#18201C}
+a{color:#F4EFE4}a:hover{color:#FFFFFF}
+.app{min-height:100vh;display:flex;flex-direction:column;background:#18201C;color:#F4EFE4;font-family:Figtree,sans-serif}
+.top{height:64px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 28px;border-bottom:1px solid #34403A}
+.brand{font-size:24px;font-weight:900;letter-spacing:.02em}
+.sit{display:flex;align-items:baseline;gap:10px}
+.sit b{font-size:20px;font-weight:900;text-transform:uppercase}
+.sit span{font-size:14px;font-weight:800;color:#A3B1A9;text-transform:uppercase}
+.meta{display:flex;align-items:center;gap:14px;font-size:14px;font-weight:600;color:#A3B1A9;font-variant-numeric:tabular-nums}
+.pips{display:flex;gap:5px}.pips i{width:9px;height:9px;border-radius:5px;background:#34403A}.pips i.on{background:#F4EFE4}.pips i.ring{box-sizing:border-box;background:transparent;border:2px solid #F4EFE4}
+.body{flex:1;display:grid;grid-template-columns:minmax(0,1fr) 440px;min-height:0}
+.stage{position:relative;background:#0C3322;display:flex;align-items:center;justify-content:center;padding:24px;min-height:0}
+.field{display:block;height:calc(100vh - 112px);width:auto;max-width:100%;border-radius:10px}
+.pill{position:absolute;top:36px;height:30px;padding:0 12px;border-radius:15px;background:rgba(6,13,10,.82);color:#F4EFE4;display:flex;align-items:center;gap:7px;font-size:13px;font-weight:700}
+.panel{border-left:1px solid #34403A;padding:28px;display:flex;flex-direction:column;gap:22px;min-height:0;box-sizing:border-box}
+.grow{flex-grow:1}
+.steps{display:flex;gap:10px}
+.steps div{flex:1;display:flex;flex-direction:column;gap:8px}
+.steps i{height:4px;border-radius:2px;background:#34403A}
+.steps span{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;color:#A3B1A9}
+.steps .done i{background:#F4EFE4;opacity:.45}.steps .now i{background:#F4EFE4}.steps .now span{color:#F4EFE4}
+.lab{display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.04em}
+.lab span{color:#A3B1A9;font-weight:700;text-transform:none;letter-spacing:0}
+.rgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.card{box-sizing:border-box;border-radius:10px;border:2px solid #34403A;background:#232C27;display:flex;flex-direction:column;overflow:hidden;padding:0;color:#F4EFE4;font:800 13px Figtree,sans-serif;text-transform:uppercase;cursor:pointer}
+.card svg{display:block;width:100%;height:auto}
+.card span{height:34px;display:flex;align-items:center;justify-content:center}
+.card.sel{border-color:#F4EFE4}.card.sel span{background:#F4EFE4;color:#18201C}
+.seg{display:flex;background:#232C27;border:1px solid #34403A;border-radius:12px;padding:3px;gap:3px}
+.seg button{flex:1;height:42px;border:none;border-radius:9px;background:transparent;color:#A3B1A9;font:800 14px Figtree,sans-serif;text-transform:uppercase;cursor:pointer}
+.seg button.sel{background:#F4EFE4;color:#18201C}
+.cta{height:58px;border:none;border-radius:10px;background:#E05A2B;color:#FFFFFF;font:900 19px Figtree,sans-serif;text-transform:uppercase;letter-spacing:.01em;display:flex;align-items:center;justify-content:center;gap:12px;cursor:pointer;width:100%}
+kbd{font:700 11px Figtree,sans-serif;padding:3px 7px;border-radius:5px;background:rgba(255,255,255,.22);color:inherit;text-transform:none;letter-spacing:0}
+.hint{font-size:12px;font-weight:600;color:#A3B1A9;text-align:center}
+.hint kbd{background:#232C27;border:1px solid #34403A;color:#F4EFE4}
+.ib{width:52px;height:52px;border:none;border-radius:26px;background:transparent;color:#F4EFE4;display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer}
+.ib.play{width:68px;height:68px;border-radius:34px;background:#F4EFE4;color:#18201C}
+.mom{display:flex;flex-direction:column;gap:8px}
+.mom button{height:52px;box-sizing:border-box;border-radius:10px;border:1px solid #34403A;background:#232C27;color:#F4EFE4;font-family:Figtree,sans-serif;display:flex;align-items:center;justify-content:space-between;padding:0 16px;cursor:pointer}
+.mom b{font-size:14px;font-weight:800;text-transform:uppercase}.mom i{font-style:normal;font-size:13px;font-weight:600;color:#A3B1A9;font-variant-numeric:tabular-nums}
+.mom button.sel{border:2px solid #F4EFE4;padding:0 15px}
+.stat{flex:1;display:flex;flex-direction:column;gap:6px}
+.stat b{font-size:32px;font-weight:900;line-height:1;color:#E05A2B}
+.stat span{font-size:13px;font-weight:600;color:#A3B1A9;line-height:1}
+.rule{border-top:1px solid #34403A;border-bottom:1px solid #34403A;padding:16px 0}
+.life{width:34px;height:34px;box-sizing:border-box;border-radius:8px;border:1.5px solid #34403A;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#A3B1A9}
+.life.lost{border-color:#F4EFE4;background:rgba(244,239,228,.14)}.life.next{border-color:#F4EFE4;color:#F4EFE4}
+.sq{width:58px;height:58px;flex-shrink:0;border-radius:10px;border:2px solid #34403A;background:#232C27;color:#F4EFE4;display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer}
+.t{border-radius:12px;display:flex;align-items:center;justify-content:center}
+.t.o{background:#5CC98A}.t.c{background:#F4B13E}.t.x{background:#E05A2B}
+.vs{flex:1;border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:7px}
+.vs span{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;line-height:1}
+.vs b{font-size:19px;font-weight:900;line-height:1.1;text-transform:uppercase}
+.share-wrap{flex:1;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:48px;align-items:center;max-width:1120px;width:100%;margin:0 auto;padding:48px 32px;box-sizing:border-box}
+@media (max-width:900px){
+.body{grid-template-columns:minmax(0,1fr)}
+.stage{padding:0;min-width:0}
+.field{width:100%;height:auto;max-height:none;border-radius:0}
+.hint,.cta kbd{display:none}
+.panel{min-width:0}
+.pill{top:12px}
+.panel{border-left:none;padding:16px}
+.top{padding:0 16px}
+.sit span,.meta .num{display:none}
+.share-wrap{grid-template-columns:1fr;gap:24px;padding:20px 16px}
+}
+
+</style>
+</head>
+<body>
+<div class="app">
+<header class="top"><span class="brand">OMAHA</span><button aria-label="Close" style="width: 44px; height: 44px; border: none; background: transparent; color: #F4EFE4; display: flex; align-items: center; justify-content: center; padding: 0; cursor: pointer;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button></header>
+<main class="share-wrap">
+<section aria-label="Share card preview" style="background: #244A3E; color: #F4EFE4; border-radius: 20px; padding: 28px; display: flex; flex-direction: column; gap: 20px;">
+<div style="display: flex; justify-content: space-between; align-items: baseline;"><span style="font-size: 24px; font-weight: 900; letter-spacing: .02em;">OMAHA #148</span><span style="font-size: 15px; font-weight: 800; color: #F4B13E;">3RD &amp; 10</span></div>
+<div style="display: flex; justify-content: center; gap: 18px;" aria-label="Rep 1 incomplete, rep 2 converted for 12 yards, reps 3 and 4 not needed"><div style="display: flex; flex-direction: column; align-items: center; gap: 14px;"><span style="width: 84px; height: 84px; box-sizing: border-box; border-radius: 15px; background: #E05A2B; display: flex; align-items: center; justify-content: center;"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.8" stroke-linecap="round" aria-hidden="true"><path d="M7 7l10 10M17 7L7 17"></path></svg></span><span style="font-size: 13px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; color: #F4EFE4; line-height: 1.15; text-align: center;">Rep 1<br>Inc</span></div><div style="display: flex; flex-direction: column; align-items: center; gap: 14px;"><span style="width: 84px; height: 84px; box-sizing: border-box; border-radius: 15px; background: #5CC98A; display: flex; align-items: center; justify-content: center;"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#1E2B22" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 12.5l4 4 8-9"></path></svg></span><span style="font-size: 13px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; color: #F4EFE4; line-height: 1.15; text-align: center;">Rep 2<br>+12</span></div><div style="display: flex; flex-direction: column; align-items: center; gap: 14px;"><span style="width: 84px; height: 84px; box-sizing: border-box; border-radius: 15px; border: 2px dashed #3D6B5B; display: flex; align-items: center; justify-content: center;"></span><span style="font-size: 13px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; color: #7F978B; line-height: 1.15; text-align: center;">Rep 3<br>—</span></div><div style="display: flex; flex-direction: column; align-items: center; gap: 14px;"><span style="width: 84px; height: 84px; box-sizing: border-box; border-radius: 15px; border: 2px dashed #3D6B5B; display: flex; align-items: center; justify-content: center;"></span><span style="font-size: 13px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; color: #7F978B; line-height: 1.15; text-align: center;">Rep 4<br>—</span></div></div>
+<div style="display: flex; justify-content: space-between; align-items: center; padding-top: 16px; border-top: 1px solid #3D6B5B;"><span style="height: 32px; padding: 0 14px; border-radius: 16px; border: 1.5px solid #F4B13E; color: #F4B13E; display: flex; align-items: center; font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: .04em;">Beat the pros</span><span style="font-size: 18px; font-weight: 800;">77 pts</span></div>
+</section>
+<div style="display: flex; flex-direction: column; gap: 24px;">
+<div style="display: flex; flex-direction: column; gap: 8px;"><h1 style="margin: 0; font-size: 72px; font-weight: 900; line-height: .9; letter-spacing: -0.01em;">CONVERTED</h1><p style="margin: 0; font-size: 18px; font-weight: 600; color: #A3B1A9;">3rd &amp; 10 · in 2 reps · +12 yards</p></div>
+<div style="display: flex; gap: 10px;"><div class="vs" style="background: #232C27; border: 1px solid #34403A;"><span style="color: #A3B1A9;">The pros</span><b>Incomplete</b></div><div class="vs" style="background: #F4EFE4;"><span style="color: #5A6B62;">You</span><b style="color: #18201C;">+12 · 1st down</b></div></div>
+<div class="rule" style="display: flex; gap: 12px;"><div class="stat"><b>77</b><span>score</span></div><div class="stat"><b>4</b><span>day streak</span></div><div class="stat"><b>38%</b><span>beat the pros</span></div></div>
+<div style="display: flex; gap: 10px;"><button class="sq" aria-label="Copy result"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"></rect><path d="M5 15V6a2 2 0 0 1 2-2h9"></path></svg></button><button class="cta"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3M7 8l5-5 5 5"></path><path d="M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"></path></svg>Share result</button></div>
+<p class="hint" style="margin: 0; text-align: left; font-variant-numeric: tabular-nums;">Next puzzle in 07:42:19</p>
+</div>
+</main>
+</div>
+</body>
+</html>

@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Desktop: puzzles</title>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@500;600;700;800;900&amp;display=swap" rel="stylesheet">
+<style>
+
+body{margin:0;background:#F4EFE4}
+a{color:#244A3E}a:hover{color:#163028}
+.app{min-height:100vh;display:flex;flex-direction:column;background:#F4EFE4;color:#244A3E;font-family:Figtree,sans-serif}
+.top{height:64px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 28px;border-bottom:1px solid #DCD3C1}
+.brand{font-size:24px;font-weight:900;letter-spacing:.02em}
+.sit{display:flex;align-items:baseline;gap:10px}
+.sit b{font-size:20px;font-weight:900;text-transform:uppercase}
+.sit span{font-size:14px;font-weight:800;color:#5A6B62;text-transform:uppercase}
+.meta{display:flex;align-items:center;gap:14px;font-size:14px;font-weight:600;color:#5A6B62;font-variant-numeric:tabular-nums}
+.pips{display:flex;gap:5px}.pips i{width:9px;height:9px;border-radius:5px;background:#DCD3C1}.pips i.on{background:#244A3E}.pips i.ring{box-sizing:border-box;background:transparent;border:2px solid #244A3E}
+.body{flex:1;display:grid;grid-template-columns:minmax(0,1fr) 440px;min-height:0}
+.stage{position:relative;background:#0C3322;display:flex;align-items:center;justify-content:center;padding:24px;min-height:0}
+.field{display:block;height:calc(100vh - 112px);width:auto;max-width:100%;border-radius:10px}
+.pill{position:absolute;top:36px;height:30px;padding:0 12px;border-radius:15px;background:rgba(6,13,10,.82);color:#F4EFE4;display:flex;align-items:center;gap:7px;font-size:13px;font-weight:700}
+.panel{border-left:1px solid #DCD3C1;padding:28px;display:flex;flex-direction:column;gap:22px;min-height:0;box-sizing:border-box}
+.grow{flex-grow:1}
+.steps{display:flex;gap:10px}
+.steps div{flex:1;display:flex;flex-direction:column;gap:8px}
+.steps i{height:4px;border-radius:2px;background:#DCD3C1}
+.steps span{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;color:#5A6B62}
+.steps .done i{background:#244A3E;opacity:.45}.steps .now i{background:#244A3E}.steps .now span{color:#244A3E}
+.lab{display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.04em}
+.lab span{color:#5A6B62;font-weight:700;text-transform:none;letter-spacing:0}
+.rgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.card{box-sizing:border-box;border-radius:10px;border:2px solid #DCD3C1;background:#FFFFFF;display:flex;flex-direction:column;overflow:hidden;padding:0;color:#244A3E;font:800 13px Figtree,sans-serif;text-transform:uppercase;cursor:pointer}
+.card svg{display:block;width:100%;height:auto}
+.card span{height:34px;display:flex;align-items:center;justify-content:center}
+.card.sel{border-color:#244A3E}.card.sel span{background:#244A3E;color:#F4EFE4}
+.seg{display:flex;background:#FFFFFF;border:1px solid #DCD3C1;border-radius:12px;padding:3px;gap:3px}
+.seg button{flex:1;height:42px;border:none;border-radius:9px;background:transparent;color:#5A6B62;font:800 14px Figtree,sans-serif;text-transform:uppercase;cursor:pointer}
+.seg button.sel{background:#244A3E;color:#F4EFE4}
+.cta{height:58px;border:none;border-radius:10px;background:#E05A2B;color:#FFFFFF;font:900 19px Figtree,sans-serif;text-transform:uppercase;letter-spacing:.01em;display:flex;align-items:center;justify-content:center;gap:12px;cursor:pointer;width:100%}
+kbd{font:700 11px Figtree,sans-serif;padding:3px 7px;border-radius:5px;background:rgba(255,255,255,.22);color:inherit;text-transform:none;letter-spacing:0}
+.hint{font-size:12px;font-weight:600;color:#5A6B62;text-align:center}
+.hint kbd{background:#FFFFFF;border:1px solid #DCD3C1;color:#244A3E}
+.ib{width:52px;height:52px;border:none;border-radius:26px;background:transparent;color:#244A3E;display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer}
+.ib.play{width:68px;height:68px;border-radius:34px;background:#244A3E;color:#F4EFE4}
+.mom{display:flex;flex-direction:column;gap:8px}
+.mom button{height:52px;box-sizing:border-box;border-radius:10px;border:1px solid #DCD3C1;background:#FFFFFF;color:#244A3E;font-family:Figtree,sans-serif;display:flex;align-items:center;justify-content:space-between;padding:0 16px;cursor:pointer}
+.mom b{font-size:14px;font-weight:800;text-transform:uppercase}.mom i{font-style:normal;font-size:13px;font-weight:600;color:#5A6B62;font-variant-numeric:tabular-nums}
+.mom button.sel{border:2px solid #244A3E;padding:0 15px}
+.stat{flex:1;display:flex;flex-direction:column;gap:6px}
+.stat b{font-size:32px;font-weight:900;line-height:1;color:#E05A2B}
+.stat span{font-size:13px;font-weight:600;color:#5A6B62;line-height:1}
+.rule{border-top:1px solid #DCD3C1;border-bottom:1px solid #DCD3C1;padding:16px 0}
+.life{width:34px;height:34px;box-sizing:border-box;border-radius:8px;border:1.5px solid #DCD3C1;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#5A6B62}
+.life.lost{border-color:#244A3E;background:rgba(36,74,62,.12)}.life.next{border-color:#244A3E;color:#244A3E}
+.sq{width:58px;height:58px;flex-shrink:0;border-radius:10px;border:2px solid #DCD3C1;background:#FFFFFF;color:#244A3E;display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer}
+.t{border-radius:12px;display:flex;align-items:center;justify-content:center}
+.t.o{background:#5CC98A}.t.c{background:#F4B13E}.t.x{background:#E05A2B}
+.vs{flex:1;border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:7px}
+.vs span{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;line-height:1}
+.vs b{font-size:19px;font-weight:900;line-height:1.1;text-transform:uppercase}
+.share-wrap{flex:1;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:48px;align-items:center;max-width:1120px;width:100%;margin:0 auto;padding:48px 32px;box-sizing:border-box}
+@media (max-width:900px){
+.body{grid-template-columns:minmax(0,1fr)}
+.stage{padding:0;min-width:0}
+.field{width:100%;height:auto;max-height:none;border-radius:0}
+.hint,.cta kbd{display:none}
+.panel{min-width:0}
+.pill{top:12px}
+.panel{border-left:none;padding:16px}
+.top{padding:0 16px}
+.sit span,.meta .num{display:none}
+.share-wrap{grid-template-columns:1fr;gap:24px;padding:20px 16px}
+}
+
+
+.seg{display:flex;background:#FFFFFF;border:1px solid #DCD3C1;border-radius:12px;padding:3px;gap:3px}
+.seg button{flex:1;height:42px;border:none;border-radius:9px;background:transparent;color:#5A6B62;font:800 13px Figtree,sans-serif;text-transform:uppercase;cursor:pointer}
+.seg button.sel{background:#244A3E;color:#F4EFE4}
+.row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #DCD3C1;text-decoration:none;color:#244A3E}
+.row:hover{color:#244A3E}
+.th{width:56px;height:56px;flex-shrink:0;border-radius:10px;overflow:hidden;display:block}
+.tx{flex-grow:1;min-width:0;display:flex;flex-direction:column;gap:5px}
+.dd{display:flex;align-items:baseline;gap:6px}
+.dd b{font-size:17px;font-weight:900;text-transform:uppercase;line-height:1}
+.dd span{font-size:12px;font-weight:800;text-transform:uppercase;color:#5A6B62;line-height:1}
+.meta{font-size:13px;color:#5A6B62;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.st{flex-shrink:0;height:26px;padding:0 10px;border-radius:13px;display:flex;align-items:center;gap:5px;font-size:12px;font-weight:800;text-transform:uppercase;line-height:1}
+.st.won{background:#244A3E;color:#F4EFE4}
+.st.lost{border:1.5px solid #B9AE99;color:#5A6B62;box-sizing:border-box}
+.st.open{border:1.5px solid #B4441C;color:#B4441C;box-sizing:border-box}
+.day{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:#5A6B62;padding-top:16px}
+
+a.cta{text-decoration:none}a.cta:hover{color:#FFFFFF;background:#C94B20}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="top"><span style="display: flex; align-items: center; gap: 8px;"><a href="#" aria-label="Back" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg></a><span class="brand">OMAHA</span></span><span style="font-size: 20px; font-weight: 900; text-transform: uppercase;">Puzzles</span><span style="width: 120px;"></span></header>
+<main style="width: 100%; max-width: 760px; margin: 0 auto; padding: 32px 32px 48px; box-sizing: border-box; display: flex; flex-direction: column; gap: 20px;">
+
+  <a href="../04-protect/prototype.html" aria-label="Today's puzzle: 3rd and 10, own 45. Field goal won't cut it" style="display: block; position: relative; height: 168px; flex-shrink: 0; border-radius: 18px; overflow: hidden; text-decoration: none; color: #F4EFE4;">
+    <svg width="100%" height="100%" viewBox="0 0 358 168" preserveAspectRatio="xMaxYMid slice" aria-hidden="true" style="display: block; position: absolute; inset: 0;">
+      <rect width="358" height="168" fill="#0F3A27"></rect>
+      <g fill="#113F2A"><rect x="0" y="0" width="358" height="42"></rect><rect x="0" y="84" width="358" height="42"></rect></g>
+      <path d="M0 42H358M0 84H358M0 126H358" stroke="#D5E0D9" stroke-opacity=".25"></path>
+      <path d="M190 74H358" stroke="#E2C044" stroke-width="2"></path>
+      <path d="M190 122H358" stroke="#3B8EEA" stroke-width="2"></path>
+      <g fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity=".9">
+        <path d="M214 120V66H262" stroke="#EAC54F"></path>
+        <path d="M282 120V96L318 60" stroke="#B7A6F5"></path>
+        <path d="M340 120V30" stroke="#55AEF5"></path>
+      </g>
+      <g fill="#A4AAAF"><circle cx="252" cy="122" r="4.5"></circle><circle cx="264" cy="122" r="4.5"></circle><circle cx="276" cy="122" r="4.5"></circle><circle cx="288" cy="122" r="4.5"></circle><circle cx="300" cy="122" r="4.5"></circle></g>
+      <circle cx="276" cy="146" r="5" fill="#F2F5F3"></circle>
+    </svg>
+    <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 230px; background: linear-gradient(90deg, rgba(10,30,20,.92) 55%, rgba(10,30,20,0));"></div>
+    <div style="position: absolute; left: 16px; top: 16px; bottom: 16px; display: flex; flex-direction: column; justify-content: space-between;">
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <span style="font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; color: #F59A72;">Today</span>
+        <span style="display: flex; align-items: baseline; gap: 6px;"><span style="font-size: 30px; font-weight: 900; line-height: 1; text-transform: uppercase;">3rd &amp; 10</span><span style="font-size: 13px; font-weight: 800; text-transform: uppercase; color: #B8C7BE;">own 45</span></span>
+        <span style="font-size: 13px; color: #B8C7BE;">Field goal won't cut it.</span>
+      </div>
+      <span style="align-self: flex-start; height: 36px; padding: 0 14px; border-radius: 12px; background: #E05A2B; color: #FFFFFF; display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 900; text-transform: uppercase;"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15l12-7.5z"></path></svg>Play</span>
+    </div>
+  </a>
+
+  <div class="seg" role="radiogroup" aria-label="Show puzzles"><button class="sel" role="radio" aria-checked="true">All</button><button role="radio" aria-checked="false">Open</button><button role="radio" aria-checked="false">Converted</button></div>
+
+  <div style="display: flex; flex-direction: column;">
+    <span class="day">Earlier</span>
+
+    <a class="row" href="../04-protect/prototype.html">
+      <svg class="th" viewBox="0 0 56 56" aria-hidden="true"><rect width="56" height="56" fill="#0F3A27"></rect><path d="M0 34H56" stroke="#E2C044" stroke-width="1.6"></path><path d="M0 44H56" stroke="#3B8EEA" stroke-width="1.6"></path><g fill="#A4AAAF"><circle cx="18" cy="44" r="2.6"></circle><circle cx="23" cy="44" r="2.6"></circle><circle cx="28" cy="44" r="2.6"></circle><circle cx="33" cy="44" r="2.6"></circle><circle cx="38" cy="44" r="2.6"></circle></g><circle cx="28" cy="51" r="2.8" fill="#F2F5F3"></circle></svg>
+      <span class="tx"><span class="dd"><b>4th &amp; 2</b><span>opp 41</span></span><span class="meta">Go for it or go home.</span></span>
+      <span class="st open">3 reps left</span>
+    </a>
+
+    <a class="row" href="../08-result/prototype.html">
+      <svg class="th" viewBox="0 0 56 56" aria-hidden="true"><rect width="56" height="56" fill="#0F3A27"></rect><path d="M0 34H56" stroke="#E2C044" stroke-width="1.6"></path><path d="M0 44H56" stroke="#3B8EEA" stroke-width="1.6"></path><path d="M0 8H56" stroke="#F4EFE4" stroke-opacity=".5" stroke-width="3"></path><g fill="#A4AAAF"><circle cx="18" cy="44" r="2.6"></circle><circle cx="23" cy="44" r="2.6"></circle><circle cx="28" cy="44" r="2.6"></circle><circle cx="33" cy="44" r="2.6"></circle><circle cx="38" cy="44" r="2.6"></circle></g><circle cx="28" cy="51" r="2.8" fill="#F2F5F3"></circle></svg>
+      <span class="tx"><span class="dd"><b>2nd &amp; 4</b><span>opp 22</span></span><span class="meta">Red zone, 38 seconds left.</span></span>
+      <span class="st won"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 6.2L5 8.6L9.6 3.6" fill="none" stroke="#F4EFE4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg>Rep 2</span>
+    </a>
+
+    <a class="row" href="../08-result/prototype.html">
+      <svg class="th" viewBox="0 0 56 56" aria-hidden="true"><rect width="56" height="56" fill="#0F3A27"></rect><path d="M0 27H56" stroke="#E2C044" stroke-width="1.6"></path><path d="M0 44H56" stroke="#3B8EEA" stroke-width="1.6"></path><g fill="#A4AAAF"><circle cx="18" cy="44" r="2.6"></circle><circle cx="23" cy="44" r="2.6"></circle><circle cx="28" cy="44" r="2.6"></circle><circle cx="33" cy="44" r="2.6"></circle><circle cx="38" cy="44" r="2.6"></circle></g><circle cx="28" cy="51" r="2.8" fill="#F2F5F3"></circle></svg>
+      <span class="tx"><span class="dd"><b>3rd &amp; 7</b><span>own 30</span></span><span class="meta">Tied late. Don't blink.</span></span>
+      <span class="st lost">Missed</span>
+    </a>
+
+    <a class="row" href="../08-result/prototype.html">
+      <svg class="th" viewBox="0 0 56 56" aria-hidden="true"><rect width="56" height="56" fill="#0F3A27"></rect><path d="M0 20H56" stroke="#E2C044" stroke-width="1.6"></path><path d="M0 44H56" stroke="#3B8EEA" stroke-width="1.6"></path><g fill="#A4AAAF"><circle cx="18" cy="44" r="2.6"></circle><circle cx="23" cy="44" r="2.6"></circle><circle cx="28" cy="44" r="2.6"></circle><circle cx="33" cy="44" r="2.6"></circle><circle cx="38" cy="44" r="2.6"></circle></g><circle cx="28" cy="51" r="2.8" fill="#F2F5F3"></circle></svg>
+      <span class="tx"><span class="dd"><b>1st &amp; 10</b><span>own 20</span></span><span class="meta">Up 1. Milk the clock.</span></span>
+      <span class="st won"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 6.2L5 8.6L9.6 3.6" fill="none" stroke="#F4EFE4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg>Rep 1</span>
+    </a>
+
+    <a class="row" href="../08-result/prototype.html">
+      <svg class="th" viewBox="0 0 56 56" aria-hidden="true"><rect width="56" height="56" fill="#0F3A27"></rect><path d="M0 11H56" stroke="#E2C044" stroke-width="1.6"></path><path d="M0 44H56" stroke="#3B8EEA" stroke-width="1.6"></path><g fill="#A4AAAF"><circle cx="18" cy="44" r="2.6"></circle><circle cx="23" cy="44" r="2.6"></circle><circle cx="28" cy="44" r="2.6"></circle><circle cx="33" cy="44" r="2.6"></circle><circle cx="38" cy="44" r="2.6"></circle></g><circle cx="28" cy="51" r="2.8" fill="#F2F5F3"></circle></svg>
+      <span class="tx"><span class="dd"><b>3rd &amp; 14</b><span>opp 35</span></span><span class="meta">Kicker is warming up.</span></span>
+      <span class="st won"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 6.2L5 8.6L9.6 3.6" fill="none" stroke="#F4EFE4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg>Rep 3</span>
+    </a>
+  </div>
+</main>
+</div>
+</body>
+</html>

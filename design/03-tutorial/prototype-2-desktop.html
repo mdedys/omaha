@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Desktop: tutorial 2</title>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@500;600;700;800;900&amp;display=swap" rel="stylesheet">
+<style>
+
+body{margin:0;background:#F4EFE4}
+a{color:#244A3E}a:hover{color:#163028}
+.app{min-height:100vh;display:flex;flex-direction:column;background:#F4EFE4;color:#244A3E;font-family:Figtree,sans-serif}
+.top{height:64px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 28px;border-bottom:1px solid #DCD3C1}
+.brand{font-size:24px;font-weight:900;letter-spacing:.02em}
+.sit{display:flex;align-items:baseline;gap:10px}
+.sit b{font-size:20px;font-weight:900;text-transform:uppercase}
+.sit span{font-size:14px;font-weight:800;color:#5A6B62;text-transform:uppercase}
+.meta{display:flex;align-items:center;gap:14px;font-size:14px;font-weight:600;color:#5A6B62;font-variant-numeric:tabular-nums}
+.pips{display:flex;gap:5px}.pips i{width:9px;height:9px;border-radius:5px;background:#DCD3C1}.pips i.on{background:#244A3E}.pips i.ring{box-sizing:border-box;background:transparent;border:2px solid #244A3E}
+.body{flex:1;display:grid;grid-template-columns:minmax(0,1fr) 440px;min-height:0}
+.stage{position:relative;background:#0C3322;display:flex;align-items:center;justify-content:center;padding:24px;min-height:0}
+.field{display:block;height:calc(100vh - 112px);width:auto;max-width:100%;border-radius:10px}
+.pill{position:absolute;top:36px;height:30px;padding:0 12px;border-radius:15px;background:rgba(6,13,10,.82);color:#F4EFE4;display:flex;align-items:center;gap:7px;font-size:13px;font-weight:700}
+.panel{border-left:1px solid #DCD3C1;padding:28px;display:flex;flex-direction:column;gap:22px;min-height:0;box-sizing:border-box}
+.grow{flex-grow:1}
+.steps{display:flex;gap:10px}
+.steps div{flex:1;display:flex;flex-direction:column;gap:8px}
+.steps i{height:4px;border-radius:2px;background:#DCD3C1}
+.steps span{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;color:#5A6B62}
+.steps .done i{background:#244A3E;opacity:.45}.steps .now i{background:#244A3E}.steps .now span{color:#244A3E}
+.lab{display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.04em}
+.lab span{color:#5A6B62;font-weight:700;text-transform:none;letter-spacing:0}
+.rgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.card{box-sizing:border-box;border-radius:10px;border:2px solid #DCD3C1;background:#FFFFFF;display:flex;flex-direction:column;overflow:hidden;padding:0;color:#244A3E;font:800 13px Figtree,sans-serif;text-transform:uppercase;cursor:pointer}
+.card svg{display:block;width:100%;height:auto}
+.card span{height:34px;display:flex;align-items:center;justify-content:center}
+.card.sel{border-color:#244A3E}.card.sel span{background:#244A3E;color:#F4EFE4}
+.seg{display:flex;background:#FFFFFF;border:1px solid #DCD3C1;border-radius:12px;padding:3px;gap:3px}
+.seg button{flex:1;height:42px;border:none;border-radius:9px;background:transparent;color:#5A6B62;font:800 14px Figtree,sans-serif;text-transform:uppercase;cursor:pointer}
+.seg button.sel{background:#244A3E;color:#F4EFE4}
+.cta{height:58px;border:none;border-radius:10px;background:#E05A2B;color:#FFFFFF;font:900 19px Figtree,sans-serif;text-transform:uppercase;letter-spacing:.01em;display:flex;align-items:center;justify-content:center;gap:12px;cursor:pointer;width:100%}
+kbd{font:700 11px Figtree,sans-serif;padding:3px 7px;border-radius:5px;background:rgba(255,255,255,.22);color:inherit;text-transform:none;letter-spacing:0}
+.hint{font-size:12px;font-weight:600;color:#5A6B62;text-align:center}
+.hint kbd{background:#FFFFFF;border:1px solid #DCD3C1;color:#244A3E}
+.ib{width:52px;height:52px;border:none;border-radius:26px;background:transparent;color:#244A3E;display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer}
+.ib.play{width:68px;height:68px;border-radius:34px;background:#244A3E;color:#F4EFE4}
+.mom{display:flex;flex-direction:column;gap:8px}
+.mom button{height:52px;box-sizing:border-box;border-radius:10px;border:1px solid #DCD3C1;background:#FFFFFF;color:#244A3E;font-family:Figtree,sans-serif;display:flex;align-items:center;justify-content:space-between;padding:0 16px;cursor:pointer}
+.mom b{font-size:14px;font-weight:800;text-transform:uppercase}.mom i{font-style:normal;font-size:13px;font-weight:600;color:#5A6B62;font-variant-numeric:tabular-nums}
+.mom button.sel{border:2px solid #244A3E;padding:0 15px}
+.stat{flex:1;display:flex;flex-direction:column;gap:6px}
+.stat b{font-size:32px;font-weight:900;line-height:1;color:#E05A2B}
+.stat span{font-size:13px;font-weight:600;color:#5A6B62;line-height:1}
+.rule{border-top:1px solid #DCD3C1;border-bottom:1px solid #DCD3C1;padding:16px 0}
+.life{width:34px;height:34px;box-sizing:border-box;border-radius:8px;border:1.5px solid #DCD3C1;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#5A6B62}
+.life.lost{border-color:#244A3E;background:rgba(36,74,62,.12)}.life.next{border-color:#244A3E;color:#244A3E}
+.sq{width:58px;height:58px;flex-shrink:0;border-radius:10px;border:2px solid #DCD3C1;background:#FFFFFF;color:#244A3E;display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer}
+.t{border-radius:12px;display:flex;align-items:center;justify-content:center}
+.t.o{background:#5CC98A}.t.c{background:#F4B13E}.t.x{background:#E05A2B}
+.vs{flex:1;border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:7px}
+.vs span{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;line-height:1}
+.vs b{font-size:19px;font-weight:900;line-height:1.1;text-transform:uppercase}
+.share-wrap{flex:1;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:48px;align-items:center;max-width:1120px;width:100%;margin:0 auto;padding:48px 32px;box-sizing:border-box}
+@media (max-width:900px){
+.body{grid-template-columns:minmax(0,1fr)}
+.stage{padding:0;min-width:0}
+.field{width:100%;height:auto;max-height:none;border-radius:0}
+.hint,.cta kbd{display:none}
+.panel{min-width:0}
+.pill{top:12px}
+.panel{border-left:none;padding:16px}
+.top{padding:0 16px}
+.sit span,.meta .num{display:none}
+.share-wrap{grid-template-columns:1fr;gap:24px;padding:20px 16px}
+}
+
+
+.dot{width:8px;height:8px;border-radius:4px;background:#DCD3C1}
+.dot.on{width:24px;background:#244A3E}
+.skip{position:absolute;right:8px;top:8px;height:44px;padding:0 12px;display:flex;align-items:center;color:#F4EFE4;font:800 14px Figtree,sans-serif;text-transform:uppercase;text-decoration:none}
+.skip:hover{color:#FFFFFF}
+.st{display:flex;align-items:flex-start;gap:12px}
+.st .n{width:28px;height:28px;flex-shrink:0;border-radius:14px;background:#244A3E;color:#F4EFE4;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900}
+.st .t{display:flex;flex-direction:column;gap:3px}
+.st b{font-size:15px;font-weight:900;text-transform:uppercase;line-height:1.1}
+.st span{font-size:14px;line-height:1.35;color:#4A5C53}
+
+a.cta{text-decoration:none}a.cta:hover{color:#FFFFFF;background:#C94B20}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="top"><span class="brand">OMAHA</span><a href="#" style="font-size: 14px; font-weight: 800; text-transform: uppercase; text-decoration: none;">Skip</a></header>
+<div class="body">
+<div class="stage"><svg class="field" viewBox="0 0 390 440" role="img" aria-label="A full play drawn: the line sliding left, four routes, and the tight end marked as the first read">
+  <rect width="390" height="440" fill="#0F3A27"></rect>
+  <g fill="#113F2A"><rect y="20" width="390" height="64"></rect><rect y="148" width="390" height="64"></rect><rect y="276" width="390" height="64"></rect><rect y="404" width="390" height="36"></rect></g>
+  <path d="M0 20H390M0 84H390M0 148H390M0 212H390M0 276H390M0 340H390M0 404H390" stroke="#D5E0D9" stroke-opacity=".3"></path>
+  <path d="M0 212H390" stroke="#E2C044" stroke-width="2"></path>
+  <path d="M0 340H390" stroke="#3B8EEA" stroke-width="2"></path>
+
+  <path d="M154 350L160 357L166 350L172 357L178 350L184 357L190 350L196 357L202 350L208 357L214 350L220 357L226 350L232 357L238 350L244 357L250 350" fill="none" stroke="#06100B" stroke-width="1.5" stroke-linejoin="round"></path>
+  <path d="M250 367H146M152 361L146 367L152 373" fill="none" stroke="#DADDE0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+  <g fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M52 332V204H164M157 198L164 204L157 210" stroke="#EAC54F"></path>
+    <path d="M262 332V276L328 210M319 211L328 210L327 219" stroke="#B7A6F5" stroke-width="2.8"></path>
+    <path d="M318 352V276H370M363 270L370 276L363 282" stroke="#F27C8E"></path>
+    <path d="M380 344V150M374 157L380 150L386 157" stroke="#55AEF5"></path>
+    <path d="M178 398L256 359M253.3 353.6L258.7 364.4" stroke="#5BDB8C"></path>
+  </g>
+  <g fill="#A4AAAF" stroke="#DADDE0" stroke-width="1.2"><circle cx="158" cy="340" r="8"></circle><circle cx="179" cy="340" r="8"></circle><circle cx="200" cy="340" r="8"></circle><circle cx="221" cy="340" r="8"></circle><circle cx="242" cy="340" r="8"></circle></g>
+  <circle cx="262" cy="341" r="14" fill="none" stroke="#F4B13E" stroke-width="1.6"></circle>
+  <g font-family="Figtree, sans-serif" font-size="6.5" font-weight="700" text-anchor="middle">
+    <g transform="translate(52 342)"><circle r="8.5" fill="#0E2219" stroke="#EAC54F" stroke-width="2.2"></circle><text y="2.3" fill="#fff">WR</text></g>
+    <g transform="translate(262 341)"><circle r="8.5" fill="#0E2219" stroke="#8E73F2" stroke-width="2.2"></circle><text y="2.3" fill="#fff">TE</text></g>
+    <g transform="translate(318 362)"><circle r="8.5" fill="#0E2219" stroke="#F0607A" stroke-width="2.2"></circle><text y="2.3" fill="#fff">WR</text></g>
+    <g transform="translate(380 354)"><circle r="8.5" fill="#0E2219" stroke="#55AEF5" stroke-width="2.2"></circle><text y="2.3" fill="#fff">WR</text></g>
+    <g transform="translate(170 404)"><circle r="8.5" fill="#0E2219" stroke="#5BDB8C" stroke-width="2.2"></circle><text y="2.3" fill="#fff">RB</text></g>
+    <g transform="translate(200 404)"><circle r="8.5" fill="#F2F5F3"></circle><text y="2.3" fill="#0A1410">QB</text></g>
+    <g transform="translate(275 328)"><circle r="6.5" fill="#F4B13E"></circle><text y="2.4" font-size="8" fill="#0A1410">1</text></g>
+  </g>
+</svg></div>
+<aside class="panel" aria-label="Step 2 of 3" style="padding: 48px 40px; gap: 28px; justify-content: space-between;">
+  <div style="display: flex; flex-direction: column; gap: 14px;">
+    <div style="display: flex; gap: 6px;" aria-hidden="true"><span class="dot"></span><span class="dot on"></span><span class="dot"></span></div>
+    <h2 style="margin: 0; font-size: 36px; font-weight: 900; line-height: .95; text-transform: uppercase; letter-spacing: -0.01em;">Draw up the play</h2>
+  </div>
+  <ol style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 14px;">
+    <li class="st"><span class="n">1</span><span class="t"><b>Protect</b><span>Who stays in to block, and which way the line slides.</span></span></li>
+    <li class="st"><span class="n">2</span><span class="t"><b>Routes</b><span>A route and a depth for every receiver.</span></span></li>
+    <li class="st"><span class="n">3</span><span class="t"><b>Read</b><span>Who the quarterback looks to first.</span></span></li>
+  </ol>
+  <a class="cta" href="#">Next</a>
+</aside>
+</div>
+</div>
+</body>
+</html>
