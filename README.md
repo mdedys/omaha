@@ -6,7 +6,7 @@ The name comes from Peyton Manning's audible call at the line.
 
 ## Status
 
-Pre-MVP. The visual design is done and lives in [design/](design/README.md). The app is a fresh Vite + React + TypeScript scaffold; build work follows the queue in [design/TASKS.md](design/TASKS.md).
+Pre-MVP. The visual design is done and lives in [design/](design/README.md). The app is a fresh Vite + React + TypeScript scaffold; build work is tracked in [GitHub issues](https://github.com/mdedys/omaha/issues), game engine first, then the front end.
 
 ## Getting started
 
@@ -38,5 +38,4 @@ TypeScript, React and SVG, with no game engine. React renders menus, briefing an
 | [GAME_CONCEPT.md](GAME_CONCEPT.md)   | Concept, design pillars, style and risks            |
 | [design/README.md](design/README.md) | Screen index, flow and settled design decisions     |
 | [design/DESIGN.md](design/DESIGN.md) | Design tokens, type, components and field-art rules |
-| [design/TASKS.md](design/TASKS.md)   | Front-end implementation queue                      |
 | [AGENTS.md](AGENTS.md)               | Instructions for coding agents                      |

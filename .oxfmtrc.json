@@ -1,10 +1,5 @@
 {
   "$schema": "./node_modules/oxfmt/configuration_schema.json",
-  "ignorePatterns": [
-    "docs/**",
-    "design/**",
-    "public/**",
-    ".impeccable/**"
-  ],
+  "ignorePatterns": ["docs/**", "design/**", "public/**", ".impeccable/**"],
   "printWidth": 80
 }
