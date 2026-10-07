@@ -10,7 +10,7 @@ A daily football puzzle: the player designs one pass play against a hidden defen
 One day's challenge: a situation, a formation, a look, a defensive call, a goal and the pros' call.
 
 **Situation**:
-The game state a puzzle starts from: down, distance, spot, score, clock and timeouts.
+The game state a puzzle starts from: down, distance, spot, hash, score, clock and timeouts.
 
 **Goal**:
 What a rep must achieve to convert: a first down or a touchdown.
@@ -26,6 +26,29 @@ _Avoid_: "the defense" on its own
 **Pros' call**:
 What the real team ran on this play, and what happened.
 _Avoid_: real call
+
+### The field
+
+**Field**:
+The playing surface every rep is resolved on: full length with 10-yard end zones, but only about 31.5 yards wide, so the whole width shows at true scale.
+_Avoid_: NFL field
+
+**Hash**:
+Where across the field the ball is snapped from: the left hash, the middle or the right hash.
+
+### The offense
+
+**Formation**:
+One of a fixed set of named offensive alignments, such as Gun Trey. A puzzle picks one and may flip it left to right.
+_Avoid_: set, alignment
+
+**Personnel**:
+How many RBs and TEs a formation uses, written as two digits: 11 is one RB and one TE, 12 is one RB and two TEs.
+_Avoid_: grouping, package
+
+**Receiver letter**:
+The fixed name of each of a formation's five eligible receivers: X and Z are the outside WRs, Y is the TE, H is the slot or second TE, and RB is the running back. Players see display names such as "Left WR" instead.
+_Avoid_: receiver slot, position
 
 ### Designing a play
 
