@@ -46,3 +46,17 @@ The decisions table in `design/README.md` is settled. Raise a question instead o
 - Formatting is oxfmt with an 80-column print width; `design/`, `public/` and `.impeccable/` are excluded from formatting.
 - Lint is oxlint with the `react`, `typescript` and `oxc` plugins.
 - Don't edit files in `design/` unless the task is a design change.
+
+## Agent skills
+
+### Issue tracker
+
+GitHub Issues on `mdedys/omaha` via the `gh` CLI; external PRs are not a triage surface. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Default vocabulary: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: `CONTEXT.md` and `docs/adr/` at the repo root, created as terms and decisions get resolved. See `docs/agents/domain.md`.
