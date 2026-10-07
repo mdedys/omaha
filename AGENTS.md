@@ -1,0 +1,48 @@
+# AGENTS.md
+
+Omaha is a daily football puzzle: the player designs one pass play (protection, routes, first read) against a hidden defense and gets up to 4 reps to convert. See [README.md](README.md) for the overview.
+
+## Commands
+
+Use pnpm, not npm or yarn.
+
+- `pnpm dev` — dev server
+- `pnpm build` — type-check (`tsc -b`) and build
+- `pnpm lint` — oxlint
+- `pnpm fmt` / `pnpm fmt:check` — oxfmt
+
+There is no test runner yet. Before calling work done, run `pnpm lint`, `pnpm fmt:check` and `pnpm build`.
+
+## Where to look
+
+- **What to build next:** [design/TASKS.md](design/TASKS.md). Work top to bottom and respect each task's **Depends on**.
+- **How a screen looks and behaves:** the screen's folder under `design/` (`spec.md` plus prototype HTML), indexed in [design/README.md](design/README.md).
+- **Tokens, type, components, field art:** [design/DESIGN.md](design/DESIGN.md).
+- **Product rules and scope:** [PRODUCT.md](PRODUCT.md), then [GAME_CONCEPT.md](GAME_CONCEPT.md).
+
+## Design sources of truth
+
+When sources disagree:
+
+1. `design/DESIGN.md` wins on visual values (colors, sizes, type).
+2. A screen's `spec.md` wins on behavior.
+3. Prototype HTML files are hand-built mockups, not reference code. Don't copy their markup or field coordinates; `design/README.md` lists their known inaccuracies.
+4. The repo `design/` folder wins over the external design canvas.
+
+The decisions table in `design/README.md` is settled. Raise a question instead of building around it.
+
+## Product constraints
+
+- **Deterministic simulation.** No randomness anywhere in play resolution: the same design against the same puzzle always gives the same result.
+- **Legible over realistic.** Every failed rep must be explainable at a glance.
+- **MVP is pass plays only.** The puzzle sets the formation and defense; the player never picks them.
+- **No real team logos, uniforms or player likenesses.**
+- **Phone-first.** Design for 390px wide and touch, then scale up to desktop. Support light and dark themes.
+- **The game engine** (simulation, read progression, scoring) is built separately. Front-end work runs against the fixture puzzle and stub simulation from TASKS.md T03 until it lands.
+
+## Code conventions
+
+- TypeScript, React 19 and SVG. Don't add a game engine or canvas library.
+- Formatting is oxfmt with an 80-column print width; `design/`, `public/` and `.impeccable/` are excluded from formatting.
+- Lint is oxlint with the `react`, `typescript` and `oxc` plugins.
+- Don't edit files in `design/` unless the task is a design change.

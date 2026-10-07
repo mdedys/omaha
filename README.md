@@ -1,32 +1,42 @@
-# React + TypeScript + Vite
+# Omaha
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+A daily football puzzle. Each day recreates one game-deciding play from last week's NFL action. You are the offensive coordinator: read the defense, design one pass play, snap it, and find out whether you out-coached the pros.
 
-Currently, two official plugins are available:
+The name comes from Peyton Manning's audible call at the line.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Status
 
-## React Compiler
+Pre-MVP. The visual design is done and lives in [design/](design/README.md). The app is a fresh Vite + React + TypeScript scaffold; build work follows the queue in [design/TASKS.md](design/TASKS.md).
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Getting started
 
-## Expanding the Oxlint configuration
+Requires Node and [pnpm](https://pnpm.io).
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```sh
+pnpm install
+pnpm dev
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+| Command          | What it does                     |
+| ---------------- | -------------------------------- |
+| `pnpm dev`       | Start the Vite dev server        |
+| `pnpm build`     | Type-check and build to `dist/`  |
+| `pnpm preview`   | Serve the production build       |
+| `pnpm lint`      | Lint with oxlint                 |
+| `pnpm fmt`       | Format with oxfmt                |
+| `pnpm fmt:check` | Check formatting without writing |
+
+## Stack
+
+TypeScript, React and SVG, with no game engine. React renders menus, briefing and result screens; SVG renders and animates the field. Planned: static hosting with one JSON file per daily puzzle, an anonymous results API on Cloudflare (Worker + D1), and a PWA install.
+
+## Docs
+
+| File                                 | What's in it                                        |
+| ------------------------------------ | --------------------------------------------------- |
+| [PRODUCT.md](PRODUCT.md)             | Users, positioning, MVP scope and game rules        |
+| [GAME_CONCEPT.md](GAME_CONCEPT.md)   | Concept, design pillars, style and risks            |
+| [design/README.md](design/README.md) | Screen index, flow and settled design decisions     |
+| [design/DESIGN.md](design/DESIGN.md) | Design tokens, type, components and field-art rules |
+| [design/TASKS.md](design/TASKS.md)   | Front-end implementation queue                      |
+| [AGENTS.md](AGENTS.md)               | Instructions for coding agents                      |
