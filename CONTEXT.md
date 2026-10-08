@@ -157,7 +157,10 @@ The spot on a route from which the QB may throw to that receiver: his break, whe
 How long the QB stays on one read once he's set and the receiver has reached his throw point. He throws the first moment the receiver is open, or moves on when it runs out.
 
 **Throwaway**:
-A ball thrown out of bounds when the QB runs out of reads. It's an incompletion nobody can catch.
+A ball thrown out of bounds when the QB runs out of reads and every read is covered. It's an incompletion nobody can catch.
+
+**Forced throw**:
+A throw to a contested read: under pressure, or when the QB runs out of reads and throws to the least-covered read in the order.
 
 **Catch point**:
 Where the QB aims the ball: the first spot on the receiver's planned path the ball can reach in time.
@@ -184,7 +187,7 @@ A defender within a yard of the ball when it reaches the catch point, who stops 
 _Avoid_: deflection, pass defensed
 
 **Interception**:
-A breakup by a defender who broke on the ball and is in front of the receiver, between the QB and the catch point. He catches it, and the rep ends there with no return.
+A breakup by a defender who broke on the ball and got to the catch point first: nearer it than the receiver on the moment before the ball arrives. He catches it, and the rep ends there with no return. A receiver who has stopped is already on the catch point, so he can't be intercepted.
 _Avoid_: pick
 
 **Ball carrier**:
