@@ -13,15 +13,17 @@ export const CONTEST_RADIUS = 1;
 export const OPEN_SEPARATION = 3;
 export const TACKLE_RADIUS = 1;
 
+// Average speeds over a route: a WR covers 10 yd past the line in about 1.6 s,
+// and every other role keeps its ratio to the WR.
 export const SPEED = {
-  WR: 9,
-  TE: 8,
-  RB: 8.5,
-  OL: 6,
-  CB: 9,
-  S: 8.6,
-  LB: 7.6,
-  DL: 6.6,
+  WR: 6.5,
+  TE: 5.78,
+  RB: 6.14,
+  OL: 4.33,
+  CB: 6.5,
+  S: 6.21,
+  LB: 5.49,
+  DL: 4.77,
 } as const;
 
 // Gun Trey, strong side right, ball on the middle of the field.
@@ -40,7 +42,7 @@ export const SACK_RADIUS = 1.5;
 export const PRESSURE_RADIUS = 2;
 
 export const QB_SET_DEPTH = 7;
-export const QB_DROP_SPEED = 1.05;
+export const QB_DROP_SPEED = 4;
 export const READ_TIME = 0.5;
 export const BALL_SPEED = 25;
 export const THROWAWAY_PAST_SIDELINE = 1;
@@ -65,6 +67,9 @@ export const TRAIL_DISTANCE = 1;
 export const CARRY_DISTANCE = 6;
 export const BALL_BREAK_RADIUS = 6;
 export const RUB_RADIUS = 0.75;
+// A rubbed defender moves at this share of his speed for the rub time.
+export const RUB_TIME = 0.6;
+export const RUB_SPEED_FACTOR = 0.5;
 // The ball carrier keeps a new heading at least this long.
 export const CUT_HOLD = 0.3;
 

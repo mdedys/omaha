@@ -23,6 +23,16 @@ function freeRun(carrier: Runner, dir: Vec, defender: Runner): number {
   );
 }
 
+// How far along dir the carrier can run before crossing the boundary margin.
+function room(carrier: Runner, dir: Vec): number {
+  return dir.x === 0
+    ? Infinity
+    : (Math.sign(dir.x) * SIDELINE_LIMIT - carrier.pos.x) / dir.x;
+}
+
+export const staysInside = (carrier: Runner, dir: Vec): boolean =>
+  room(carrier, dir) >= carrier.step;
+
 export function headingVector(heading: Heading, insideSign: number): Vec {
   if (heading === "upfield") return vec(0, 1);
   const sx = heading === "inside" ? insideSign : -insideSign;
@@ -48,13 +58,9 @@ export function chooseHeading(
   ];
   const options = order.flatMap((heading) => {
     const dir = headingVector(heading, insideSign);
-    const room =
-      dir.x === 0
-        ? Infinity
-        : (Math.sign(dir.x) * SIDELINE_LIMIT - carrier.pos.x) / dir.x;
-    if (room < carrier.step) return [];
+    if (!staysInside(carrier, dir)) return [];
     const run = Math.min(
-      room,
+      room(carrier, dir),
       ...defenders.map((d) => freeRun(carrier, dir, d)),
     );
     const needed = (targetY - carrier.pos.y) / dir.y;

@@ -2,14 +2,15 @@
 // prints each rep's cause, receiver feedback, ball-carrier cuts and event log.
 // Usage: node scripts/check-engine.ts [--quiet]
 import { deepStrictEqual } from "node:assert/strict";
-import { CUT_HOLD, toTicks } from "../src/engine/constants.ts";
+import { toTicks } from "../src/engine/constants.ts";
 import { simulate } from "../src/engine/simulate.ts";
 import { formatEvent, seconds } from "../src/format.ts";
 import { SCENARIOS } from "../src/scenarios.ts";
 
 const quiet = process.argv.includes("--quiet");
-// A flicker is a return to the heading just left within this many ticks.
-const FLICKER_WINDOW = toTicks(CUT_HOLD + 0.25);
+// A flicker is three heading changes within this many ticks: every change that
+// comes no later than this after the change two before it counts once.
+const FLICKER_WINDOW = toTicks(1);
 let unmet = 0;
 
 SCENARIOS.forEach((scenario, i) => {
@@ -34,12 +35,8 @@ SCENARIOS.forEach((scenario, i) => {
   );
   const cuts = rep.events.flatMap((e) => (e.kind === "cut" ? [e] : []));
   if (rep.carrier) {
-    const left = (k: number) => (k === 0 ? "upfield" : cuts[k - 1].heading);
     const flickers = cuts.filter(
-      (c, k) =>
-        k >= 1 &&
-        c.heading === left(k - 1) &&
-        c.tick - cuts[k - 1].tick <= FLICKER_WINDOW,
+      (c, k) => k >= 2 && c.tick - cuts[k - 2].tick <= FLICKER_WINDOW,
     ).length;
     console.log(
       `   carrier: ${cuts.length} heading change(s), ${flickers} flicker(s)`,

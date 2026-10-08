@@ -192,11 +192,11 @@ export const SCENARIOS: Scenario[] = [
       routes: {
         X: { route: "In", depth: 5 },
         Y: { route: "Hook", depth: 10 },
-        H: { route: "In", depth: 5 },
+        H: { route: "Wheel" },
         Z: { route: "Hitch" },
         RB: { route: "In", depth: 5 },
       },
-      readOrder: ["Y", "Z", "X"],
+      readOrder: ["X", "Z", "Y"],
     },
   },
   {
@@ -242,7 +242,7 @@ export const SCENARIOS: Scenario[] = [
         H: { route: "Out", depth: 10 },
         Z: { route: "Go" },
       },
-      readOrder: ["Z", "H", "Y"],
+      readOrder: ["Z", "X", "H"],
     },
   },
   {
@@ -269,7 +269,7 @@ export const SCENARIOS: Scenario[] = [
       ["converted", "short"].includes(rep.cause.code),
     defense: {
       coverageName: "Cover 1",
-      defenders: replace(COVER_1, d("CB2", "CB", 12.75, 7.5, man("Z"))),
+      defenders: replace(COVER_1, d("CB2", "CB", 12.75, 5, man("Z"))),
     },
     design: {
       protection: { blockers: 5, call: "man" },
