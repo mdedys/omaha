@@ -7,7 +7,7 @@ A daily football puzzle: the player designs one pass play against a hidden defen
 ### The puzzle
 
 **Puzzle**:
-One day's challenge: a situation, a formation, a look, a defensive call, a goal and the pros' call.
+One day's challenge: a situation, a formation, a look, a defensive call, a goal and the pros' result.
 
 **Situation**:
 The game state a puzzle starts from: down, distance, spot, hash, score, clock and timeouts.
@@ -23,9 +23,9 @@ The defense's pre-snap alignment, the only part of the defense the player sees. 
 The coverage and pressure the defense actually runs, hidden from the player.
 _Avoid_: "the defense" on its own
 
-**Pros' call**:
-What the real team ran on this play, and what happened. It always failed to convert.
-_Avoid_: real call
+**Pros' result**:
+What happened on the real play the puzzle is taken from, such as an incompletion, an interception or a strip sack. It always failed to convert.
+_Avoid_: pros' call, real call, real result
 
 ### The field
 
