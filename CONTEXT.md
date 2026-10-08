@@ -60,6 +60,10 @@ _Avoid_: play, play call
 The receiver the QB looks to first.
 _Avoid_: primary read
 
+**Rub**:
+A route runner crossing close to a defender in man coverage who is chasing a different receiver, which costs that defender time. Zone defenders are never rubbed.
+_Avoid_: pick, pick play
+
 ### Reps
 
 **Rep**:
