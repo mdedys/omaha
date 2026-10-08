@@ -60,6 +60,36 @@ _Avoid_: play, play call
 The receiver the QB looks to first.
 _Avoid_: primary read
 
+### Routes
+
+**Route tree**:
+Every route a receiver can be given, such as the In, the Wheel or the Hitch, grouped into route menus.
+_Avoid_: playbook
+
+**Route menu**:
+The routes open to one receiver in a formation: WR, Inside (the TE or slot) or RB.
+_Avoid_: route list
+
+**Route runner**:
+A receiver who runs a route instead of staying in to block.
+
+**Depth**:
+How many yards past the line of scrimmage a route breaks: 5, 10 or 15, for the routes that take one.
+_Avoid_: length
+
+**Stem**:
+The straight run upfield from a receiver's alignment to his break.
+
+**Release point**:
+Where an RB's route starts: just outside the tackle on his side, at the line of scrimmage.
+
+**Break**:
+Where a route changes direction. A hard break turns square or back toward the line; a soft break turns at 45 degrees.
+_Avoid_: cut
+
+**Inside**:
+Toward the ball, judged from the receiver's side of the formation. **Outside** is toward his own sideline.
+
 ### Reps
 
 **Rep**:
