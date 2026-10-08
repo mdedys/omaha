@@ -95,7 +95,7 @@ _Avoid_: fake look
 ### Designing a play
 
 **Design**:
-The player's protection, routes and first read.
+The player's protection, routes and read order.
 _Avoid_: play, play call
 
 **Protection**:
@@ -106,8 +106,12 @@ _Avoid_: pass pro, blocking scheme
 How the line splits up the rush. On a slide left or right, each lineman owns the gap on the slide side of him and the RB owns the far edge. On man, each lineman blocks the DL in front of him and the RB takes the first blitzer left over, inside-out.
 _Avoid_: slide call, BOB
 
+**Read order**:
+The route runners the QB looks at, in the order the player sets: a first read, then up to two more. The QB never throws to a route runner outside it.
+_Avoid_: progression, read list
+
 **First read**:
-The receiver the QB looks to first.
+The receiver the QB looks to first, at the head of the read order.
 _Avoid_: primary read
 
 ### Routes
@@ -139,6 +143,25 @@ _Avoid_: cut
 
 **Inside**:
 Toward the ball, judged from the receiver's side of the formation. **Outside** is toward his own sideline.
+
+### The quarterback
+
+**Drop**:
+The QB's move from where he takes the snap to his set spot, about 7 yards behind the line, where he stands until the ball is out. He never throws before he's set.
+_Avoid_: dropback, set
+
+**Throw point**:
+The spot on a route from which the QB may throw to that receiver: his break, where he sits, the Wheel's turn upfield, or 10 yards past the line on a Go or Seam.
+
+**Read time**:
+How long the QB stays on one read once he's set and the receiver has reached his throw point. He throws the first moment the receiver is open, or moves on when it runs out.
+
+**Throwaway**:
+A ball thrown out of bounds when the QB runs out of reads. It's an incompletion nobody can catch.
+
+**Catch point**:
+Where the QB aims the ball: the first spot on the receiver's planned path the ball can reach in time.
+_Avoid_: target spot
 
 ### Reps
 
