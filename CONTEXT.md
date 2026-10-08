@@ -57,7 +57,7 @@ What one defender does after the snap: man coverage on one receiver, a zone, or 
 _Avoid_: responsibility, role
 
 **Coverage name**:
-The label a puzzle gives its defensive call, such as "Cover 3" or "Tampa 2". The player sees it once the defense is revealed.
+The label a puzzle gives its defensive call, such as "Cover 3" or "Tampa 2". The player sees it only once the puzzle ends, on the converting rep or the fourth, and in the pros reveal.
 _Avoid_: coverage type
 
 **Zone**:
@@ -197,7 +197,18 @@ A defender reaching the ball carrier after the catch. It ends the rep where the 
 The play outcome judged against the goal: converted when a completion reaches the goal, short when a completion falls short of it (even for a loss), failed on an incompletion, interception or sack.
 
 **Receiver feedback**:
-The open, contested or covered mark each route runner gets after a rep.
+The open, contested or covered mark each route runner gets after a rep: open is 3 yards or more from the nearest defender, contested 1 to 3, covered under 1. The receiver thrown to is marked where the ball arrives; every other route runner is marked at his best moment while the QB could have thrown to him.
+
+**Cause**:
+The one reason a rep ended the way it did, such as a free rusher's sack or a breakup by a defender who closed while the ball was in the air. It names the decisive defender, if there is one, and the receiver thrown to.
+_Avoid_: reason, explanation
+
+**Decisive defender**:
+The defender a cause names: the sacker, the defender who broke up or intercepted the ball, or the tackler on a short rep.
+
+**Play art**:
+The defense's assignments drawn over a rep's final frame: zones, drop lines, and man, rush and blitz paths. It grows with each failed rep: none after the first, the linemen and linebackers after the second, every defender after the third or once the puzzle ends.
+_Avoid_: defense reveal
 
 **Yards gained**:
 Whole yards from the line of scrimmage to where the play ends, with any fraction dropped, so 9.6 yards counts as 9. Rep verdicts, the bonus and every stat use it.
