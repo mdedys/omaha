@@ -20,7 +20,7 @@ _Avoid_: success condition, objective
 The defense's pre-snap alignment, the only part of the defense the player sees. It may disguise the defensive call.
 
 **Defensive call**:
-The coverage and pressure the defense actually runs, hidden from the player.
+The coverage and pressure the defense actually runs, hidden from the player: every defender's assignment, plus its coverage name.
 _Avoid_: "the defense" on its own
 
 **Pros' result**:
@@ -49,6 +49,36 @@ _Avoid_: grouping, package
 **Receiver letter**:
 The fixed name of each of a formation's five eligible receivers: X and Z are the outside WRs, Y is the TE, H is the slot or second TE, and RB is the running back. Players see display names such as "Left WR" instead.
 _Avoid_: receiver slot, position
+
+### The defense
+
+**Assignment**:
+What one defender does after the snap: man coverage on one receiver, a zone, or a rush at the QB.
+_Avoid_: responsibility, role
+
+**Coverage name**:
+The label a puzzle gives its defensive call, such as "Cover 3" or "Tampa 2". The player sees it once the defense is revealed.
+_Avoid_: coverage type
+
+**Zone**:
+One of a fixed set of named areas a defender covers, such as deep third left or curl-flat right. Deep zones divide the field's width; underneath zones sit relative to the ball.
+_Avoid_: area
+
+**Carry**:
+A deep zone defender trailing a receiver who threatens to get behind him, even out of his zone.
+_Avoid_: match
+
+**Blitz**:
+A rush by a defender who isn't a lineman.
+_Avoid_: pressure, on its own
+
+**Hug rush**:
+A rush by a man defender whose receiver stayed in to block.
+_Avoid_: green dog
+
+**Disguise**:
+The difference between where a defender lines up in the look and where his assignment takes him.
+_Avoid_: fake look
 
 ### Designing a play
 
