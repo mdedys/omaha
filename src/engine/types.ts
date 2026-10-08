@@ -56,6 +56,8 @@ export type RoutePath = {
 
 export type Heading = "upfield" | "inside" | "outside";
 
+export type ForceReason = "pressure" | "out-of-reads";
+
 export type GameEvent = { tick: number } & (
   | { kind: "pickup"; blocker: OffenseId; rusher: DefenderId }
   | { kind: "double"; helper: Lineman; blocker: OffenseId; rusher: DefenderId }
@@ -66,7 +68,12 @@ export type GameEvent = { tick: number } & (
   | { kind: "sack"; rusher: DefenderId }
   | { kind: "read"; letter: Letter }
   | { kind: "read-next"; from: Letter; to: Letter }
-  | { kind: "throw"; letter: Letter; separation: number; forced: boolean }
+  | {
+      kind: "throw";
+      letter: Letter;
+      separation: number;
+      forced: ForceReason | null;
+    }
   | { kind: "throwaway" }
   | {
       kind: "defender-react";
@@ -89,22 +96,21 @@ export type GameEvent = { tick: number } & (
   | { kind: "touchdown"; letter: Letter }
 );
 
+type ForcedCode = "breakup-forced" | "interception-forced";
 export type CauseCode =
   | "sack-free-rusher"
   | "sack-beat-block"
   | "throwaway"
   | "breakup-closed"
-  | "breakup-forced"
   | "interception-closed"
-  | "interception-forced"
+  | ForcedCode
   | "short"
   | "converted"
   | "touchdown";
-export type Cause = {
-  code: CauseCode;
-  decisive: DefenderId | null;
-  thrownTo: Letter | null;
-};
+export type Cause = { decisive: DefenderId | null; thrownTo: Letter | null } & (
+  | { code: Exclude<CauseCode, ForcedCode> }
+  | { code: ForcedCode; forcedBy: ForceReason }
+);
 
 export type Badge = "open" | "contested" | "covered";
 export type Feedback = {

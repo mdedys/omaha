@@ -25,7 +25,7 @@ export function causeOf(events: readonly GameEvent[]): Cause {
   if (!end) throw new Error("rep ended without an ending event");
   const thrown = events.findLast((e) => e.kind === "throw");
   const thrownTo = thrown?.kind === "throw" ? thrown.letter : null;
-  const forced = thrown?.kind === "throw" && thrown.forced;
+  const forcedBy = thrown?.kind === "throw" ? thrown.forced : null;
   switch (end.kind) {
     case "sack": {
       const free = events.some(
@@ -41,13 +41,17 @@ export function causeOf(events: readonly GameEvent[]): Cause {
       return { code: "throwaway", decisive: null, thrownTo: null };
     case "breakup":
       return {
-        code: forced ? "breakup-forced" : "breakup-closed",
+        ...(forcedBy
+          ? { code: "breakup-forced", forcedBy }
+          : { code: "breakup-closed" }),
         decisive: end.defender,
         thrownTo,
       };
     case "interception":
       return {
-        code: forced ? "interception-forced" : "interception-closed",
+        ...(forcedBy
+          ? { code: "interception-forced", forcedBy }
+          : { code: "interception-closed" }),
         decisive: end.defender,
         thrownTo,
       };

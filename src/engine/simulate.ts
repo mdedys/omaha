@@ -5,6 +5,7 @@ import {
   BREAK_COSINE,
   CARRY_DISTANCE,
   CONTEST_RADIUS,
+  CUT_HOLD,
   ENGAGE_OFFSET,
   FIELD_HALF_WIDTH,
   HOLD_TIME,
@@ -16,7 +17,6 @@ import {
   READ_TIME,
   REACTION_DELAY,
   RUB_RADIUS,
-  RUB_TIME,
   SACK_RADIUS,
   SPEED,
   TACKLE_RADIUS,
@@ -46,6 +46,7 @@ import type {
   DefenderId,
   Defense,
   Design,
+  ForceReason,
   GameEvent,
   Heading,
   Letter,
@@ -71,7 +72,7 @@ import {
 const REACT_TICKS = toTicks(REACTION_DELAY);
 const READ_TICKS = toTicks(READ_TIME);
 const HOLD_TICKS = toTicks(HOLD_TIME);
-const RUB_TICKS = toTicks(RUB_TIME);
+const CUT_HOLD_TICKS = toTicks(CUT_HOLD);
 const LAST_TICK = toTicks(TICK_CAP);
 const BALL_STEP = BALL_SPEED * TICK;
 const SET_SPOT = vec(0, -QB_SET_DEPTH);
@@ -106,7 +107,7 @@ type Rush = {
   atGap: boolean;
 };
 type Coverage =
-  | { kind: "man"; chase: Chase; rubbedUntil: number; rubbedBy: Letter[] }
+  | { kind: "man"; chase: Chase; detour: Letter | null }
   | {
       kind: "zone";
       zone: ZoneName;
@@ -126,7 +127,13 @@ type Coverage =
   | { kind: "ball"; point: Vec }
   | { kind: "pursue" };
 
-type Run = { kind: "run"; letter: Letter; catchTick: number; heading: Heading };
+type Run = {
+  kind: "run";
+  letter: Letter;
+  catchTick: number;
+  heading: Heading;
+  heldUntil: number;
+};
 type Phase = { kind: "pocket" } | { kind: "flight"; flight: BallFlight } | Run;
 
 const unit = (v: Vec): Vec | null => {
@@ -294,8 +301,7 @@ export function simulate(defense: Defense, design: Design): Rep {
       coverage.set(d.id, {
         kind: "man",
         chase: chaseFrom(d.spot, a.letter, GUN_TREY[a.letter]),
-        rubbedUntil: -1,
-        rubbedBy: [],
+        detour: null,
       });
     } else if (a.kind === "zone") {
       coverage.set(
@@ -443,27 +449,33 @@ export function simulate(defense: Defense, design: Design): Rep {
     return c.atGap ? qb : c.gap;
   }
 
-  // Each tick the man defender's step is checked against every other route
-  // runner; brushing past one costs him a fixed number of ticks.
-  function rubbed(
+  // A man defender whose step would pass within the rub radius of another
+  // route runner heads for the tangent point of that radius instead, on the
+  // side nearer his chase target, keeping the step's length.
+  function aroundRunners(
     id: DefenderId,
     c: Extract<Coverage, { kind: "man" }>,
     from: Vec,
     to: Vec,
+    target: Vec,
     t: number,
-  ): boolean {
-    if (t <= c.rubbedUntil) return true;
+  ): Vec {
     const by = runners.find(
       (l) =>
         l !== c.chase.letter &&
-        !c.rubbedBy.includes(l) &&
         segmentDistance(from, to, at(l, t - 1)) < RUB_RADIUS,
     );
-    if (!by) return false;
-    c.rubbedBy.push(by);
-    c.rubbedUntil = t + RUB_TICKS - 1;
-    log({ tick: t, kind: "rubbed", defender: id, by });
-    return true;
+    if (by && by !== c.detour)
+      log({ tick: t, kind: "rubbed", defender: id, by });
+    c.detour = by ?? null;
+    if (!by) return to;
+    const away = sub(from, at(by, t - 1));
+    const out = unit(away) ?? vec(0, 1);
+    const left = vec(-out.y, out.x);
+    const side = dot(left, sub(target, from)) >= 0 ? left : scale(left, -1);
+    const sin = Math.min(1, RUB_RADIUS / length(away));
+    const dir = add(scale(out, -Math.sqrt(1 - sin * sin)), scale(side, sin));
+    return add(from, scale(dir, distance(from, to)));
   }
 
   // QB, ball and outcome state.
@@ -494,36 +506,56 @@ export function simulate(defense: Defense, design: Design): Rep {
           readReached = t;
           continue;
         }
-        log({ tick: t, kind: "throwaway" });
-        const to = vec(
-          (qb.x < 0 ? -1 : 1) * (FIELD_HALF_WIDTH + THROWAWAY_PAST_SIDELINE),
-          qb.y,
-        );
-        const arriveTick = t + Math.ceil(distance(qb, to) / BALL_STEP);
-        return { from: qb, to, throwTick: t, arriveTick, target: null };
+        return outOfReads(t, qb);
       }
       if (t < start) return null;
       const separation = separationAt(letter, t - 1);
       const bar = pressured ? CONTEST_RADIUS : OPEN_SEPARATION;
       if (separation < bar) return null;
-      log({
-        tick: t,
-        kind: "throw",
-        letter,
-        separation,
-        forced: separation < OPEN_SEPARATION,
-      });
-      for (let k = t + 1; ; k++) {
-        const spot = plannedAt(letter, k);
-        if (distance(qb, spot) <= (k - t) * BALL_STEP) {
-          return {
-            from: qb,
-            to: spot,
-            throwTick: t,
-            arriveTick: k,
-            target: letter,
-          };
-        }
+      const forced = separation < OPEN_SEPARATION ? "pressure" : null;
+      return throwTo(letter, separation, forced, t, qb);
+    }
+  }
+
+  // Out of reads: the read past its throw point with the most separation,
+  // the earlier read on a tie, if he is at least contested.
+  function outOfReads(t: number, qb: Vec): BallFlight {
+    let best: { letter: Letter; separation: number } | null = null;
+    for (const letter of order) {
+      if (throwableFrom(letter) > t - 1) continue;
+      const separation = separationAt(letter, t - 1);
+      if (!best || separation > best.separation) best = { letter, separation };
+    }
+    if (best && best.separation >= CONTEST_RADIUS) {
+      return throwTo(best.letter, best.separation, "out-of-reads", t, qb);
+    }
+    log({ tick: t, kind: "throwaway" });
+    const to = vec(
+      (qb.x < 0 ? -1 : 1) * (FIELD_HALF_WIDTH + THROWAWAY_PAST_SIDELINE),
+      qb.y,
+    );
+    const arriveTick = t + Math.ceil(distance(qb, to) / BALL_STEP);
+    return { from: qb, to, throwTick: t, arriveTick, target: null };
+  }
+
+  function throwTo(
+    letter: Letter,
+    separation: number,
+    forced: ForceReason | null,
+    t: number,
+    qb: Vec,
+  ): BallFlight {
+    log({ tick: t, kind: "throw", letter, separation, forced });
+    for (let k = t + 1; ; k++) {
+      const spot = plannedAt(letter, k);
+      if (distance(qb, spot) <= (k - t) * BALL_STEP) {
+        return {
+          from: qb,
+          to: spot,
+          throwTick: t,
+          arriveTick: k,
+          target: letter,
+        };
       }
     }
   }
@@ -648,15 +680,22 @@ export function simulate(defense: Defense, design: Design): Rep {
         const targetY =
           at(letter, p).y >= LINE_TO_GAIN_Y ? GOAL_LINE_Y : LINE_TO_GAIN_Y;
         const step = LETTER_SPEED[letter] * TICK;
-        const heading = chooseHeading(
-          { pos: at(letter, p), step },
-          insideSign,
-          defenders.map((d) => ({ pos: at(d.id, p), step: defenderStep(d) })),
-          targetY,
-        );
+        const heading =
+          t < run.heldUntil
+            ? run.heading
+            : chooseHeading(
+                { pos: at(letter, p), step },
+                insideSign,
+                defenders.map((d) => ({
+                  pos: at(d.id, p),
+                  step: defenderStep(d),
+                })),
+                targetY,
+              );
         if (heading !== run.heading) {
           log({ tick: t, kind: "cut", letter, heading });
-          phase = { ...run, heading };
+          const cut: Run = { ...run, heading, heldUntil: t + CUT_HOLD_TICKS };
+          phase = cut;
         }
         moves.set(
           letter,
@@ -669,9 +708,12 @@ export function simulate(defense: Defense, design: Design): Rep {
     for (const d of defenders) {
       const c = coverageOf(d.id);
       const from = at(d.id, p);
-      const to = stepToward(from, defenderTarget(d, c, t), defenderStep(d));
-      const stuck = c.kind === "man" && rubbed(d.id, c, from, to, t);
-      moves.set(d.id, stuck ? from : to);
+      const target = defenderTarget(d, c, t);
+      const to = stepToward(from, target, defenderStep(d));
+      moves.set(
+        d.id,
+        c.kind === "man" ? aroundRunners(d.id, c, from, to, target, t) : to,
+      );
     }
     for (const [id, pos] of moves) tracks[id].push(pos);
     if (setTick === Infinity && distance(at("QB", t), SET_SPOT) < 1e-9)
@@ -722,12 +764,11 @@ export function simulate(defense: Defense, design: Design): Rep {
           .filter((x) => x.d <= CONTEST_RADIUS),
       );
       if (contest) {
-        const c = coverageOf(contest.id);
-        const inFront =
-          dot(sub(at(contest.id, t), f.to), sub(f.from, f.to)) > 0;
+        const brokeOnBall = coverageOf(contest.id).kind === "ball";
+        const beatReceiver = contest.d < distance(at(f.target, t), f.to);
         log({
           tick: t,
-          kind: c.kind === "ball" && inFront ? "interception" : "breakup",
+          kind: brokeOnBall && beatReceiver ? "interception" : "breakup",
           defender: contest.id,
           letter: f.target,
         });
@@ -745,6 +786,7 @@ export function simulate(defense: Defense, design: Design): Rep {
         letter: f.target,
         catchTick: t,
         heading: "upfield",
+        heldUntil: t,
       };
       for (const d of defenders) {
         if (coverageOf(d.id).kind === "ball")

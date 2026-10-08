@@ -40,9 +40,9 @@ export const SACK_RADIUS = 1.5;
 export const PRESSURE_RADIUS = 2;
 
 export const QB_SET_DEPTH = 7;
-export const QB_DROP_SPEED = 4;
+export const QB_DROP_SPEED = 1.05;
 export const READ_TIME = 0.5;
-export const BALL_SPEED = 20;
+export const BALL_SPEED = 25;
 export const THROWAWAY_PAST_SIDELINE = 1;
 
 export const RB_RELEASE_OUTSIDE = 1;
@@ -65,7 +65,8 @@ export const TRAIL_DISTANCE = 1;
 export const CARRY_DISTANCE = 6;
 export const BALL_BREAK_RADIUS = 6;
 export const RUB_RADIUS = 0.75;
-export const RUB_TIME = 0.3;
+// The ball carrier keeps a new heading at least this long.
+export const CUT_HOLD = 0.3;
 
 // Zone ellipses (center and radii) with the ball on the middle hash, so the
 // hooks and curl-flats, placed from the ball, need no hash shift.

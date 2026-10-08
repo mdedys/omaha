@@ -194,14 +194,14 @@ export const SCENARIOS: Scenario[] = [
         Y: { route: "Hook", depth: 10 },
         H: { route: "In", depth: 5 },
         Z: { route: "Hitch" },
-        RB: { route: "Flat" },
+        RB: { route: "In", depth: 5 },
       },
-      readOrder: ["X", "Z", "Y"],
+      readOrder: ["Y", "Z", "X"],
     },
   },
   {
     name: "Whole read order covered",
-    expected: "throwaway",
+    expected: "throwaway, both reads covered when the QB runs out of reads",
     met: causeIs("throwaway"),
     defense: { coverageName: "Cover 1", defenders: COVER_1 },
     design: {
@@ -213,7 +213,7 @@ export const SCENARIOS: Scenario[] = [
         Z: { route: "Go" },
         RB: { route: "Flat" },
       },
-      readOrder: ["X", "Z", "H"],
+      readOrder: ["X", "Z"],
     },
   },
   {
@@ -242,7 +242,7 @@ export const SCENARIOS: Scenario[] = [
         H: { route: "Out", depth: 10 },
         Z: { route: "Go" },
       },
-      readOrder: ["X", "H", "Y"],
+      readOrder: ["Z", "H", "Y"],
     },
   },
   {
@@ -300,7 +300,7 @@ export const SCENARIOS: Scenario[] = [
         Z: { route: "Go" },
         RB: { route: "Flat" },
       },
-      readOrder: ["H", "Y", "X"],
+      readOrder: ["H", "X", "Y"],
     },
   },
   {

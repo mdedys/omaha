@@ -1,5 +1,5 @@
 import { TICK } from "./engine/constants.ts";
-import type { Cause, GameEvent } from "./engine/types.ts";
+import type { Cause, ForceReason, GameEvent } from "./engine/types.ts";
 
 export const seconds = (tick: number): string => `${(tick * TICK).toFixed(2)}s`;
 const yd = (n: number) => n.toFixed(1);
@@ -25,9 +25,14 @@ export function formatEvent(e: GameEvent): string {
     case "read-next":
       return `read-next(${e.from} → ${e.to})`;
     case "throw":
-      return e.forced
-        ? `forced(${e.letter}, sep ${yd(e.separation)}, pressure)`
-        : `throw(${e.letter}, sep ${yd(e.separation)})`;
+      switch (e.forced) {
+        case "pressure":
+          return `forced(${e.letter}, sep ${yd(e.separation)}, pressure)`;
+        case "out-of-reads":
+          return `forced(${e.letter}, sep ${yd(e.separation)}, out-of-reads, ${seconds(e.tick)})`;
+        case null:
+          return `throw(${e.letter}, sep ${yd(e.separation)})`;
+      }
     case "throwaway":
       return "throwaway";
     case "defender-react":
@@ -37,7 +42,7 @@ export function formatEvent(e: GameEvent): string {
     case "carry":
       return `carry(${e.defender}, ${e.letter})`;
     case "rubbed":
-      return `rubbed(${e.defender}, by ${e.by})`;
+      return `rubbed(${e.defender}, by ${e.by}, ${seconds(e.tick)})`;
     case "catch":
       return `catch(${e.letter}, sep ${yd(e.separation)})`;
     case "breakup":
@@ -53,6 +58,11 @@ export function formatEvent(e: GameEvent): string {
   }
 }
 
+const forcedThrow: Record<ForceReason, string> = {
+  pressure: "pressure forced a contested throw",
+  "out-of-reads": "out of reads, the QB forced the throw",
+};
+
 // The cause in plain words; it never names the coverage.
 export function causeLine(cause: Cause): string {
   const { decisive: d, thrownTo: r } = cause;
@@ -62,15 +72,15 @@ export function causeLine(cause: Cause): string {
     case "sack-beat-block":
       return `Sacked by ${d}: he beat his block while the QB was still reading.`;
     case "throwaway":
-      return "Thrown away: every read stayed covered.";
+      return "Thrown away: every read was covered when the QB ran out of reads.";
     case "breakup-closed":
       return `Broken up by ${d}: ${r} was open at the throw, ${d} closed by the catch.`;
     case "breakup-forced":
-      return `Broken up by ${d}: pressure forced a contested throw to ${r}.`;
+      return `Broken up by ${d}: ${forcedThrow[cause.forcedBy]} to ${r}.`;
     case "interception-closed":
-      return `Intercepted by ${d}: ${r} was open at the throw, ${d} undercut it.`;
+      return `Intercepted by ${d}: ${r} was open at the throw, ${d} beat him to the ball.`;
     case "interception-forced":
-      return `Intercepted by ${d}: pressure forced a contested throw to ${r}.`;
+      return `Intercepted by ${d}: ${forcedThrow[cause.forcedBy]} to ${r}.`;
     case "short":
       return `Short: ${r} caught it and ${d} tackled him before the line to gain.`;
     case "converted":

@@ -2,7 +2,8 @@
 
 Throwaway branch `prototype/legibility`. The engine (`src/engine/`) runs the
 Resolution comments of #4, #9 (with its amendment), #10, #11, #12, #13, #14 and
-#15 as decided; `src/scenarios.ts` holds the ten scenarios; `src/App.tsx` and
+#15 as decided, with the rule changes Mike made after the first run (below);
+`src/scenarios.ts` holds the ten scenarios; `src/App.tsx` and
 `src/Field.tsx` are the viewer.
 
 - `pnpm dev` serves the viewer. Pick a scenario, watch it, then "Skip to end"
@@ -29,13 +30,13 @@ in yards per second.
 | Hold time                                             | 2.5                                                   | 2.5–4.5                         |
 | Sack radius                                           | 1.5                                                   | ≤ 1.5                           |
 | Pressure radius                                       | 2                                                     | ≈ 2                             |
-| QB set depth                                          | 7                                                     | ≈ 7                             |
-| QB drop speed                                         | 4 (shotgun shuffle of 2 yd takes 0.5 s)               | free                            |
-| Read time                                             | 0.5                                                   | ≈ 0.5                           |
-| Ball speed                                            | 20                                                    | ≈ 20 (I used 20, not 25–28)     |
+| QB set depth                                          | 7 (unchanged)                                         | ≈ 7                             |
+| QB drop speed                                         | 1.05 (the 2-yd shuffle takes 39 ticks, set at 1.95 s) | none                            |
+| Read time                                             | 0.5 (unchanged)                                       | ≈ 0.5                           |
+| Ball speed                                            | 25                                                    | 20 or 25–28 (I used 25)         |
 | Throwaway lands past the sideline by                  | 1                                                     | free                            |
 | Rub contact radius                                    | 0.75                                                  | ≈ 0.75                          |
-| Rub cost                                              | 0.3 (6 ticks)                                         | free                            |
+| Cut hold                                              | 0.3 (6 ticks)                                         | start around 0.3                |
 | Speeds                                                | WR 9, TE 8, RB 8.5, OL 6, CB 9, S 8.6, LB 7.6, DL 6.6 | WR ≈ 9                          |
 | Reaction delay                                        | 0.3                                                   | free                            |
 | Break threshold                                       | cos 45°                                               | 45°                             |
@@ -64,26 +65,59 @@ Zone ellipses (center x, y; radii x, y), ball on the middle hash:
 | flat-L / R           | ∓13.25, 4            | 2.5, 4             |
 
 Every value stays inside its anchor. The hold time sits on the bottom of its
-anchor on purpose: see scenario 3.
+anchor on purpose: see scenario 3. Only the QB drop speed and the ball speed
+changed for read timing; set depth and read time already sat on their anchors.
+
+## Rules as changed by Mike
+
+Mike reviewed the first findings and changed these rules; the engine runs them
+in place of the decided ones where they conflict.
+
+1. **Out of reads.** When the last read's time runs out without a throw, the QB
+   looks at every read in the order that is past its throw point and throws to
+   the one with the most separation (nearest defender), the earlier read on a
+   tie, if it is at least 1 yd. The log writes
+   `forced(<letter>, sep X, out-of-reads, t)`. Under 1 yd he throws it away.
+2. **Read timing.** Only the QB drop speed, set depth, read time and ball speed
+   were tuned (values above).
+3. **Cut hold.** After the ball carrier changes heading he keeps the new heading
+   for the cut hold before he may change again.
+4. **Hitch.** Mike confirmed the Hitch stays at 0–1 yd (#10); #14's 4-yd
+   example is wrong. No engine change.
+5. **7-man.** Mike decided the rule text is wrong, not the engine: 7-man covers
+   every gap except the D gap on the slide side. No engine change.
+6. **Interception.** On the arrival tick, the nearest defender within the
+   contest radius intercepts if he broke on the ball and is nearer the ball
+   than the receiver is; otherwise it is a breakup. There is no front/behind
+   test any more.
+7. **Rub.** A man defender whose chase step would pass within the rub contact
+   radius of another route runner steers around him instead of stopping, and
+   rejoins his chase. The lost-ticks constant is gone. The log writes
+   `rubbed(<defender>, by <letter>, t)` on the first tick of the detour.
+
+A forced throw that is broken up or intercepted ends `breakup-forced` /
+`interception-forced` whether pressure or running out of reads forced it; the
+cause line says which ("pressure forced a contested throw to Y" or "out of
+reads, the QB forced the throw to Z").
 
 ## Scenario results
 
-`node scripts/check-engine.ts` reports all ten deep-equal across two runs and
-all ten matching what was expected. Times are seconds after the snap, quoted
-from the event log.
+`node scripts/check-engine.ts` reports all ten deep-equal across two runs, nine
+matching what was expected and scenario 7 flagged DIFFERS (a finding, below).
+Times are seconds after the snap, quoted from the event log.
 
-| #   | Scenario                           | Coverage | Expected                                         | Actual cause                                                                                                          |
-| --- | ---------------------------------- | -------- | ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------- |
-| 1   | Free rusher off the far edge       | Cover 1  | `sack-free-rusher`, edge rusher decisive         | `sack-free-rusher`, S2 (from R-D), 1.20                                                                               |
-| 2   | A-gap blitz against man protection | Cover 1  | RB picks up the blitzer, a double shows          | `pickup(RB on LB1)`, `double(LG helps C on DL2)`, `double(RG helps RT on DL3)`; ends `breakup-forced`, LB2 on Y, 4.05 |
-| 3   | Hold-time sack                     | Cover 3  | `sack-beat-block`                                | `sack-beat-block`, DL3, 3.15                                                                                          |
-| 4   | Second read open                   | Cover 3  | throw to the second read, `converted` or `short` | `read-next(X → Z)` and `throw(Z, sep 5.9)` at 1.15; `short`, NB tackles at 1.3 yd                                     |
-| 5   | Whole read order covered           | Cover 1  | `throwaway`                                      | `throwaway` at 2.70, lands 3.55                                                                                       |
-| 6   | Breakup by a disguised defender    | Cover 3  | `breakup-closed`, the safety decisive            | `throw(H, sep 3.1)` at 1.30; `breakup(S2 on H)` at 2.45                                                               |
-| 7   | Undercut interception              | Cover 2  | `interception-closed`                            | `throw(X, sep 3.1)` at 0.85; `interception(LB2 on X)` at 1.80                                                         |
-| 8   | Hitch against an off corner        | Cover 1  | cuts 45° inside; `converted` or `short`          | `cut(Z, inside)` at 1.35; `short`, CB2 tackles at 5.6 yd                                                              |
-| 9   | Rub                                | Cover 1  | `rubbed` and the crosser open                    | `rubbed(LB1, by X)` at 1.55; Y's badge open (3.4 yd at 1.65); ends `breakup-closed`, CB1 on H                         |
-| 10  | Zone choice and carry              | Cover 3  | `zone-choose` and a seam carried                 | `zone-choose(LB2, Z over H)` at 1.40, `carry(S1, Y)` at 1.80 on Y's seam; ends `touchdown`, Z                         |
+| #   | Scenario                           | Coverage | Expected                                         | Actual cause                                                                                                                     |
+| --- | ---------------------------------- | -------- | ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Free rusher off the far edge       | Cover 1  | `sack-free-rusher`, edge rusher decisive         | `sack-free-rusher`, S2 (from R-D), 1.15                                                                                          |
+| 2   | A-gap blitz against man protection | Cover 1  | RB picks up the blitzer, a double shows          | `pickup(RB on LB1)`, `double(LG helps C on DL2)`, `double(RG helps RT on DL3)`; ends `breakup-forced` (pressure), LB2 on Y, 3.85 |
+| 3   | Hold-time sack                     | Cover 3  | `sack-beat-block`                                | `sack-beat-block`, DL3, 3.15                                                                                                     |
+| 4   | Second read open                   | Cover 3  | throw to the second read, `converted` or `short` | `read-next(Y → Z)` and `throw(Z, sep 6.3)` at 2.45; `short`, NB tackles at 4.6 yd                                                |
+| 5   | Whole read order covered           | Cover 1  | `throwaway`                                      | `throwaway` at 2.95, lands 3.65                                                                                                  |
+| 6   | Breakup by a disguised defender    | Cover 3  | `breakup-closed`, the safety decisive            | `throw(H, sep 4.3)` at 2.45; `breakup(S2 on H)` at 3.40                                                                          |
+| 7   | Undercut interception              | Cover 2  | `interception-closed`                            | **differs**: `throw(X, sep 4.7)` at 2.00; `breakup(S2 on X)` at 3.10, `breakup-closed`                                           |
+| 8   | Hitch against an off corner        | Cover 1  | cuts 45° inside; `converted` or `short`          | `throw(Z, sep 6.6)` at 2.00; `cut(Z, inside)` at 2.65; `short`, CB2 tackles at 5.6 yd                                            |
+| 9   | Rub                                | Cover 1  | `rubbed` and the crosser open                    | `rubbed(LB1, by X, 1.55s)`; Y's badge open (3.2 yd at 2.45); ends `short`, CB1 tackles X at 3.3 yd                               |
+| 10  | Zone choice and carry              | Cover 3  | `zone-choose` and a seam carried                 | `zone-choose(LB2, Z over H)` at 1.40, `carry(S1, Y)` at 1.80 on Y's seam; ends `touchdown`, Z                                    |
 
 Scenario notes:
 
@@ -92,52 +126,133 @@ Scenario notes:
   R-D and takes the inner one (LB2), so S2 comes free. Under 5-man slide left
   both edge gaps would be unowned and both rushers free. I used 6-man so
   exactly one rusher, the one off the far edge, comes free; strictly he is
-  "owned by a busy back", not "unowned". Both read as `sack-free-rusher`.
+  "owned by a busy back", not "unowned". Both read as `sack-free-rusher`. The
+  sack comes 0.05 s earlier than before because the QB is still shuffling.
 - **2.** 3-DL front: DL1 in the LT's area, DL2 over the center, DL3 in the RT's
   area. LB1 rushes L-A. Both guards are idle, so both double. The RB, the only
-  back, picks up LB1 as the first leftover inside-out.
-- **3.** See "Hold-time sack needs the hold time at 2.5" below.
+  back, picks up LB1 as the first leftover inside-out. LB1, released at the
+  hold time, pressures at 3.00 and the QB forces the contested third read.
+- **3.** See "Hold-time sack" below.
 - **4.** The non-target who was open while throwable and looks covered on the
-  frozen frame is H (In 5, not in the read order): open 3.2 yd at 1.15, then
-  0.1 yd from LB1 on the dead-ball tick. The first read X is contested (2.5 yd),
-  not covered; the QB moved on because X was never 3 yd clear.
+  frozen frame is X (In 5, the third read, never reached): open 3.5 yd at 2.20,
+  0.2 yd from a defender on the dead-ball tick. The first read Y (Hook 10) is
+  covered from the set.
+- **5.** Both reads, X and Z on Go routes against man, are under 1 yd on the
+  snapshot when the QB runs out of reads at 2.95, so he throws it away.
 - **6.** S2 lines up at 12 yd over the middle with `zone curl-flat-R` and
-  travels about 9 yd to his landmark. H is 3.1 yd clear at the throw; S2
-  reaches the catch point from the deep side, so the catch is broken up, not
-  intercepted.
+  travels about 9 yd to his landmark. H is 4.3 yd clear at the throw; S2
+  reaches the catch point before the ball and stands on it, so the catch is
+  broken up.
+- **7.** See "Interceptions can't happen" below.
 - **8.** The off corner (CB2) lines up 8 yd deep and 1 yd outside Z. The Hitch
-  is caught at 1 yd, not 4 (see "Hitch depth" below).
+  is caught at 1 yd.
 - **9.** Y and X run Drags at 2 yd in opposite directions. LB1 presses Y with a
-  0.5-yd cushion, so his chase passes within 0.75 yd of X where they cross.
-  The QB's first read was H, so the throw went to H; the rub shows in the log,
-  the replay and Y's open badge.
+  0.5-yd cushion, so his chase passes within 0.75 yd of X where they cross. The
+  QB reads H, then X, and hits X; the rub shows in the log and Y's open badge.
+  See "The rub detour costs almost nothing" below.
 - **10.** LB2 (hook-R) locks Y as Y's seam passes through his zone, and has to
   choose when Y leaves it with Z (Slant) and H (In 5) both inside. S1 (deep
   third middle) then carries Y.
 
-Designs were found by hand, with two small search scripts over routes and
-defender look spots for scenarios 4, 6 and 7. No scenario has a branch in the
-engine; the engine never reads a scenario name or a coverage name.
+### Re-shapes
+
+Only designs changed, in `src/scenarios.ts`; no defense, engine or constant
+changed for a scenario, and no expected cause or `met` check was loosened.
+
+- **4.** RB Flat → In 5, read order X, Z, Y → Y, Z, X. With the QB set at
+  1.95 s the old first read X (In 5) was already open on the set and was thrown
+  at once. Y's Hook 10 is covered at the set, so the QB moves to Z.
+- **5.** Read order X, Z, H → X, Z. With three reads the QB runs out at 3.45,
+  but a 4-man rush released at the 2.5-s hold time sacks him at about 3.15
+  first (see "Hold-time sack"). No three-read order with at most one route
+  changed ends in a throwaway; two reads run out at 2.95. Still the whole
+  order covered.
+- **6.** Read order X, H, Y → Z, H, Y. X's In 5 was open on the set and LB2
+  broke that throw up. Z's Go is carried, so H's Out 10 is the second read,
+  thrown the tick its window opens; S2 is still the one who closes.
+- **9.** Read order H, Y, X → H, X, Y. With the later throw the QB reached Y,
+  so Y's badge was measured at the catch point, where LB2 broke the ball up;
+  reading X second leaves Y untargeted and open (3.2 yd).
+- **7** is not re-shaped: no design can produce an interception (below).
+
+Designs were found by hand and with a small search script over routes and read
+orders. No scenario has a branch in the engine; the engine never reads a
+scenario name or a coverage name.
+
+The viewer's expected text for scenario 5 now says the reads are covered when
+the QB runs out of reads; the others target the same outcome as before.
+
+## Read timing and time to throw
+
+The QB reaches his set spot 1.95 s after the snap and decides from the next
+tick, so a first read whose throw point is already behind him opens at 1.95 and
+can be thrown from 2.00. A 10-yd Hook or Out reaches its throw point earlier
+than that, so every such first read opens at the set: scenarios 2, 4, 9 and 10
+read a Hook 10 first and log `read-next` at 2.45, one read time later.
+Scenario 1's QB is sacked at 1.15, before his first read opens. Second reads
+open at 2.45 and third reads at 2.95 (scenarios 2 and 3). Quick throws don't
+stay faster than the set: the Hitch (scenario 8) and the Slant (scenario 7)
+leave at 2.00.
+
+Throw times of every throw to a receiver (throwaways excluded):
+
+| #   | Throw                                | Time |
+| --- | ------------------------------------ | ---- |
+| 2   | Y, third read, forced under pressure | 3.05 |
+| 4   | Z, second read                       | 2.45 |
+| 6   | H, second read                       | 2.45 |
+| 7   | X, first read (Slant)                | 2.00 |
+| 8   | Z, first read (Hitch)                | 2.00 |
+| 9   | X, second read                       | 2.45 |
+| 10  | Z, second read                       | 2.45 |
+
+The mean is 2.41 s over seven throws, under the 2.8-s average anchor; no
+scenario here throws to a third read except under pressure.
+
+## Hold-time sack
+
+Scenario 3's cause at each hold time, run on copies of the engine with only the
+hold time changed (the committed value stays 2.5):
+
+| Hold time | Cause                                                                       |
+| --------- | --------------------------------------------------------------------------- |
+| 2.50      | `sack-beat-block`, DL3, 3.15                                                |
+| 2.75      | `sack-beat-block`, DL3, 3.40                                                |
+| 3.00      | `breakup-forced`, CB2 on Z, after `forced(Z, sep 1.6, out-of-reads, 3.45s)` |
+| 3.25      | same as 3.00                                                                |
+| 3.50      | same as 3.00                                                                |
+| 3.75      | same as 3.00                                                                |
+| 4.00      | same as 3.00                                                                |
+| 4.25      | same as 3.00                                                                |
+| 4.50      | same as 3.00                                                                |
+
+Only 2.5 and 2.75 give `sack-beat-block`. A blocked rusher released at the hold
+time needs about 0.65 s to reach the QB, and a three-read order now runs out at
+3.45, so the sack wins only while the hold time is at most about 2.8 s. From
+3.0 up the QB runs out of reads first and forces the first read, Z (1.6 yd;
+H and X are under 0.1 yd).
 
 ## Ball carrier heading changes
 
 Counted from `cut` events (one per heading change, the first one measured
-against straight upfield). A flicker is a heading that changes back within five
-ticks (0.25 s).
+against straight upfield). A flicker is a return to the heading just left
+within the cut hold plus 0.25 s (11 ticks) of leaving it, which is how
+`scripts/check-engine.ts` counts it.
 
-| #   | Heading changes                                                                     | Flicker                                                    |
-| --- | ----------------------------------------------------------------------------------- | ---------------------------------------------------------- |
-| 4   | 1 (`cut(Z, outside)` at 1.95)                                                       | no; he is tackled the same tick                            |
-| 8   | 2 (inside at 1.35, upfield at 2.00)                                                 | no                                                         |
-| 10  | 6 (inside 4.50, upfield 4.60, inside 4.70, upfield 4.75, inside 4.90, upfield 4.95) | **yes**, inside/upfield three times in under half a second |
+| #   | Heading changes                      | Flicker                                       |
+| --- | ------------------------------------ | --------------------------------------------- |
+| 4   | 2 (outside at 3.10, upfield at 3.45) | **yes**, back upfield 0.35 s after leaving it |
+| 8   | 2 (inside at 2.65, upfield at 3.30)  | no                                            |
+| 9   | 1 (inside at 3.15)                   | no; tackled at 3.30                           |
+| 10  | 2 (inside at 4.75, upfield at 5.05)  | **yes**, back upfield 0.30 s after leaving it |
 
-Scenario 10's flicker is the case #14 anticipated ("a minimum hold on a cut is
-the fix"). I did not add the hold, so the flicker is visible in the replay.
+Scenario 10 no longer zig-zags (it changed heading six times in half a second
+before the hold), but it still flickers by this count: see "The cut hold can't
+stop the return" below.
 
 ## Ambiguities and how I read them
 
-- **Hitch depth.** #10 says the Hitch "stops at 0–1 yd"; #14's example catches a
-  Hitch at 4 yd. I followed #10 (1 yd).
+- **Hitch depth.** Settled by Mike: 0–1 yd. I use 1 yd.
 - **Man cushion.** The cushion shrinks by how far upfield the receiver has gone,
   measured as his furthest progress, so it never regrows when a Hook or
   Comeback comes back toward the line. A cushion already at or under the trail
@@ -163,10 +278,25 @@ the fix"). I did not add the hold, so the flicker is visible in the replay.
   delay, against each defender's distance to the catch point. Rushers never
   break on the ball. A defender who breaks runs to the catch point and stops
   there.
-- **Interception "in front".** Strictly on the QB's side of the catch point
-  (positive dot product with the catch-to-QB vector).
-- **Rubs** apply whenever a defender is in man coverage, including during the
-  flight. Each route runner can rub a given defender once.
+- **Interception "nearer the ball".** Strictly nearer: the defender's distance
+  to the catch point on the arrival tick is compared with the receiver's, and a
+  tie is a breakup.
+- **Out of reads.** "That tick's snapshot" is the previous tick's, the one the
+  QB decides every throw from. A read is past its throw point once he has
+  reached it on that snapshot. Pressure doesn't change the choice. A ball he
+  forces to an open receiver (3 yd or more) is still logged as forced.
+- **Rub detour.** A man defender's intended step is checked against every
+  other route runner's position on the previous snapshot. If it passes within
+  the rub radius, he heads for the tangent point of that runner's rub circle on
+  the side nearer his chase target (left on a tie), with his normal step
+  length; already inside the circle, he steps straight along the tangent.
+  `rubbed` is written when a detour starts or switches to another runner, so a
+  runner can rub the same defender again on a later crossing.
+- **Cut hold.** It counts from the tick of the cut. The upfield heading the
+  carrier takes on the catch isn't a cut, so his first cut is never held back.
+  A held heading is kept even when it runs toward the sideline; at 0.3 s that
+  is at most about 1.9 yd sideways, and no carrier here goes past the boundary
+  margin.
 - **Protection geometry.** The side without Y spaces its C and D gaps as if Y
   were attached there. A blocked rusher stops at his gap 1 yd behind the line
   whether or not his blocker has arrived; his blocker stands 0.7 yd behind him,
@@ -178,7 +308,7 @@ the fix"). I did not add the hold, so the flicker is visible in the replay.
   kept-in receiver, so it never fires.
 - **Read clock.** A read's window is the 10 ticks from its start, deciding from
   the previous tick's snapshot. Pressure lowers the bar for the rest of the
-  play. The QB is set 0.5 s after the snap.
+  play. The QB is set 1.95 s after the snap.
 - **Catch point.** The first future tick on the receiver's own track where the
   ball, at full speed, could already be there. The ball may wait at the point
   for less than one tick.
@@ -192,7 +322,7 @@ the fix"). I did not add the hold, so the flicker is visible in the replay.
   one reaction delay later for everyone else, rushers and blocked linemen
   included.
 - **Out of bounds** is never checked: routes stop 1 yd inside the lines and the
-  carrier drops any heading that would cross the margin.
+  carrier drops any heading that would cross the margin once its hold is over.
 - **Viewer.** Defense art shows only on the dead-ball frame. A man defender's art
   is his track plus a dashed line from his look spot to his receiver's
   alignment; a zone defender's is the ellipse plus a drop line to the landmark;
@@ -204,51 +334,65 @@ the fix"). I did not add the hold, so the flicker is visible in the replay.
   the field. The scenario list shows each coverage name at every tier because
   the task asks for it there.
 
-## Rules that contradict themselves or couldn't be built as written
+## Findings: rules that contradict themselves or couldn't be built as written
 
-- **Hitch depth** (above): #10's 0–1 yd and #14's 4-yd example can't both hold.
-- **"7-man covers every gap"** (#12) is false for slide left in Gun Trey. Y is on
-  the right, so he owns R-D, the RB owns R-C, and L-D is left open. It holds
-  only when Y is on the slide side.
-- **Defenders who break on the ball stand on the catch point.** The
-  interception test asks whether the defender is in front of the catch point,
-  but a defender who arrives early stands exactly on it, which is neither in
-  front nor behind. With the strict reading every early arrival is a breakup;
-  only a defender reaching the contest radius on the arrival tick itself, from
-  the QB's side, intercepts. Scenario 7's LB2 does exactly that. Reading "on the
-  point" as in front instead would turn every early arrival into an
-  interception, including deep defenders coming from behind.
-- **Carry "until the throw"** (#11) doesn't say what the deep defender does next.
-  Going back to his landmark mid-flight looked wrong, so a carry already
+- **Interceptions can't happen.** The QB leads a receiver to a spot on the
+  receiver's own track, so on the arrival tick the receiver is exactly on the
+  ball (0.000 yd in every throw here). A defender can only tie that, by
+  standing on the catch point after breaking on the ball, and a tie is not
+  "nearer". So every contested arrival is a breakup, whatever the design.
+  Scenario 7's log: `throw(X, sep 4.7)` at 2.00, `defender-react(S2, throw)` at
+  2.30, `breakup(S2 on X)` at 3.10, with S2 0.000 yd from the catch point and X
+  0.000 yd. Scenarios 2 and 6 end the same way (LB2 and S2 on the point). For
+  interceptions to exist, a tie has to go to the defender, or the distances
+  have to be measured before the receiver arrives (for example on the tick
+  before arrival). That is Mike's call, so scenario 7 stays a DIFFERS.
+- **The cut hold can't stop the return.** Scenario 10's carrier cuts inside at
+  4.75 and goes back upfield the first tick the hold lets him, for every hold
+  from 0.05 to 2.0 s and every allowed ball speed (20, 25, 26, 27, 28): always
+  2 heading changes and 1 flicker by the hold-plus-0.25-s count (6 changes and
+  5 flickers at 0.05). The heading race prefers upfield again as soon as the
+  short inside run has moved him off the pursuer's line, so the hold only sets
+  how long the jog inside lasts. Long holds also break the sideline: at 0.6 s
+  scenario 4's carrier reaches 15.6 yd from the middle and at 1.0 s scenario
+  10's reaches 16.5, past the sideline at 15.75. I kept 0.3, which turns the
+  old six-cut zig-zag into one 0.3-s jog and keeps every carrier inside the
+  margin.
+- **A three-read order now outlasts the hold time.** With the QB set at 1.95 the
+  third read opens at 2.95 and the QB runs out at 3.45, while a rusher released
+  at the 2.5-s hold time sacks at about 3.15 (after a pressure tick at about
+  3.10 that lowers the bar). So with a 4-man rush every three-read order that
+  isn't thrown by about 3.1 ends in a sack, not a throwaway or an out-of-reads
+  throw, and the third read gets about 0.15 s. ADR 0005 says a sack never comes
+  from the QB waiting on covered receivers and that he throws away instead of
+  forcing; both are now out of date.
+- **The rub detour costs almost nothing.** In scenario 9, X crosses LB1 at
+  9 yd/s, so LB1's step brushes him for one tick (1.55) and the detour bends
+  that step by about 0.04 yd. Measured against a copy with no rubs at all, LB1
+  ends up 0.01 yd and 0 ticks behind; the freeze cost him 6 ticks and 2.3 yd.
+  At the throw (2.45) LB1 is 3.2 yd from Y with the detour and with no rub, and
+  would be 5.4 yd with the freeze. It no longer reads as a rub: only the log
+  shows one. Y is open here because of the cushion and the drag, not the rub.
+- **Carry "until the throw"** (#11) doesn't say what the deep defender does
+  next. Going back to his landmark mid-flight looked wrong, so a carry already
   running continues, and only new carries stop at the throw.
-- **Hold-time sack needs the hold time at 2.5.** A blocked rusher released at
-  the hold time needs about 0.65 s to reach the QB, so the sack lands about
-  0.65 s after the hold time. The latest a read order can run is about 3.7 s
-  (a first throw point near 2.2 s plus three 0.5-s reads). Worse, the pressure
-  radius is reached one tick before the sack radius, and on that tick the QB
-  throws any read that is contested (1–3 yd). So a beat-block sack needs the
-  current read to be _covered_ (under 1 yd) on the pressure tick. Scenario 3
-  gets that with a Corner 15 first and two Hooks into zone defenders who sit
-  on them. With the hold time at 2.75, 3, 3.5 or 4.5 the same design ends in
-  a `throwaway` at 3.25 s (landing 4.10). Inside the anchor only 2.5 works for
-  this design. In practice, sacks in this engine come almost only from free
-  rushers.
-- **Time to throw is short of the anchors.** Throws happen at 0.55–2.05 s
-  (3.05 for scenario 2's forced throw); the mean of the seven throws is about
-  1.5 s, well under the 2.8-s average. First reads open at their throw points
-  (about 0.5 s for a Hitch, 1.3 s for a 10-yd break, 1.7 s for a 10-yd Hook).
-  These scenarios favor quick routes, and the QB throws on the first tick a
-  read is 3 yd clear; I haven't measured how the clock behaves with slower
-  designs.
-- **Long leads.** At 20 yd/s some leads are long: scenario 10's throw to Z on a
-  Slant flies 1.6 s and is caught near the far sideline 25 yd downfield.
+- **Time to throw is under the anchor.** The mean throw time is 2.41 s, against
+  the 2.8-s average. First and second reads open at 1.95 and 2.45 as asked; the
+  mean stays low because the QB throws on the first tick a read is 3 yd clear
+  and these scenarios favor reads that are open early.
+- **Long leads.** At 25 yd/s scenario 10's throw to Z on a Slant still flies
+  1.3 s (2.45 to 3.75) and is caught 24 yd downfield near the far numbers.
 
 ## Things worth looking at live
 
-- Scenario 4: H's open badge at his best moment against a defender standing on
+- Scenario 4: X's open badge at his best moment against a defender standing on
   him on the frozen frame. Turn on "Best-moment ghosts" to compare.
-- Scenario 9: the rub is one tick of contact. LB1 stops for 0.3 s at the
-  crossing.
-- Scenario 10: the inside/upfield flicker after the catch.
+- Scenario 7: S2 standing on the catch point when the ball arrives, called a
+  breakup.
+- Scenario 9: the rub is a one-tick bend in LB1's path at 1.55; it is hard to
+  see.
+- Scenario 10: the one 0.3-s jog inside after the catch.
 - Scenario 6: the cause line says S2 closed, but at Rep 1 his path from 12 yd is
   hidden; only the ring and the replay show where he came from.
+- Scenario 3 against scenario 5: the same covered reads end in a sack with
+  three reads and in a throwaway with two.
