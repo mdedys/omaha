@@ -9,3 +9,4 @@ A puzzle's defensive call gives each of the 11 defenders a spot in the look and 
 ## Consequences
 
 - Authoring speed comes from templates in the authoring tool, which fill in assignments the author can then change.
+- A rush attacks one gap, derived from the defender's look spot unless the puzzle names it, as in `rush R-A`. See [ADR 0004](0004-protection-by-ownership.md).

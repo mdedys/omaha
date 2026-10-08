@@ -76,6 +76,18 @@ _Avoid_: pressure, on its own
 A rush by a man defender whose receiver stayed in to block.
 _Avoid_: green dog
 
+**Gap**:
+One of eight spots on the line of scrimmage a rusher attacks: A, B, C and D on each side, counting out from the center. A is beside the center, B between guard and tackle, C just outside the tackle and D wider, outside Y when he's attached.
+_Avoid_: lane, hole
+
+**Free rusher**:
+A rusher no blocker picks up under the line call, because no one is responsible for him or the one who is already has a rusher.
+_Avoid_: unblocked rusher
+
+**Double team**:
+A lineman with no rusher of his own helping the nearest teammate who has one, which holds that rusher twice as long.
+_Avoid_: help, chip
+
 **Disguise**:
 The difference between where a defender lines up in the look and where his assignment takes him.
 _Avoid_: fake look
@@ -85,6 +97,14 @@ _Avoid_: fake look
 **Design**:
 The player's protection, routes and first read.
 _Avoid_: play, play call
+
+**Protection**:
+How many players block and which way the line slides. 5-man is the line alone, 6-man keeps the RB in, and 7-man also keeps Y in when Y is attached. A receiver kept in blocks all play and runs no route.
+_Avoid_: pass pro, blocking scheme
+
+**Line call**:
+How the line splits up the rush. On a slide left or right, each lineman owns the gap on the slide side of him and the RB owns the far edge. On man, each lineman blocks the DL in front of him and the RB takes the first blitzer left over, inside-out.
+_Avoid_: slide call, BOB
 
 **First read**:
 The receiver the QB looks to first.
@@ -102,6 +122,13 @@ _Avoid_: attempt
 
 **Play outcome**:
 What happened on the snap: a completion with yards, an incompletion, an interception or a sack.
+
+**Sack**:
+A rusher reaching the QB before the ball is out. It ends the rep where the QB stands.
+
+**Pressure**:
+A rusher getting within a couple of yards of the QB before the ball is out, short of a sack.
+_Avoid_: hurry, hit
 
 **Rep verdict**:
 The play outcome judged against the goal: converted when a completion reaches the goal, short when a completion falls short of it (even for a loss), failed on an incompletion, interception or sack.
