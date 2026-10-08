@@ -179,6 +179,20 @@ A rusher reaching the QB before the ball is out. It ends the rep where the QB st
 A rusher getting within a couple of yards of the QB before the ball is out, short of a sack.
 _Avoid_: hurry, hit
 
+**Breakup**:
+A defender within a yard of the ball when it reaches the catch point, who stops the catch without intercepting it. It ends the rep as an incompletion. Every incompletion except a throwaway is a breakup.
+_Avoid_: deflection, pass defensed
+
+**Interception**:
+A breakup by a defender who broke on the ball and is in front of the receiver, between the QB and the catch point. He catches it, and the rep ends there with no return.
+_Avoid_: pick
+
+**Ball carrier**:
+The receiver after the catch. He runs for the line to gain, then the goal line, cutting 45 degrees either way to stay clear of defenders, but never sideways or backward.
+
+**Tackle**:
+A defender reaching the ball carrier after the catch. It ends the rep where the ball carrier is.
+
 **Rep verdict**:
 The play outcome judged against the goal: converted when a completion reaches the goal, short when a completion falls short of it (even for a loss), failed on an incompletion, interception or sack.
 
