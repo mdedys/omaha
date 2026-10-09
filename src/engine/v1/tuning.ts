@@ -83,3 +83,18 @@ export const ENGAGE_OFFSET_YARDS = 0.7;
 // contest radius; range: 3 yd and about 1 yd; source: prototype.
 export const OPEN_SEPARATION_YARDS = 3;
 export const CONTEST_RADIUS_YARDS = 1;
+// Range: about 0.5 s; source: prototype.
+export const READ_TIME_SECONDS = 0.5;
+// Range: 20–28 yd/s; source: prototype.
+export const BALL_SPEED_YARDS_PER_SECOND = 25;
+// Range: free; source: prototype.
+export const THROWAWAY_PAST_SIDELINE_YARDS = 1;
+// Range: free; source: prototype.
+export const TRAIL_DISTANCE_YARDS = 1;
+// Range: about 0.75 yd; source: prototype.
+export const RUB_CONTACT_RADIUS_YARDS = 0.75;
+// Range: about 0.6 s at about half speed; source: prototype.
+export const RUB_TIME_SECONDS = 0.6;
+export const RUB_SPEED_FACTOR = 0.5;
+// Range: free; source: prototype.
+export const BALL_BREAK_RADIUS_YARDS = 6;
