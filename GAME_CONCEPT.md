@@ -21,7 +21,7 @@ The name comes from Peyton Manning's famous audible call: the moment a play call
 
 ## Unique Selling Points
 
-- **Design the play, don't pick it.** You build the play — protection, routes, the QB's read — rather than choosing from a menu of calls. The puzzle sets the formation and the defense.
+- **Design the play, don't pick it.** You build the play — protection, routes, the QB's read order — rather than choosing from a menu of calls. The puzzle sets the formation and the defense.
 - **Real situations from last week.** Every puzzle recreates a pivotal moment from a recent NFL game, so the game is always topical during the season.
 - **"Could you do better than the pros?"** After you finish, Omaha reveals what the real team called and what happened. Beating the real call is the brag.
 - **One play, all the stakes.** No drives, no clock management between plays — a single high-pressure snap that rewards reading the defense.
@@ -87,7 +87,7 @@ Free. No ads, no paid tier, no paywalled puzzles.
 - **MVP:**
   - Daily puzzle with up to 4 reps
   - Pass plays only
-  - A small set of formations (set per puzzle), a route tree, basic protection options, and a primary read
+  - A small set of formations (set per puzzle), a route tree, basic protection options, and a read order
   - A handful of defensive coverages (e.g., Cover 0/1/2/3/4, man and zone) with pre-snap disguise
   - Result screen with the real-call reveal and share card
   - Results API for the "% beat the pros" stat
@@ -107,7 +107,7 @@ Free. No ads, no paid tier, no paywalled puzzles.
 **Moment-to-moment (one rep, ~30–60 seconds):**
 
 1. Read the defense's pre-snap look.
-2. Design the play: protection, routes, primary read.
+2. Design the play: protection, routes, read order.
 3. Snap.
 4. Watch the play resolve.
 5. Get per-receiver feedback.
@@ -153,7 +153,7 @@ Free. No ads, no paid tier, no paywalled puzzles.
     - 5-man: the line only; the RB and TE run routes.
     - 6-man: the RB always stays in as the 6th blocker.
     - 7-man: the RB and TE stay in. Hidden when the formation has no TE, or the TE is lined up outside.
-  - Choose the QB's primary read.
+  - Set the QB's read order: a first read, then up to two more. He throws only to a receiver in it.
 - **Defense** — a hidden defensive call (coverage plus pressure) fixed for the puzzle, shown to the player only as a pre-snap alignment that may disguise the real call.
 - **Play resolution** — a deterministic simulation animates the play top-down and produces an outcome: completion with yards gained, incompletion, interception, or sack.
 - **Rep feedback** — after each rep, each receiver is marked open, contested or covered with a shape badge (check, wave, ✕), and the result screen draws the defense's play art so the post-snap coverage is visible. `TODO:` how much a failed rep reveals is the key balance question — too much and rep 2 is trivial, too little and it's guesswork. Settle it in playtesting.
@@ -174,7 +174,7 @@ Free. No ads, no paid tier, no paywalled puzzles.
   - The design happens in three steps in a bottom bar: Protect, Routes, Read.
   - Protect: pick a blocker count and a line call from two rows of toggles.
   - Routes: tap a receiver on the field, swipe a carousel of route cards, then pick a set depth (5, 10 or 15 yards) from a toggle row. Snapping to a route tree instead of freehand drawing keeps phones precise and keeps the simulation tractable. Freehand drawing could be a later expert mode.
-  - Read: pick the receiver the QB looks to first.
+  - Read: tap up to three receivers in the order the QB reads them.
   - A large "Snap" button.
 - **Watching:** replay controls (replay, slow-mo, scrub) after each rep, so the player can study why a play worked or failed.
 - **Feedback:** short text callouts at the decisive moment ("Safety rotated down — Cover 3"), color-coded receivers, and an end-of-rep summary.

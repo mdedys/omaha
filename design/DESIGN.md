@@ -259,7 +259,7 @@ Warm paper and forest ink around a saturated field, with a single orange for act
 - **Ink Green** (#244A3E): the brand ink. Body text and headings in light mode, selected segmented options (with cream text), the converted result panel, the share card background.
 
 ### Secondary
-- **Read Gold** (#F4B13E): the quarterback's read. The selected-receiver halo, the "1" read badge, the QB vision cone, the short-of-the-sticks outcome tile. On ink-green surfaces (the win panel, the share card) gold is also the accent: stat numbers, down and distance, the "Beat the pros" chip.
+- **Read Gold** (#F4B13E): the quarterback's read. The read rings and numbered read badges, the QB vision cone, the short-of-the-sticks outcome tile. On ink-green surfaces (the win panel, the share card) gold is also the accent: stat numbers, down and distance, the "Beat the pros" chip.
 - **Converted Green** (#5CC98A): the converted tile on the share card only.
 
 ### Neutral
@@ -390,7 +390,7 @@ White track, Sand Border, 3px padding; options 38–40px tall, 800 uppercase 14p
 92×88 cards: a mini turf diagram of the route in the selected receiver's colors above an uppercase name. Selected card has a 2px Ink Green border. The carousel scrolls horizontally and bleeds off both edges.
 
 ### Read option
-52px white option with the receiver's ring swatch, name and route; selected gets a 2px Ink Green border and a filled check.
+52px white toggle with the receiver's ring swatch, name and route. In the read order it gets a 2px Ink Green border and a gold badge with its number, the same badge the field shows. Once three reads are set, the rest go quiet: transparent, Sage Muted text, swatch at 45%.
 
 ### Field pills
 - **Situation pill** (`field-pill`): translucent near-black, cream 12px text. Used for "3rd & 10 · own 45", "Down 4 · 1:12", "Rep 1 replay".
@@ -421,7 +421,7 @@ Ink-green card: "OMAHA #N", down and distance in gold, one tile per rep (orange 
 - **Players** as listed in the player palette: receivers r=8.5, linemen r=8, defenders r=7.5.
 - **Routes** (design screens): 2px lines in the route color with an open arrowhead about 9 units long at ±40°; on the pros reveal they use the 5-unit play-art arrowhead so they read as part of the diagram; the selected receiver's route is 2.4px and the others drop to 45% opacity. Route-card mini diagrams use a 6–7 unit arrowhead.
 - **Protection:** zigzag in Protection zigzag (#06100B) under the line for pass protection, a Lineman stroke (#DADDE0) arrow for the slide direction, and the RB's block as a green line ending in a T at the edge opposite the slide.
-- **Read:** gold 14-unit ring around the selected receiver and a gold "1" badge.
+- **Read:** a gold 14-unit ring around each receiver in the read order and a gold badge with its number (1–3), up-right of the receiver, flipped up-left at the right sideline. Routes in the order are 2.4px.
 - **Receiver feedback badges** (result screens): r=7 badge offset up-right of the receiver. Open = solid white disc with a dark check. Contested = dark disc, white ring, white wave. Covered = dark disc, grey ring, white ✕. Shape carries the meaning, so color is never the only cue.
 - **Ball:** dashed white path (2 on, 5 off) from the QB's position at the throw to the catch point, at 70% opacity on result screens and full opacity in the replay; the football is a brown #8B5A2B ellipse (rx 4.2, ry 2.7) with a 0.8 white edge, rotated along its flight. It is drawn in flight during the live play and the replay, and on a result only for an interception.
 - **QB vision cone:** gold wedge (gradient 70% → 0%, 176 units long, ±13°) from the QB aimed at his current read's position, fading in at the snap and out within 0.3s after the throw.

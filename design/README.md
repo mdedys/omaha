@@ -13,9 +13,9 @@ Product context lives in [../PRODUCT.md](../PRODUCT.md) and [../GAME_CONCEPT.md]
 | [03-tutorial](03-tutorial/spec.md) | Three-step how-to-play | phone ×3, desktop ×3 · light and dark |
 | [04-protect](04-protect/spec.md) | Step 1: protection | phone, desktop · light and dark |
 | [05-routes](05-routes/spec.md) | Step 2: routes | phone, desktop · light and dark |
-| [06-read](06-read/spec.md) | Step 3: first read and snap | phone, desktop · light and dark |
+| [06-read](06-read/spec.md) | Step 3: read order and snap | phone, desktop · light and dark |
 | [07-live-play](07-live-play/spec.md) | The animated snap, flowing into the result | phone, desktop (animated) · light and dark |
-| [08-result](08-result/spec.md) | Rep result with defense play art | phone, desktop · light and dark; 6 end states (light and dark); 4 coverages |
+| [08-result](08-result/spec.md) | Rep result with defense play art | phone, desktop · light and dark; 7 end states (light and dark); 4 coverages |
 | [09-replay](09-replay/spec.md) | Video-style replay | phone, desktop · light and dark |
 | [10-pros-reveal](10-pros-reveal/spec.md) | How the pros did | phone, desktop · light and dark |
 | [11-share](11-share/spec.md) | Share result and link-preview card | phone, desktop · light and dark; 1200×630 card |
@@ -35,6 +35,8 @@ The prototypes are hand-built mockups, not reference code. Where a prototype and
 - The Puzzles list thumbnails use an uneven yard scale.
 - Some files carry unused CSS (route chips, share-card helpers, play-screen rules in the desktop share file).
 - The phone and dark prototypes animate or hold one example state; the specs list every state.
+- The live-play prototypes throw on the first read, so they never show the cone moving to the next read.
+- The field prototypes in `field/` show the Read panel before the read order (one radio pick and a check); 06-read is current.
 
 ## Flow
 
@@ -57,7 +59,7 @@ These are settled for the UX, and specs assume them. Game rules in this table (p
 | Formation and defense | Set by the puzzle. The player never picks a formation. |
 | Protection | Blocker count (5-, 6-, 7-man) and line call (slide left, man, slide right). 6-man always keeps the RB in; 7-man also keeps the TE and is hidden when there is no TE or the TE is split out. |
 | Routes | Tap a receiver on the field, pick a route from a carousel, pick a depth from 5/10/15 yards. No freehand drawing. |
-| Read | The player picks the first read. |
+| Read | The player sets a read order by tapping receivers in turn: a first read, then up to two more. The QB throws only to a receiver in the order; a read switched to blocking leaves it. |
 | Snap unlock | Protection starts on 5-man, man. Snap unlocks once every route runner has a route and a first read is picked. |
 | Between reps | Run It Back reopens the previous design for editing. |
 | Live play | Plays once, no route lines or zones, QB vision cone on the current read, compact caption bar, then slides into the result automatically. Skip jumps to the result. |
@@ -75,7 +77,6 @@ These are settled for the UX, and specs assume them. Game rules in this table (p
 
 Tracked on the game engine's `wayfinder:map` issue on GitHub.
 
-- **Read progression after the first read.** Leaning toward the player setting a 1-2-3 order in the Read step. If adopted, the Read step and the vision cone need an update.
 - **Touchdown result.** A converted rep that also scores needs its own headline and bonus display.
 - **How much a failed rep reveals** beyond the defense play art already shown.
 - **Difficulty ramp** through the NFL week.

@@ -16,9 +16,10 @@ Tell the player what happened on the rep and why. The field freezes on the final
 | `states/short.html` | Rep 2, SHORT (+7), cream sheet with a gold tile, 2 reps left. |
 | `states/sack.html` | Rep 3, SACKED (−6), cream sheet, 1 rep left, no ball path, left end's rush path drawn. |
 | `states/interception.html` | Rep 1, PICKED OFF, cream sheet, football drawn at the interception point. |
+| `states/throwaway.html` | Rep 1, INCOMPLETE after a throwaway, cream sheet, 3 reps left. Read order TE, Right WR, Left WR, all covered; ball path to just past the left sideline; the slot, not in the order, was open. |
 | `states/converted.html` | Rep 2, CONVERTED (+12), ink-green sheet, 3.5 px first-down line, key pill "Defense · Cover 4". |
 | `states/out-of-reps.html` | Rep 4 failed, OUT OF REPS, charcoal sheet, key pill "Defense · Cover 4". |
-| `states/incomplete-dark.html`, `short-dark.html`, `sack-dark.html`, `interception-dark.html`, `converted-dark.html`, `out-of-reps-dark.html` | The six states in the dark theme. |
+| `states/incomplete-dark.html`, `short-dark.html`, `sack-dark.html`, `interception-dark.html`, `throwaway-dark.html`, `converted-dark.html`, `out-of-reps-dark.html` | The seven states in the dark theme. |
 | `coverages/cover-4.html` | Play art for Cover 4 (rep 1, no key pill). |
 | `coverages/tampa-2.html` | Play art for Tampa 2. |
 | `coverages/cover-0-lb-blitz.html` | Play art for Cover 0 with both linebackers blitzing. |
@@ -101,10 +102,11 @@ Legend: **[P]** puzzle data, **[S]** simulation, **[D]** design state, **[R]** r
 
 | State | Sheet | Tile | Headline | Result line (example) [G] | Stats (value / label) | Rep boxes | Status | CTA |
 |---|---|---|---|---|---|---|---|---|
-| Incomplete (rep 1) | Cream | Orange ✕ | `INCOMPLETE` | "Swatted. The safety was parked on that corner." | `0` yards gained · `2.3s` in the pocket · `TE` first read | ✕ · 2 next · 3 · 4 | `3 reps left` | RUN IT BACK |
-| Short (rep 2) | Cream | Gold `+7` | `SHORT` | "Seven yards on 3rd & 10. Close doesn't count." | `+7` yards gained · `1.6s` in the pocket · `Slot` first read | ✕ · +7 · 3 next · 4 | `2 reps left` | RUN IT BACK |
-| Sack (rep 3) | Cream | Orange ✕ | `SACKED` | "Everyone was covered, so you just held it. Sacked." | `−6` yards · `3.6s` in the pocket · `TE` first read | ✕ · +7 · ✕ · 4 next | `1 rep left` | RUN IT BACK |
-| Interception (rep 1) | Cream | Orange ✕ | `PICKED OFF` | "Thrown right to the safety. He says thanks." | `0` yards gained · `2.0s` in the pocket · `Left WR` first read | ✕ · 2 next · 3 · 4 | `3 reps left` | RUN IT BACK |
+| Incomplete (rep 1) | Cream | Orange ✕ | `INCOMPLETE` | "Swatted. The safety was parked on that corner." | `0` yards gained · `2.3s` in the pocket · `TE` 1st read | ✕ · 2 next · 3 · 4 | `3 reps left` | RUN IT BACK |
+| Short (rep 2) | Cream | Gold `+7` | `SHORT` | "Seven yards on 3rd & 10. Close doesn't count." | `+7` yards gained · `1.6s` in the pocket · `Slot` 1st read | ✕ · +7 · 3 next · 4 | `2 reps left` | RUN IT BACK |
+| Sack (rep 3) | Cream | Orange ✕ | `SACKED` | "Left end won the edge. Your reads took too long to come open." | `−6` yards · `3.6s` in the pocket · `TE` on 2nd read | ✕ · +7 · ✕ · 4 next | `1 rep left` | RUN IT BACK |
+| Interception (rep 1) | Cream | Orange ✕ | `PICKED OFF` | "Thrown right to the safety. He says thanks." | `0` yards gained · `2.0s` in the pocket · `Left WR` 1st read | ✕ · 2 next · 3 · 4 | `3 reps left` | RUN IT BACK |
+| Throwaway (rep 1) | Cream | Orange ✕ | `INCOMPLETE` | "All three reads covered. The open slot wasn't on your list." | `0` yards gained · `2.9s` in the pocket · `—` thrown away | ✕ · 2 next · 3 · 4 | `3 reps left` | RUN IT BACK |
 | Converted (rep 2) | Ink green | none | `CONVERTED` | "Slot out for 12. Take notes, real OC." | `+12` yards gained · `77` points · `4` day streak | ✕ · ✓ · 3 dashed · 4 dashed | `Converted in 2` | SEE HOW THE PROS DID |
 | Out of reps (rep 4 failed) | Charcoal | none | `OUT OF REPS` | "Four reps, no first down. Film room. Now." | `0` points · `+7` best rep · `4` reps used | ✕ · +7 · ✕ · ✕ | `No reps left` | SEE HOW THE PROS DID |
 
@@ -123,7 +125,7 @@ Coverage examples (all rep 1, Incomplete, same stats as the first row):
 - **Result line:** one sentence pair, cause first, jab second (DESIGN.md Voice). It is authored or generated per outcome cause, never per outcome kind alone. Inputs: outcome kind, yards and the distance to gain, the cause code, the decisive defender's role, the targeted receiver and route, any receiver who was open, and the rep count (for out of reps). On a rep where the coverage name is hidden, the line must not name the coverage. The lines above are examples, not final copy.
 - **Yards values:** signed, with `+` for gains and U+2212 `−` for losses. Zero is `0`. The sack's label is `yards`; every other label is `yards gained`.
 - **Time in the pocket:** seconds with one decimal and a trailing `s` ("2.3s"), from snap to throw, or to the sack.
-- **First read:** the receiver's short name [P]. The Fit Rule applies: it must never wrap.
+- **Read stat:** the read the ball went to [S]. The value is the receiver's short name [P]; the label is that read's place in the order, `1st read`, `2nd read` or `3rd read`. A throwaway shows `—` over `thrown away`. A sack shows the read the QB was on over `on 1st read` (`on 2nd read`, `on 3rd read`). The Fit Rule applies: the value must never wrap. The receiver and the place don't fit one value at 26 px in a phone stat column (about 108 px), so they split between value and label.
 - **Status text:** `N reps left` (N ≥ 2), `1 rep left`, `Converted in N` (N = the converting rep), `No reps left`.
 - **Converted stats:** yards gained [S], points [engine scoring], day streak [L].
 - **Out-of-reps stats:** points (`0`), best rep (the largest yards across reps, signed) [R], reps used (`4`).
@@ -176,7 +178,7 @@ CTA (`button-primary-result`): 56 px, radius 16 px (`rounded.cta-result`), Snap 
 Every rep's result draws the defense's play art from data (`DefensePlayArt`, see Data). Draw order inside the SVG, back to front:
 
 1. Field: turf, stripes, hash marks, yard lines, numbers, first-down line (2 px, or 3.5 px on a converted result), line of scrimmage.
-2. **Ball path**, except on a sack. A quadratic curve from the QB's position at the throw through the control point to the end point (DESIGN.md Ball). Stroke #F2F5F3, opacity .7, width 1.8, `stroke-dasharray="2 5"`, round caps.
+2. **Ball path**, except on a sack. A quadratic curve from the QB's position at the throw through the control point to the end point (DESIGN.md Ball). On a throwaway the end point is the landing spot just past the nearest sideline, so the path runs off the field's edge. Stroke #F2F5F3, opacity .7, width 1.8, `stroke-dasharray="2 5"`, round caps.
 3. **Football**, on an interception only (DESIGN.md Ball). Ellipse rx 4.2, ry 2.7, rotated along its flight direction, at the end of the ball path. Fill Football #8B5A2B, white edge 0.8. No other outcome draws the football on this screen.
 4. **Zones.** One ellipse per zone (`cx, cy, rx, ry` from data), filled with the zone colour at `fill-opacity .3` and stroked in the same colour at `stroke-opacity .85`, width 1.4. Zone colours: deep → Zone Deep #3D7BFF, flat → Zone Flat #7FD8FF, hook/curl → Zone Hook #FFD84A, curl-flat → Zone Curl-Flat #B57CFF. A zone shows the assigned area; the defender may finish outside it (Tampa 2 safety, Cover 4 safety).
 5. **Start dots.** A circle of r 3, no fill, stroke Start Dot #7E8B85 1.2, at the pre-snap spot of every defender that has a drawn path. Defenders without a path get no dot.
@@ -265,6 +267,7 @@ All four use the same offense and final offensive frame: left WR (140,229), TE (
 | Short, reps left | Same | Cream, gold yards tile | No |
 | Sack, reps left | No ball path. The sacker's rush path is drawn (prototype: left end 146,346→[134,394]→189,434). QB at the sack spot (201,446). | Cream, orange ✕ tile | No |
 | Interception, reps left | Ball path plus the football at the interception point | Cream, orange ✕ tile. Interception counts as a failed rep. | No |
+| Throwaway, reps left | Ball path to the landing spot past the nearest sideline, play art, badges. Every read in the order is covered; a receiver outside the order may be open. | Cream, orange ✕ tile, headline INCOMPLETE | No |
 | Converted (any rep) | First-down line 3.5 px | Ink green | Yes |
 | Out of reps (rep 4 failed or short) | The rep-4 frame as for its outcome | Charcoal, headline OUT OF REPS | Yes |
 | Converted on rep 1 | As converted | ✓ then three dashed boxes, `Converted in 1` | Yes |
@@ -297,7 +300,8 @@ None on this screen. The arrival animation belongs to 07-live-play. Returning fr
 - Field SVG: `role="img"` with a generated `aria-label`. Before the final rep or a conversion it reads "Rep N final frame with the defense revealed: …" and never names the coverage. On converted and out-of-reps results it reads "Rep N final frame against {coverage}: …". Prototype examples:
   - Incomplete: "Rep 1 final frame with the defense revealed: the throw to the tight end is broken up by the safety; the slot receiver was open"
   - Short: "Rep 2 final frame with the defense revealed: the slot receiver catches a five-yard out and is tackled by the nickel three yards short of the first-down line"
-  - Sack: "Rep 3 final frame with the defense revealed: every receiver is covered and the left end comes around the edge to sack the quarterback six yards behind the line"
+  - Sack: "Rep 3 final frame with the defense revealed: the quarterback is on his second read when the left end comes around the edge to sack him six yards behind the line"
+  - Throwaway: "Rep 1 final frame with the defense revealed: the tight end, right receiver and left receiver are all covered, so the quarterback throws the ball away past the left sideline; the slot receiver, not in the read order, was open"
   - Interception: "Rep 1 final frame with the defense revealed: the throw to the left receiver's in route is intercepted by the safety sitting over it"
   - Converted: "Rep 2 final frame against Cover 4: the slot receiver catches the ten-yard out beyond the first-down line and is chased down two yards later"
   - Out of reps: "Rep 4 final frame against Cover 4: the throw to the tight end is broken up by the safety, ending the puzzle without a first down"
@@ -355,14 +359,14 @@ The ball path uses `RepPlayback.ball` (`from`, `control`, `to`). On an intercept
 2. **How much a failed rep reveals** (README) beyond the play art already shown.
 3. **Result line ownership.** Are lines authored per cause in puzzle data, written by the engine, or written by the front end from cause codes?
 4. **Best rep when nothing gained.** What does the out-of-reps "best rep" stat show when no rep gained yards (`0`, a negative value, or a dash)?
-5. **First-read short names.** The prototypes use `TE`, `Slot` and `Left WR`, while DESIGN.md's Fit Rule suggests `RWR` and `TE`. What is the canonical short label for each receiver slot?
+5. **Read stat short names.** The prototypes use `TE`, `Slot` and `Left WR`, while DESIGN.md's Fit Rule suggests `RWR` and `TE`, and the receiver letters (`X`, `Y`, `Z`, `H`) are shorter still but unfamiliar to most players. What is the canonical short label for each receiver?
 6. **Desktop converted and out-of-reps panels, and the desktop key pill position.** Not prototyped.
 7. **Rush-path selection.** DESIGN.md draws a rush path only where the rush matters (edge rush, sacker). Does the engine flag those rushers in `DefenderPath`, or does the front end infer them?
 8. **Back navigation.** What do the browser and OS back actions do on the Result screen?
 
 ## Acceptance criteria
 
-- [ ] All six states in `states/*.html` render from fixture data with the exact headline, tile, result line, stat values and labels, rep boxes, status text and CTA listed above.
+- [ ] All seven states in `states/*.html` render from fixture data with the exact headline, tile, result line, stat values and labels, rep boxes, status text and CTA listed above.
 - [ ] Phone layout matches `prototype.html` at 390×844: field 390×479 with `viewBox 0 0 403 495`, shade `rgba(6,13,10,.22)`, pills at 12/14 px, a 398 px sheet overlapping the field by 33 px.
 - [ ] Sheet colour follows the rule: cream for failed or short with reps left, ink green for converted, charcoal when rep 4 fails or falls short. Interception uses the cream failed treatment.
 - [ ] Cream sheet stat values are Charcoal, ink-green ones Read Gold, charcoal ones Snap Orange.
@@ -370,6 +374,7 @@ The ball path uses `RepPlayback.ball` (`from`, `control`, `to`). On an intercept
 - [ ] A converted result draws the first-down line at 3.5 px; all others at 2 px.
 - [ ] The four `coverages/*.html` frames render from `DefensePlayArt` data alone: zone colours by type at 30% fill and 85% stroke, same-colour drop lines with no arrowhead, grey man and rush paths with arrowheads, 2.4 px orange blitz paths with arrowheads, r 3 grey start dots only for defenders with a path, every path trimmed 10.5 units, arrowheads 5 units at ±38°. Rush paths appear only for rushers that matter (edge rush, sacker).
 - [ ] Sack shows no ball path. Interception shows the football at the end of the ball path. No other state draws the football.
+- [ ] Throwaway draws the ball path to just past the nearest sideline and shows `—` over `thrown away` in the read stat.
 - [ ] Every route-running receiver has a badge whose shape matches its status. Blocking receivers have none.
 - [ ] Dark theme matches `prototype-dark.html`, `prototype-desktop-dark.html` and `states/*-dark.html` with the field unchanged: the ink-green sheet is identical to light, and the out-of-reps sheet adds the orange ✕ tile beside a 44 px headline.
 - [ ] At ≥900 px the layout matches `prototype-desktop.html`: 64 px top bar, stage on #0C3322 with no shade and the "Final · defense revealed" pill, 440 px panel, 58 px buttons with a 10 px radius, 34 px rep boxes, `Enter` triggers the CTA, `R` opens Replay, hints visible.
