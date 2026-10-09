@@ -10,8 +10,9 @@ Use pnpm, not npm or yarn.
 - `pnpm build` — type-check (`tsc -b`) and build
 - `pnpm lint` — oxlint
 - `pnpm fmt` / `pnpm fmt:check` — oxfmt
+- `pnpm test` — Vitest's `node` project, once (no watch mode)
 
-There is no test runner yet. Before calling work done, run `pnpm lint`, `pnpm fmt:check` and `pnpm build`.
+Before calling work done, run `pnpm lint`, `pnpm fmt:check`, `pnpm build` and `pnpm test`.
 
 ## Where to look
 
