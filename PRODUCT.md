@@ -57,7 +57,7 @@ The nearest competitor is Monday QB (monday-qb.com). It covers a whole drive and
 - The simulation is deterministic and rule-based, with no randomness. The same design always produces the same result.
 - **Rep outcomes:** completion with yards gained, incompletion, interception, or sack.
 - **Receiver feedback:** each receiver is marked open, contested or covered.
-- **Scoring:** 100 / 75 / 50 / 25 for solving in 1–4 reps, 0 for a fail, plus a quality bonus capped at +20. Fewer reps always wins.
+- **Scoring:** 100 / 75 / 50 / 25 for solving on rep 1–4, 0 when out of reps, plus a bonus on the converting rep: +20 for a touchdown when the goal is a first down, otherwise +1 per whole yard past the line to gain, up to +10. Fewer reps always wins, and the top score is 120.
 
 **Terminology:**
 
@@ -65,7 +65,7 @@ The nearest competitor is Monday QB (monday-qb.com). It covers a whole drive and
 - **Briefing:** the situation shown before designing.
 - **Real-call reveal:** what the pros called and what happened.
 - **Coach Rating:** the season average.
-- **Beat the pros:** solving in a way that beats the real result.
+- **Beat the pros:** solving the puzzle. Puzzles only feature plays the real offense failed to convert.
 
 **Hard constraints:**
 

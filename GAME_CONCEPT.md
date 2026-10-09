@@ -129,12 +129,11 @@ Free. No ads, no paid tier, no paywalled puzzles.
 
 ## Objectives and Progression
 
-- **Daily objective:** convert the situation. The success condition is situation-specific — a first down, a touchdown, getting out of bounds to stop the clock, etc.
-- **Score:** reps used plus a quality bonus.
-  - Base: 1 rep = 100, 2 reps = 75, 3 reps = 50, 4 reps = 25, failed = 0.
-  - Quality bonus, capped at +20: +1 per yard gained beyond the success condition, plus +10 for a touchdown when the objective didn't require one.
-  - The cap stays below the 25-point gap between reps, so solving in fewer reps always beats a flashier play in more reps.
-  - Proposed formula; tune the numbers in playtesting.
+- **Daily objective:** convert the situation. Each puzzle names its goal: a first down or a touchdown.
+- **Score:** reps used plus a bonus.
+  - Base: 1 rep = 100, 2 reps = 75, 3 reps = 50, 4 reps = 25, out of reps = 0.
+  - Bonus on the converting rep: +20 for a touchdown when the goal is a first down, otherwise +1 per whole yard past the line to gain, up to +10. A touchdown-goal puzzle earns no bonus. The top score is 120.
+  - The bonus never closes the 25-point gap between reps, so solving in fewer reps always beats a flashier play in more reps.
 - **Progression:** Wordle-light, not RPG.
   - Streak (consecutive days solved)
   - Win distribution by reps
