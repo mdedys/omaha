@@ -1,8 +1,10 @@
 import {
   TICK_SECONDS,
+  type CauseCode,
   type DefenderId,
   type DefensePlayArt,
   type Design,
+  type ForcedBy,
   type Letter,
   type Lineman,
   type OffenseId,
@@ -16,6 +18,7 @@ import {
 import { EngineError } from "../error";
 import {
   ballX,
+  defenderIds,
   formations,
   gapPoints,
   letters,
@@ -25,7 +28,7 @@ import {
 import { linemen, nearestGap, protect, type Blocker } from "./protection";
 import { routePath, routeTrack } from "./routes";
 import * as t from "./tuning";
-import { distance, stepToward } from "./vec";
+import { direction, distance, segmentDistance, stepToward } from "./vec";
 import { zoneCatalog } from "./zones";
 
 export type LogEvent = { tick: number } & (
@@ -36,15 +39,44 @@ export type LogEvent = { tick: number } & (
   | { kind: "hold-release"; rusher: DefenderId }
   | { kind: "pressure"; rusher: DefenderId }
   | { kind: "sack"; rusher: DefenderId }
+  | { kind: "defender-react"; defender: DefenderId; reason: "break" | "throw" }
+  | { kind: "rubbed"; defender: DefenderId; by: Letter }
 );
 type Rush =
   | { kind: "blocked"; engage: Vec; releaseTick: number }
   | { kind: "free"; gap: Vec; reachedGap: boolean };
+// A man defender's chase: his pre-snap offset, his pre-snap depth and the
+// cushion left of it, the receiver heading he last reacted to, the heading he
+// holds while reacting to a break, and the runner rubbing him.
+type Chase = {
+  letter: Letter;
+  offsetX: number;
+  depth: number;
+  cushion: number;
+  heading: Vec | null;
+  resumeTick: number;
+  hold: Vec;
+  rubbedBy: Letter | null;
+  slowUntil: number;
+};
+type Read = { letter: Letter; track: Vec[]; throwTick: number };
+type Pass = { read: Read | null; forcedBy?: ForcedBy };
+type Ending =
+  | { kind: "sack"; rusher: DefenderId }
+  | { kind: "throwaway" }
+  | { kind: "catch"; spot: Vec }
+  | { kind: "breakup" | "interception"; defender: DefenderId };
 
 const ticks = (seconds: number) => Math.round(seconds / TICK_SECONDS);
 const capTicks = ticks(t.REP_CAP_SECONDS);
 const holdTicks = ticks(t.HOLD_TIME_SECONDS);
 const reactTicks = ticks(t.REACTION_DELAY_SECONDS);
+const readTicks = ticks(t.READ_TIME_SECONDS);
+const rubTicks = ticks(t.RUB_TIME_SECONDS);
+const ballStep = t.BALL_SPEED_YARDS_PER_SECOND * TICK_SECONDS;
+// The cosine of a 45° turn, with room for rounding in headings taken from
+// track steps, since route turns are exact multiples of 45°.
+const breakCosine = Math.sqrt(0.5) + 1e-9;
 
 const roleSpeed: Record<Role, number> = {
   DL: t.DL_SPEED_YARDS_PER_SECOND,
@@ -132,9 +164,9 @@ export function simulateWithLog(
   const runners = [...paths.keys()];
   const keptIn = letters.filter((letter) => !runners.includes(letter));
   const spots = preSnap(puzzle);
-  const ball = ballX(puzzle);
+  const snapX = ballX(puzzle);
   const gaps = gapPoints(puzzle);
-  const setSpot = { x: ball, y: -t.QB_SET_DEPTH_YARDS };
+  const setSpot = { x: snapX, y: -t.QB_SET_DEPTH_YARDS };
   const log: LogEvent[] = [];
 
   const planned = new Map(
@@ -160,7 +192,7 @@ export function simulateWithLog(
     puzzle,
     design.protection.lineCall,
     keptIn,
-    spots.Y.x < ball ? "L" : "R",
+    spots.Y.x < snapX ? "L" : "R",
     rushers,
     puzzle.defense
       .filter((defender) => role(defender.id) === "DL")
@@ -214,10 +246,204 @@ export function simulateWithLog(
   const at = (id: PlayerId, tick: number): Vec => tracks[id][tick];
   const defenders = puzzle.defense.map((defender) => defender.id);
   const pressured = new Set<DefenderId>();
+  const separation = (letter: Letter, tick: number): number =>
+    Math.min(
+      ...defenders.map((id) => distance(at(letter, tick), at(id, tick))),
+    );
+  const chases = new Map<DefenderId, Chase>();
+  for (const defender of puzzle.defense) {
+    const assignment = defender.assignment;
+    if (assignment.kind !== "man" || !runners.includes(assignment.target))
+      continue;
+    const receiver = spots[assignment.target];
+    const me = spots[defender.id];
+    chases.set(defender.id, {
+      letter: assignment.target,
+      offsetX: me.x - receiver.x,
+      depth: me.y,
+      cushion: me.y - receiver.y,
+      heading: null,
+      resumeTick: 0,
+      hold: { x: 0, y: 0 },
+      rubbedBy: null,
+      slowUntil: 0,
+    });
+  }
+  const order: Read[] = design.readOrder.flatMap((letter) => {
+    const route = planned.get(letter);
+    return route === undefined ? [] : [{ letter, ...route }];
+  });
+  const reads: Rep["reads"] = [];
+  let readIndex = 0;
+  let readFrom = 0;
   let setTick = Infinity;
+  let ball: Rep["ball"] = null;
+  let forcedBy: ForcedBy | undefined;
+  const breakers = new Set<DefenderId>();
+  let ending: Ending | null = null;
   let endTick = 0;
-  let sacker: DefenderId | null = null;
-  for (let tick = 1; tick <= capTicks && sacker === null; tick++) {
+
+  // The receiver's target is his position plus the pre-snap offset and the
+  // cushion; at a turn of 45° or more the defender holds his own last heading
+  // for the reaction delay.
+  const chaseTarget = (id: DefenderId, chase: Chase, tick: number): Vec => {
+    const prev = tick - 1;
+    const me = at(id, prev);
+    const receiver = at(chase.letter, prev);
+    const heading =
+      prev > 0 ? direction(at(chase.letter, prev - 1), receiver) : null;
+    if (tick === chase.resumeTick) {
+      log.push({ tick, kind: "defender-react", defender: id, reason: "break" });
+      chase.heading = heading ?? chase.heading;
+    } else if (heading !== null && tick > chase.resumeTick) {
+      if (chase.heading === null) chase.heading = heading;
+      else if (
+        heading.x * chase.heading.x + heading.y * chase.heading.y <=
+        breakCosine
+      ) {
+        chase.resumeTick = tick + reactTicks;
+        chase.hold = direction(at(id, prev - 1), me) ?? { x: 0, y: 0 };
+      }
+    }
+    chase.cushion = Math.min(
+      chase.cushion,
+      prev > 0 && heading === null
+        ? t.TRAIL_DISTANCE_YARDS
+        : Math.max(t.TRAIL_DISTANCE_YARDS, chase.depth - receiver.y),
+    );
+    if (tick < chase.resumeTick)
+      return { x: me.x + chase.hold.x, y: me.y + chase.hold.y };
+    return { x: receiver.x + chase.offsetX, y: receiver.y + chase.cushion };
+  };
+  // A chase step that would pass within the contact radius of another route
+  // runner heads along the tangent to that radius, on the side nearer the
+  // chase target, or straight out when already inside it; from the rub he
+  // moves at the rub speed for the rub time.
+  const manStep = (id: DefenderId, chase: Chase, tick: number): Vec => {
+    const prev = tick - 1;
+    const me = at(id, prev);
+    const step = roleSpeed[role(id)] * TICK_SECONDS;
+    const target = chaseTarget(id, chase, tick);
+    const to = stepToward(me, target, step);
+    const by = runners.find(
+      (letter) =>
+        letter !== chase.letter &&
+        segmentDistance(me, to, at(letter, prev)) < t.RUB_CONTACT_RADIUS_YARDS,
+    );
+    if (by !== undefined && by !== chase.rubbedBy) {
+      log.push({ tick, kind: "rubbed", defender: id, by });
+      chase.slowUntil = tick + rubTicks;
+    }
+    chase.rubbedBy = by ?? null;
+    const stride = tick < chase.slowUntil ? step * t.RUB_SPEED_FACTOR : step;
+    if (by === undefined) return stepToward(me, target, stride);
+    const runner = at(by, prev);
+    const gap = distance(me, runner);
+    const out = direction(runner, me) ?? { x: 0, y: 1 };
+    const length = Math.min(stride, distance(me, to));
+    if (gap < t.RUB_CONTACT_RADIUS_YARDS)
+      return { x: me.x + length * out.x, y: me.y + length * out.y };
+    const side =
+      out.x * (target.y - me.y) - out.y * (target.x - me.x) >= 0 ? 1 : -1;
+    const sin = t.RUB_CONTACT_RADIUS_YARDS / gap;
+    const cos = Math.sqrt(1 - sin * sin);
+    return {
+      x: me.x + length * (-out.x * cos - side * out.y * sin),
+      y: me.y + length * (-out.y * cos + side * out.x * sin),
+    };
+  };
+
+  // Every read is past its throw point once the order runs out. He forces the
+  // one with the most separation, ties to the earlier read, if it is at
+  // least contested, and otherwise throws it away.
+  const outOfReads = (tick: number): Pass => {
+    let best: Read | null = null;
+    let most = -Infinity;
+    for (const read of order) {
+      const each = separation(read.letter, tick - 1);
+      if (each > most) {
+        most = each;
+        best = read;
+      }
+    }
+    return best !== null && most >= t.CONTEST_RADIUS_YARDS
+      ? { read: best, forcedBy: "out-of-reads" }
+      : { read: null };
+  };
+  // Each read's time opens at the latest of reaching it, the QB being set and
+  // the receiver reaching his throw point; the QB reads the previous snapshot.
+  const decide = (tick: number): Pass | null => {
+    for (;;) {
+      const read = order[readIndex];
+      const opens = Math.max(readFrom, setTick, read.throwTick);
+      if (tick >= opens + readTicks) {
+        if (readIndex === order.length - 1) return outOfReads(tick);
+        reads.push({ letter: read.letter, fromTick: readFrom, toTick: tick });
+        readIndex++;
+        readFrom = tick;
+        continue;
+      }
+      if (tick < opens) return null;
+      const open = separation(read.letter, tick - 1);
+      if (open >= t.OPEN_SEPARATION_YARDS) return { read };
+      if (pressured.size > 0 && open >= t.CONTEST_RADIUS_YARDS)
+        return { read, forcedBy: "pressure" };
+      return null;
+    }
+  };
+  const flight = (pass: Pass, tick: number): NonNullable<Rep["ball"]> => {
+    const from = at("QB", tick);
+    const read = pass.read;
+    if (read === null) {
+      // From the middle of the field he throws it away to the right.
+      const to = {
+        x:
+          (from.x < 0 ? -1 : 1) *
+          (t.FIELD_HALF_WIDTH_YARDS + t.THROWAWAY_PAST_SIDELINE_YARDS),
+        y: from.y,
+      };
+      return {
+        from,
+        to,
+        throwTick: tick,
+        arriveTick: tick + Math.ceil(distance(from, to) / ballStep),
+        target: null,
+      };
+    }
+    for (let arrive = tick + 1; ; arrive++) {
+      const to = read.track[Math.min(arrive, capTicks)];
+      if (distance(from, to) <= (arrive - tick) * ballStep)
+        return {
+          from,
+          to,
+          throwTick: tick,
+          arriveTick: arrive,
+          target: read.letter,
+        };
+    }
+  };
+  // The nearest defender within the contest radius makes the play, ties by
+  // the fixed defender order.
+  const arrival = (to: Vec, target: Letter, tick: number): Ending => {
+    let maker: DefenderId | null = null;
+    let nearest = Infinity;
+    for (const id of defenderIds.filter((each) => defenders.includes(each))) {
+      const d = distance(at(id, tick), to);
+      if (d <= t.CONTEST_RADIUS_YARDS && d < nearest) {
+        nearest = d;
+        maker = id;
+      }
+    }
+    if (maker === null) return { kind: "catch", spot: to };
+    const first =
+      distance(at(maker, tick - 1), to) < distance(at(target, tick - 1), to);
+    return {
+      kind: breakers.has(maker) && first ? "interception" : "breakup",
+      defender: maker,
+    };
+  };
+
+  for (let tick = 1; tick <= capTicks && ending === null; tick++) {
     const prev = tick - 1;
     const qbPrev = at("QB", prev);
     if (tick === reactTicks) {
@@ -245,6 +471,23 @@ export function simulateWithLog(
         rushes.set(hug.id, { kind: "blocked", engage, releaseTick: holdTicks });
         blockerTargets.set(hug.letter, behind(engage, 0));
         log.push({ tick, kind: "pickup", blocker: hug.letter, rusher: hug.id });
+      }
+    }
+    if (
+      ball !== null &&
+      ball.target !== null &&
+      tick === ball.throwTick + reactTicks
+    ) {
+      for (const id of defenders) {
+        if (distance(at(id, prev), ball.to) > t.BALL_BREAK_RADIUS_YARDS)
+          continue;
+        breakers.add(id);
+        log.push({
+          tick,
+          kind: "defender-react",
+          defender: id,
+          reason: "throw",
+        });
       }
     }
 
@@ -287,74 +530,163 @@ export function simulateWithLog(
       );
     }
     for (const id of defenders) {
+      const me = at(id, prev);
+      const step = roleSpeed[role(id)] * TICK_SECONDS;
+      const point = breakers.has(id) ? ball?.to : undefined;
       const rush = rushes.get(id);
+      const chase = chases.get(id);
       tracks[id].push(
-        rush === undefined
-          ? at(id, prev)
-          : stepToward(
-              at(id, prev),
-              rushTarget(id, rush),
-              roleSpeed[role(id)] * TICK_SECONDS,
-            ),
+        point !== undefined
+          ? stepToward(me, point, step)
+          : rush !== undefined
+            ? stepToward(me, rushTarget(id, rush), step)
+            : chase !== undefined
+              ? manStep(id, chase, tick)
+              : me,
       );
     }
     const qb = at("QB", tick);
     if (setTick === Infinity && qb.x === setSpot.x && qb.y === setSpot.y)
       setTick = tick;
+    endTick = tick;
 
-    let nearest = Infinity;
-    for (const id of defenders) {
-      if (!rushes.has(id)) continue;
-      const d = distance(at(id, tick), qb);
-      if (d <= t.PRESSURE_RADIUS_YARDS && !pressured.has(id)) {
-        pressured.add(id);
-        log.push({ tick, kind: "pressure", rusher: id });
-      }
-      if (d <= t.SACK_RADIUS_YARDS && d < nearest) {
-        nearest = d;
-        sacker = id;
+    if (ball === null) {
+      const pass = decide(tick);
+      if (pass !== null) {
+        ball = flight(pass, tick);
+        forcedBy = pass.forcedBy;
       }
     }
-    endTick = tick;
+    if (ball === null) {
+      let nearest = Infinity;
+      let sacker: DefenderId | null = null;
+      for (const id of defenders) {
+        if (!rushes.has(id)) continue;
+        const d = distance(at(id, tick), qb);
+        if (d <= t.PRESSURE_RADIUS_YARDS && !pressured.has(id)) {
+          pressured.add(id);
+          log.push({ tick, kind: "pressure", rusher: id });
+        }
+        if (d <= t.SACK_RADIUS_YARDS && d < nearest) {
+          nearest = d;
+          sacker = id;
+        }
+      }
+      if (sacker !== null) {
+        log.push({ tick, kind: "sack", rusher: sacker });
+        ending = { kind: "sack", rusher: sacker };
+      }
+    } else if (tick === ball.arriveTick) {
+      ending =
+        ball.target === null
+          ? { kind: "throwaway" }
+          : arrival(ball.to, ball.target, tick);
+    }
   }
-  if (sacker === null) throw new EngineError("Rep reached the 20 s cap");
-  log.push({ tick: endTick, kind: "sack", rusher: sacker });
+  if (ending === null) throw new EngineError("Rep reached the 20 s cap");
 
-  const separation = (letter: Letter, tick: number): number =>
-    Math.min(
-      ...defenders.map((id) => distance(at(letter, tick), at(id, tick))),
-    );
+  const ballOut = ball?.throwTick ?? endTick;
+  reads.push({
+    letter: order[readIndex].letter,
+    fromTick: readFrom,
+    toTick: ballOut,
+  });
   const feedback = runners.map((letter) => {
-    const from = Math.max(setTick, planned.get(letter)?.throwTick ?? Infinity);
-    let tick = endTick;
-    let best = -Infinity;
-    for (let each = from; each <= endTick; each++) {
-      if (separation(letter, each) > best) {
-        best = separation(letter, each);
-        tick = each;
+    let tick = ballOut;
+    if (ball?.target === letter) {
+      tick = ball.arriveTick;
+    } else {
+      const from = Math.max(
+        setTick,
+        planned.get(letter)?.throwTick ?? Infinity,
+      );
+      let best = -Infinity;
+      for (let each = from; each <= ballOut; each++) {
+        if (separation(letter, each) > best) {
+          best = separation(letter, each);
+          tick = each;
+        }
       }
     }
     const measured = separation(letter, tick);
     return { letter, badge: badge(measured), separation: measured, tick };
   });
-  const free = log.some(
-    (event) => event.kind === "rusher-free" && event.rusher === sacker,
-  );
+  const thrownTo = ball?.target ?? null;
+  // A breakup or interception, split by whether the throw was forced.
+  const played = (
+    kind: Rep["outcome"]["kind"],
+    closed: CauseCode,
+    forced: CauseCode,
+    decisive: DefenderId,
+  ): Pick<Rep, "outcome" | "verdict" | "cause"> => ({
+    outcome: { kind, yards: 0 },
+    verdict: "failed",
+    cause: {
+      code: forcedBy === undefined ? closed : forced,
+      decisive,
+      thrownTo,
+      ...(forcedBy === undefined ? {} : { forcedBy }),
+    },
+  });
+  const result = ((): Pick<Rep, "outcome" | "verdict" | "cause"> => {
+    switch (ending.kind) {
+      case "sack": {
+        const free = log.some(
+          (event) =>
+            event.kind === "rusher-free" && event.rusher === ending.rusher,
+        );
+        return {
+          outcome: { kind: "sack", yards: Math.trunc(at("QB", endTick).y) },
+          verdict: "failed",
+          cause: {
+            code: free ? "sack-free-rusher" : "sack-beat-block",
+            decisive: ending.rusher,
+            thrownTo: null,
+          },
+        };
+      }
+      case "throwaway":
+        return {
+          outcome: { kind: "incompletion", yards: 0 },
+          verdict: "failed",
+          cause: { code: "throwaway", decisive: null, thrownTo: null },
+        };
+      case "breakup":
+        return played(
+          "incompletion",
+          "breakup-closed",
+          "breakup-forced",
+          ending.defender,
+        );
+      case "interception":
+        return played(
+          "interception",
+          "interception-closed",
+          "interception-forced",
+          ending.defender,
+        );
+      case "catch": {
+        // The rep ends on the catch, so it converts only where it is caught.
+        const yards = Math.trunc(ending.spot.y);
+        const verdict =
+          yards >= puzzle.situation.distance ? "converted" : "short";
+        return {
+          outcome: { kind: "completion", yards },
+          verdict,
+          cause: { code: verdict, decisive: null, thrownTo },
+        };
+      }
+    }
+  })();
   const rep: Rep = {
     endTick,
     tracks,
-    ball: null,
+    ball,
     carrier: null,
-    reads: [{ letter: design.readOrder[0], fromTick: 0, toTick: endTick }],
-    thrownToRead: null,
-    outcome: { kind: "sack", yards: Math.trunc(at("QB", endTick).y) },
-    verdict: "failed",
-    timeInPocketTicks: endTick,
-    cause: {
-      code: free ? "sack-free-rusher" : "sack-beat-block",
-      decisive: sacker,
-      thrownTo: null,
-    },
+    reads,
+    thrownToRead: thrownTo === null ? null : design.readOrder.indexOf(thrownTo),
+    ...result,
+    timeInPocketTicks: ballOut,
     feedback,
     playArt: playArt(puzzle),
   };
