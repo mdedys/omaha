@@ -64,7 +64,7 @@ Example (the current starter page):
   expect-title=omaha click=button:"Count is 0" expect="Count is 1" shot=after-click
 ```
 
-Prefer roles and accessible names over CSS. The specs in `design/<screen>/spec.md` list the accessible names each screen must have (for example the "First read" radio group or the field's `aria-label`). Drive by those names, so a pass also proves the accessibility criteria. If a handle you need has no accessible name, that is a bug in the screen, not a reason to fall back to CSS.
+Prefer roles and accessible names over CSS. The specs in `design/<screen>/spec.md` list the accessible names each screen must have (for example the "Read order" group or the field's `aria-label`). Drive by those names, so a pass also proves the accessibility criteria. If a handle you need has no accessible name, that is a bug in the screen, not a reason to fall back to CSS.
 
 ## Evidence
 

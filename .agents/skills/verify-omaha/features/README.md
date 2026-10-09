@@ -21,7 +21,7 @@ This directory is the maintained source for verifying what an Omaha player sees 
 - Capture a screenshot before and after the action under test, plus the final `aria.yml`.
 - When state persists, prove it with a `storage=` step and a reload in the same drive.
 - Record the feature file and sub-feature ID with each evidence folder you report.
-- A feature marked **Not built** cannot be verified. Report it as skipped and name the task that builds it. Never report a different screen as proof for it.
+- A feature marked **Not built** cannot be verified. Report it as skipped and name the issue that builds it. Never report a different screen as proof for it.
 
 ## Feature entry contract
 
@@ -29,13 +29,13 @@ Each feature file starts with an H1 and one paragraph on what the player sees. I
 
 ## Features
 
-| Feature                     | Status                   | Builds in       |
-| --------------------------- | ------------------------ | --------------- |
-| [App shell](./app-shell.md) | Live (Vite starter page) | T01 replaces it |
-| [Landing](./landing.md)     | Not built                | T17             |
-| [Protect](./protect.md)     | Not built                | T08             |
-| [Routes](./routes.md)       | Not built                | T09             |
-| [Read and snap](./read.md)  | Not built                | T10             |
-| [Result](./result.md)       | Not built                | T12             |
+| Feature                     | Status                   | Builds in                                 |
+| --------------------------- | ------------------------ | ----------------------------------------- |
+| [App shell](./app-shell.md) | Live (Vite starter page) | #60 replaces it                           |
+| [Landing](./landing.md)     | Not built                | #60                                       |
+| [Protect](./protect.md)     | Not built                | #61 (play screen), #62 (controls)         |
+| [Routes](./routes.md)       | Not built                | #63                                       |
+| [Read and snap](./read.md)  | Not built                | #64                                       |
+| [Result](./result.md)       | Not built                | #64 (sheet), #65 (play art), #71 (reveal) |
 
-Not mapped yet: Puzzles (T18), Tutorial (T19), Live play (T11), Replay (T13), Pros reveal (T14), Share (T15). Add a file for each when its task starts.
+Issue numbers are GitHub issues on `mdedys/omaha`, all children of #58. Not mapped yet: Puzzles (#70), Tutorial (#69), Live play (#66), Replay (#67), Pros reveal (#72), Share (#68), stored progress (#57). Add a file for each when its issue starts.

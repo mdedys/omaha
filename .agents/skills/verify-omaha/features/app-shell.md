@@ -1,6 +1,6 @@
 # App shell
 
-**Status:** Live. Today the root URL serves the stock Vite + React starter page. T01 replaces it with Omaha's routed scaffold, and T02 adds the Omaha themes. When T01 lands, rewrite the sub-features below to fit the scaffold.
+**Status:** Live. Today the root URL serves the stock Vite + React starter page. #60 replaces it with Omaha's routed scaffold, the DESIGN.md light and dark themes, and Landing. When #60 lands, rewrite the sub-features below to fit the scaffold.
 
 The shell is what a player gets on opening the site: the document titled `omaha`, a React app mounted in `#root`, a page that follows the system light or dark preference, and an interactive UI with no console errors.
 
@@ -23,10 +23,10 @@ Preconditions:
 - **Load (light).** Open `/`. Run `drive.mjs shell expect-title=omaha expect-role=heading:"Get started"`. Both steps say `ok`, `00-loaded.png` shows the starter hero, and `console.log` has no `[error]` or `[pageerror]` lines.
 - **Interact.** Click the counter. Add `click=button:"Count is 0" expect="Count is 1" shot=clicked` to the same drive. `aria.yml` shows `button "Count is 1"`.
 - **Dark theme.** Repeat with `--theme dark`. Run `drive.mjs shell --theme dark expect-title=omaha shot=dark`. The screenshot background is near-black (`#16171d`), not white.
-- **Desktop.** Repeat with `--viewport desktop`. The two-column "Documentation" and "Connect with us" section renders side by side.
+- **Desktop.** Run `drive.mjs shell --viewport desktop expect-role=heading:Documentation expect-role=heading:"Connect with us" shot=desktop`. The two sections sit side by side with a divider between them; at 1024px and narrower, phone included, they stack.
 
 ## Gotchas
 
-- The starter links to external sites (vite.dev, GitHub). Don't click them: they leave the app and need the network.
+- The starter has six external links (Explore Vite, Learn more, GitHub, Discord, X.com, Bluesky), all opening a new tab. Don't click them: they leave the app and need the network.
 - React `StrictMode` double-invokes effects in dev. A side effect seen twice in `console.log` may be StrictMode, not a bug.
 - This whole file describes throwaway starter content. If `/` no longer shows "Get started", the scaffold has landed and this file is stale.
