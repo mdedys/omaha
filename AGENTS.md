@@ -11,6 +11,7 @@ Use pnpm, not npm or yarn.
 - `pnpm lint` — oxlint
 - `pnpm fmt` / `pnpm fmt:check` — oxfmt
 - `pnpm test` — Vitest's `node` project, once (no watch mode)
+- `pnpm test:e2e` — Playwright at phone and desktop sizes (install Chromium with `pnpm exec playwright install chromium`)
 
 Before calling work done, run `pnpm lint`, `pnpm fmt:check`, `pnpm build` and `pnpm test`.
 
