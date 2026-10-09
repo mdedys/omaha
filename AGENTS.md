@@ -11,6 +11,7 @@ Use pnpm, not npm or yarn.
 - `pnpm lint` — oxlint
 - `pnpm fmt` / `pnpm fmt:check` — oxfmt
 - `pnpm test` — Vitest's `node` project, once (no watch mode)
+- `pnpm test:e2e` — Playwright at phone and desktop sizes (install Chromium with `pnpm exec playwright install chromium`)
 
 Before calling work done, run `pnpm lint`, `pnpm fmt:check`, `pnpm build` and `pnpm test`.
 
@@ -48,6 +49,14 @@ The decisions table in `design/README.md` is settled for UX; raise a question in
 - Formatting is oxfmt with an 80-column print width; `docs/`, `design/`, `public/`, `.impeccable/` and ephemeral `.mashing-skills/` run artifacts are excluded from formatting.
 - Lint is oxlint with the `react`, `typescript` and `oxc` plugins.
 - Don't edit files in `design/` unless the task is a design change.
+
+## UX pull request evidence
+
+- Every PR that implements or changes a UX feature must include screenshots in its description.
+- Capture the running implementation, not design prototypes: phone at 390×844 and desktop at 1280×800, in both light and dark themes.
+- Include the changed screen and any interaction states needed to demonstrate the feature. For changes to existing UI, include before and after screenshots where practical.
+- Embed the images with descriptive labels using URLs accessible to PR reviewers. Local file paths, uncommitted run artifacts, and statements that screenshots were inspected do not satisfy this requirement.
+- Capture and inspect the screenshots before opening or updating the PR; keep them current with the implementation under review.
 
 ## Agent skills
 

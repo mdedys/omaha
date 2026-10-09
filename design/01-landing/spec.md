@@ -101,7 +101,7 @@ Exact strings. Copy marked **[puzzle]** is authored per puzzle and comes from th
 | Wordmark | `Omaha` (displayed uppercase) | static |
 | Tagline | `A real situation from last week. Four reps to out-coach the pros.` | static |
 | Card label | `Today's puzzle` | static |
-| Puzzle number | `Puzzle #[N]` | **[puzzle]** number; keep `[N]` as the placeholder in fixtures |
+| Puzzle number | `Puzzle #[N]` | **[puzzle]** number; `[N]` is replaced by the fixture's numeric ID |
 | Down and distance | `3rd & 10` (displayed uppercase) | **[puzzle]** down + distance |
 | Spot | `own 45` (displayed uppercase) | **[puzzle]** spot (`own`/`opp` + yard line) |
 | Briefing | `Sunday night. Down 4 with 1:12 to go and one timeout left. A field goal won't cut it, so the drive lives or dies on this first down. No pressure.` | **[puzzle]** briefing. Gives score/clock context and stakes in the trash-talk voice. At most four lines on phone (DESIGN.md Body). |
@@ -137,8 +137,8 @@ The prototype briefing is placeholder content. The situation and briefing must n
    - The CTA goes to the player's result or to Share; which one, and its label, are open questions.
 4. **Finished, out of reps (not prototyped).** Four reps used without converting. Same as state 3 but the outcome is out of reps (all four reps spent, orange/gold per rep). Layout, copy and CTA destination are open questions.
 5. **First-ever visit (not prototyped).** No local storage record of any play. Renders as state 1. Whether the app routes first-time players to the Tutorial instead is an open question.
-6. **Loading (not prototyped).** Today's puzzle JSON is being fetched. The hero and wordmark render immediately; the card's puzzle fields have no specified loading treatment (open question).
-7. **Puzzle unavailable (not prototyped).** The puzzle JSON fails to load, or there is no puzzle today (off-season after the Super Bowl). No design exists; open question.
+6. **Loading (not prototyped).** While the index or selected puzzle JSON loads, retain the hero, wordmark and secondary navigation. Replace puzzle fields with “Loading today's puzzle…” and “Drawing up the situation.” Do not show the primary CTA.
+7. **Puzzle unavailable (not prototyped).** Retain the hero, wordmark and secondary navigation; do not show the primary CTA. A failed fetch or `EngineError` shows “Couldn't load today's puzzle.” and “Please refresh to try again.” An index with no entry dated today or earlier shows “No puzzle available yet.” and “Check back for the next situation.”
 
 ## Interactions
 
@@ -175,7 +175,7 @@ None.
 | Down, distance | puzzle JSON |
 | Spot (side `own`/`opp`, yard line) | puzzle JSON |
 | Briefing text | puzzle JSON (authored) |
-| Goal (type: first down / touchdown / out of bounds; display text) | puzzle JSON (authored) |
+| Goal | puzzle JSON `goal` (engine type: first down / touchdown) and authored `goalText` (complete display copy) |
 | Rep count (4) | constant |
 | Today's puzzle ID / date | determined by the date in US Eastern time (puzzles publish at midnight ET) |
 | Reps used, per-rep outcomes, converted flag, finished flag | local storage, keyed by puzzle |
@@ -187,11 +187,14 @@ None.
 - **In-progress CTA:** label (for example a "resume" wording) and destination. Resume on Protect with the last design loaded (matching Run It Back), or on the last screen the player saw (for example a result they had not acted on)? Does an unsnapped design in progress persist?
 - **In-progress reps text:** exact copy for reps remaining (the Puzzles list uses "N reps left").
 - **Finished states:** CTA destination (result or Share), CTA label, and how the outcome is drawn on the card (rep tiles like the share card, a text line, or both).
-- **Goal row wording** for the touchdown and out-of-bounds goals is authored per puzzle; is there a character limit so it fits beside the reps indicator on one line?
-- **Loading, error and off-season** treatments.
-- **Theme selection:** follow the system setting, offer a toggle, or both? Not specified anywhere.
-- **Desktop duplicate links:** the desktop prototype shows "All puzzles" and "How to play" both in the top bar and as panel buttons. Keep both?
-- **Desktop field position:** the prototype's inline `position: absolute; left: 0; top: 0` on the stage SVG pins the art to the top-left corner. This spec centers it per the shared `.field` rule. Confirm.
+### Resolved shell and Landing decisions
+
+- **Goal row wording:** authored per puzzle, with no new character limit. Allow wrapping beside the rep indicator.
+- **Loading, error and off-season:** keep the hero, wordmark and secondary navigation visible. Replace puzzle content with the status copy under States; show the primary CTA only when a puzzle is available.
+- **Theme selection:** follow the system setting through `prefers-color-scheme`; no toggle.
+- **Desktop duplicate links:** keep both the top-bar navigation pair and the panel pair.
+- **Desktop field position:** center the fixed hero art on the field stage; do not copy the prototype's top-left positioning.
+- **Delivery scope:** in-progress, finished and first-visit behavior remains deferred to #57. `/puzzles`, `/how-to-play` and `/puzzle/:n` render labelled route placeholders until their screen pieces land; the primary CTA currently navigates to `/puzzle/<n>`, not implemented Protect controls.
 
 ## Acceptance criteria
 

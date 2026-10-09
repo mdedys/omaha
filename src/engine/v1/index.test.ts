@@ -293,6 +293,18 @@ describe("v1 puzzle boundary", () => {
       { kind: "rush" },
     ]);
   });
+  it.each([-5, 0, 0.5])("rejects distance %s below one yard", (distance) => {
+    const raw = rawPuzzle();
+    raw.situation.distance = distance;
+    expect(() => parsePuzzle(raw)).toThrow(EngineError);
+  });
+  it("accepts a one-yard first-down distance", () => {
+    const raw = rawPuzzle();
+    raw.situation.distance = 1;
+    const parsed = parsePuzzle(raw);
+    expect(parsed.situation.distance).toBe(1);
+    expect(parsed.goal).toBe("first-down");
+  });
   it("accepts goal-to-go at both field limits", () => {
     for (const spot of [10, 99]) {
       const raw = rawPuzzle();

@@ -54,6 +54,7 @@ export function parsePuzzle(json: unknown): Puzzle {
   const distance = number(situation.distance);
   const goal = member(raw.goal, ["first-down", "touchdown"]);
   if (
+    distance < 1 ||
     spot < MIN_SPOT_YARDS ||
     spot > MAX_SPOT_YARDS ||
     spot + distance > FIELD_LENGTH_YARDS
