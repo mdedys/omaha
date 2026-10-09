@@ -39,8 +39,8 @@ Top to bottom:
    - Yard lines every 64px (`field-line` at 30% opacity, 1px); hash marks at x 136–150 and 240–254 every 13px (`field-line` at 35%).
    - First-down line at y 330 (`first-down-line`, 2px, 90% opacity); line of scrimmage at y 420 (`scrimmage-line`, 2px, 90% opacity).
    - Five linemen (r 8, `lineman` fill, `lineman-stroke` 1.2px) at x 153, 174, 195, 216, 237, y 420.
-   - Receivers (r 8.5, `receiver-fill`, 2.2px ring, white 6.5px 700 label): Left WR (`left-wr`) at 52,422; TE (`tight-end`) at 258,421; Slot WR (`slot-wr`) at 312,442; Right WR (`right-wr`) at 372,434; RB (`running-back`) at 168,482. QB (`quarterback` fill, `quarterback-text` label) at 195,482.
-   - Routes, 2.4px, round caps and joins, open arrowheads: Left WR out-breaking route (`left-wr`), TE corner (`tight-end-route`), Slot WR out (`slot-wr-route`), Right WR go (`right-wr`), RB check-down (`running-back`). Path data is in the prototype; copy it.
+   - Receivers (r 8.5, `receiver-fill`, 2.2px ring, white 6.5px 700 label): X (`receiver-x`) at 52,422; Y (`receiver-y`) at 258,421; H (`receiver-h`) at 312,442; Z (`receiver-z`) at 372,434; RB (`receiver-rb`) at 168,482. QB (`quarterback` fill, `quarterback-text` label) at 195,482.
+   - Routes, 2.4px, round caps and joins, open arrowheads: X out-breaking route (`receiver-x`), Y corner (`receiver-y-route`), H out (`receiver-h-route`), Z go (`receiver-z`), RB check-down (`receiver-rb`). Path data is in the prototype; copy it.
    - Gradient overlay over the whole 390×520 hero: `linear-gradient(180deg, rgba(10,30,20,.86) 0%, rgba(10,30,20,.55) 34%, rgba(10,30,20,0) 58%)`.
    - The prototype draws the hero as fixed decorative art, not derived from the puzzle's formation. Build it that way.
 2. **Wordmark block**, absolute, left 24, right 24, top 72; column with 10px gap; text Cream.

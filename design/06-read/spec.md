@@ -84,7 +84,7 @@ DESIGN.md "Layout › Desktop" and its desktop control variants apply. Same styl
 
 - **Step bar** (DESIGN.md "Step bar"): Protect and Routes done (Ink Green bars, Sage Muted labels), Read current (Ink Green bar and label). Desktop uses the 4px variant with done bars at 45% opacity.
 - **Read option** (DESIGN.md "Read option", `read-option`): 52px tall, `box-sizing: border-box`, radius 12px, 1px Sand Border `#DCD3C1`, Paper White, flex row centered, gap 10px, padding `0 12px`, left-aligned text.
-  - Swatch: SVG 14×14, `circle cx=7 cy=7 r=5.5`, fill `#0E2219`, stroke = the receiver's player color (ring color, not route tint: TE `#8E73F2`, Slot WR `#F0607A`), width 2, `aria-hidden`.
+  - Swatch: SVG 14×14, `circle cx=7 cy=7 r=5.5`, fill `#0E2219`, stroke = the player color of the receiver's letter (ring color, not route tint: Y `#8E73F2`, H `#F0607A`), width 2, `aria-hidden`.
   - Text column (`flex-grow: 1`, gap 3px): name 14px 600, `line-height 1`; route name 12px Sage Muted (no weight set; renders 500), `line-height 1`.
   - Selected: 2px Ink Green border, padding `0 11px`, and a check at the right end: SVG 20×20, `circle r=9` Ink Green, check path `M6 10.2L8.8 13L14 7.6` in Cream, width 2, round caps and joins, `aria-hidden`.
   - Desktop variant: full width, 60px tall, radius 12px, 1px Sand Border, gap 12px, padding `0 16px`; swatch 16×16 (same 14-unit viewBox); text column gap 4px, name 16px 700, route name 13px Sage Muted; check 22×22. Selected: 2px Ink Green border, padding `0 15px`.
@@ -141,7 +141,7 @@ None on this screen. The live play that follows is specified in 07-live-play.
 
 ## Data
 
-- **Puzzle JSON:** header values; formation (display name and player color per eligible receiver); defense pre-snap alignment.
+- **Puzzle JSON:** header values; formation (receiver letter and display name per eligible receiver; the letter picks the player color); defense pre-snap alignment.
 - **Design state:** `blockers`, `lineCall` (decide the route runners and whether the RB block line is drawn); `routes` (route and depth per runner, for drawing and for option route names); `firstRead`: a receiver id that must be a current route runner, or `null`. Kept between reps.
 - **Derived:** `canSnap` = every route runner has a route AND `firstRead` is a current route runner.
 - **On Snap:** the full design (`blockers`, `lineCall`, `routes`, `firstRead`) and the rep index go to the simulation.
