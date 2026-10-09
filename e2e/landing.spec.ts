@@ -205,7 +205,7 @@ for (const index of [[], [{ number: 1, date: "2026-10-10" }]]) {
 }
 
 for (const destination of [
-  { name: "Play today's puzzle", path: "/puzzle/2", title: "Puzzle #2" },
+  { name: "Play today's puzzle", path: "/puzzle/2", title: "2nd & goal" },
   { name: "All puzzles", path: "/puzzles", title: "All puzzles" },
   { name: "How to play", path: "/how-to-play", title: "How to play" },
 ]) {
@@ -259,7 +259,11 @@ for (const destination of [
     await expect(
       page.getByRole("heading", { name: destination.title, exact: true }),
     ).toBeVisible();
-    await page.getByRole("link", { name: "Back to Landing" }).click();
+    if (destination.path === "/puzzle/2") {
+      await page.goto("/");
+    } else {
+      await page.getByRole("link", { name: "Back to Landing" }).click();
+    }
     await expect(page).toHaveURL("/");
     await expect(
       page.getByRole("heading", { name: "Omaha", exact: true }),

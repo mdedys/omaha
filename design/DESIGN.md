@@ -361,6 +361,8 @@ Madden zone colors, because players already know them:
 - Backed up at the offense's own 10, its goal line falls on the bottom edge (y 494), so its end zone shows only where the camera reaches farther back, as in live play.
 - Prototypes: [field/prototype-goal-to-go.html](field/prototype-goal-to-go.html) (phone) and [field/prototype-goal-to-go-desktop.html](field/prototype-goal-to-go-desktop.html), 2nd & goal from the 6.
 
+**Shared field implementation decisions:** engine `preSnap` positions are the source of truth, including hash shifts and flipped formations; prototype player coordinates are not used. The one projection maps x by `201.5 + x × (403 / 31.5)` so both sidelines are exact, and y by `366 − 12.8y`. Geometry is settled; no alternate camera or scale is introduced for desktop. The desktop stage clips the SVG's overflowing stadium decoration, while the same viewBox and deterministic row/column seat hash preserve phone seat coordinates. The field's colors are independent of frame theme. Only the yellow line is drawn at the opposing goal line for touchdown goals, even when the situation is not goal to go.
+
 ## Elevation & Depth
 
 Flat by default. Depth comes from the paper-on-turf split, not shadows. Two exceptions, both structural:

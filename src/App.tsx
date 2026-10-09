@@ -3,6 +3,7 @@ import type { ComponentProps, MouseEvent } from "react";
 import { Hero } from "./Hero";
 import { loadTodaysPuzzle } from "./puzzles";
 import type { LandingPuzzle } from "./puzzles";
+import { PuzzleScreen } from "./PuzzleScreen";
 import "./App.css";
 
 type LandingState =
@@ -224,14 +225,17 @@ function App() {
     return () => window.removeEventListener("popstate", update);
   }, []);
   const puzzleRoute = /^\/puzzle\/(\d+)$/.exec(path);
+  if (puzzleRoute) {
+    return (
+      <PuzzleScreen key={puzzleRoute[1]} number={Number(puzzleRoute[1])} />
+    );
+  }
   const title =
     path === "/puzzles"
       ? "All puzzles"
       : path === "/how-to-play"
         ? "How to play"
-        : puzzleRoute
-          ? `Puzzle #${puzzleRoute[1]}`
-          : null;
+        : null;
   if (!title) return <Landing />;
   return (
     <main className="route-placeholder">

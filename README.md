@@ -6,7 +6,7 @@ The name comes from Peyton Manning's audible call at the line.
 
 ## Status
 
-Pre-MVP. The visual design lives in [design/](design/README.md). The app shell and Landing are implemented in React and SVG, with system light/dark themes and a static daily puzzle source. The other three routes are labelled placeholders. The engine contract and Gun Trey stub are ready for screen development while v1 is built; work is tracked in [GitHub issues](https://github.com/mdedys/omaha/issues).
+Pre-MVP. The visual design lives in [design/](design/README.md). The app shell, Landing and numbered puzzle play-screen frame are implemented in React and SVG, with system light/dark themes and a static daily puzzle source. Protect, Routes and Read currently have placeholder panels; their controls and play art are not built. The Puzzles list and How to play routes remain labelled placeholders. The engine contract and Gun Trey stub are ready for screen development while v1 is built; work is tracked in [GitHub issues](https://github.com/mdedys/omaha/issues).
 
 ## Getting started
 
@@ -32,13 +32,21 @@ Install Chromium before the first browser run with `pnpm exec playwright install
 
 ## Shell and daily puzzles
 
-`/` renders Landing; `/puzzles`, `/how-to-play` and `/puzzle/:n` render placeholders until those screens land. Links use browser history without reloading; unknown paths render Landing. Static hosting must rewrite non-asset URLs to `index.html` so direct entry into those routes works.
+`/` renders Landing; `/puzzle/:n` loads numbered puzzle `n` directly through the engine boundary and shows its pre-snap field. `/puzzles` and `/how-to-play` remain placeholders. Links use browser history without reloading; browser back returns to the actual origin and unknown paths render Landing. Static hosting must rewrite non-asset URLs to `index.html` so direct entry into those routes works.
 
 `public/puzzles/index.json` is an array of `{ number, date }` entries. Landing selects the newest ISO date on or before today in `America/New_York`, independently of index order, then fetches `/puzzles/<number>.json` and parses it through `loadPuzzle`. The fixtures are synthetic situations and contain no real team or player names. A puzzle includes engine data plus authored `goalText` for the Landing goal row. Field position is yards from the offense's own goal line; spots beyond midfield display as `opp <100 - spot>`. Goal-to-go displays when distance reaches the opposing goal line.
 
 The hero is fixed playbook art, not a preview of the selected formation. Figtree weights 500–900 are self-hosted through `@fontsource/figtree`. Loading, fetch/engine errors and no eligible puzzle retain the wordmark, hero and secondary navigation but hide the play CTA. Stored progress and first-visit behavior belong to #57.
 
 Playwright runs both 390×844 and 1280×800 projects in the pull-request `checks` job. Its tests use browser-controlled time and network interception for date boundaries and unavailable states; the manual [verification map](.agents/skills/verify-omaha/features/README.md) drives the actual committed fixtures.
+
+## Puzzle field and session
+
+The shared `Field` uses `engine.preSnap(puzzle)` in engine yards, projected by `fieldPoint`: center `(201.5, 366)`, downfield y decreasing by 12.8 units per yard, and 31.5 yards across the 403-unit width. The fixed viewBox is `0 0 403 495`. Turf stripes, numbers and hashes follow absolute field position; the yellow line marks the first-down target or replaces the goal line for a touchdown target. A visible end line adds the path, wall and a deterministic seat-hashed crowd, extended across the desktop stage. Field colors never change with theme.
+
+Each numbered puzzle owns an in-memory session: rep 1, 5-man/man protection, no routes, empty read order, Protect selected. The ungated step buttons switch placeholder panels without replacing the draft. Reloading or opening a different puzzle creates a fresh session; no progress is persisted. The phone step bar sits inside the panel below the field, with the spot retained below 900px. Desktop uses a 64px header and 440px named design aside. Header exits, protection controls and protection art belong to #62.
+
+Unit coverage exercises projection, actual pre-snap player mapping and fresh session isolation; browser coverage exercises numbered loading/errors, goal decorations, steps, history, reload, responsive geometry, accessibility and theme invariance. The `checks` CI job runs both suites.
 
 ## Engine contract and stub
 

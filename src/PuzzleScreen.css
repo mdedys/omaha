@@ -1,0 +1,204 @@
+.play-screen {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  background: var(--page);
+  color: var(--ink);
+}
+.play-header {
+  height: 52px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--border);
+}
+.play-brand,
+.play-number {
+  display: none;
+}
+.play-situation {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  white-space: nowrap;
+  text-transform: uppercase;
+}
+.play-situation h1 {
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: 0.01em;
+}
+.play-situation > span {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--muted);
+}
+.play-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--muted);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.play-reps {
+  display: flex;
+  gap: 5px;
+}
+.play-reps i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--border);
+}
+.play-reps .current {
+  background: transparent;
+  border: 2px solid var(--ink);
+}
+.play-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+.play-stage {
+  background: var(--turf-stage);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.puzzle-field {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 403 / 495;
+  flex-shrink: 0;
+}
+.play-panel {
+  padding: 14px 16px 22px;
+  flex: 1;
+}
+.play-steps {
+  display: flex;
+  gap: 8px;
+}
+.play-steps button {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 0 8px;
+  border: 0;
+  border-radius: 2px;
+  background: transparent;
+  color: var(--muted);
+  font:
+    800 12px Figtree,
+    sans-serif;
+  letter-spacing: 0.02em;
+  text-align: left;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.step-bar {
+  width: 100%;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--border);
+}
+.play-steps button[aria-current="step"] {
+  color: var(--ink);
+}
+.play-steps button[aria-current="step"] .step-bar {
+  background: var(--ink);
+}
+.play-steps button:hover {
+  color: var(--ink);
+  background: var(--surface);
+}
+.play-steps button:focus-visible {
+  outline: 3px solid var(--accent-text);
+  outline-offset: 3px;
+}
+.step-placeholder {
+  margin-top: 16px;
+}
+.step-placeholder h2 {
+  font-size: 20px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+.step-placeholder p {
+  margin-top: 10px;
+  color: var(--body-ink);
+  font-size: 16px;
+  line-height: 1.4;
+}
+.step-placeholder .draft-summary {
+  margin-top: 22px;
+  font-size: 14px;
+}
+@media (min-width: 900px) {
+  .play-header {
+    height: 64px;
+    padding: 0 28px;
+    gap: 16px;
+  }
+  .play-brand {
+    display: inline;
+    font-size: 24px;
+    font-weight: 900;
+    letter-spacing: 0.02em;
+  }
+  .play-number {
+    display: inline;
+  }
+  .play-situation {
+    gap: 10px;
+  }
+  .play-situation > span {
+    font-size: 14px;
+  }
+  .play-meta {
+    font-size: 14px;
+    font-weight: 600;
+    gap: 14px;
+  }
+  .play-reps i {
+    width: 9px;
+    height: 9px;
+  }
+  .play-body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 440px;
+  }
+  .play-stage {
+    padding: 24px;
+    min-width: 0;
+  }
+  .puzzle-field {
+    height: min(calc(100svh - 112px), calc((100vw - 488px) * 495 / 403));
+    width: auto;
+    max-width: 100%;
+    border-radius: 10px;
+  }
+  .play-panel {
+    padding: 28px;
+    border-left: 1px solid var(--border);
+  }
+  .play-steps {
+    gap: 10px;
+  }
+  .step-bar {
+    height: 4px;
+  }
+  .step-placeholder {
+    margin-top: 22px;
+  }
+}

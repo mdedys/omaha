@@ -31,6 +31,10 @@ async function fetchJson(path: string, signal: AbortSignal): Promise<unknown> {
   return response.json();
 }
 
+export async function loadNumberedPuzzle(number: number, signal: AbortSignal) {
+  return loadPuzzle(await fetchJson(`/puzzles/${number}.json`, signal));
+}
+
 export async function loadTodaysPuzzle(
   signal: AbortSignal,
 ): Promise<LandingPuzzle | null> {
