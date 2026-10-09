@@ -2,16 +2,18 @@
 
 ## Purpose
 
-Second design step. The player gives every route runner a route from the route tree and a depth. They tap a receiver on the field to select it, pick a route card, and pick 5, 10 or 15 yards. Receivers kept in to block by the Protect step cannot be selected.
+Second design step. The player gives every route runner a route from its route menu, and a depth when the route takes one. They tap a receiver on the field to select it, pick a route card, and pick 5, 10 or 15 yards. Each formation gives every receiver one of three route menus (WR, Inside or RB), so the cards change with the selected receiver. Receivers kept in to block by the Protect step cannot be selected.
 
 ## Prototypes
 
 | File | Shows |
 |---|---|
-| `prototype.html` | Light theme, phone 390×844. Rep 1, 6-man protection (RB blocking). Slot WR selected (gold ring) with **Out** at **10 yds**. Other routes already assigned: Left WR In, TE Corner, Right WR Go, drawn at 45% opacity. Carousel shows five cards: In, Slant, Out (selected), Corner, Go. |
+| `prototype.html` | Light theme, phone 390×844. Rep 1, 6-man protection (RB blocking). Slot WR selected (gold ring) with **Out** at **10 yds**. Other routes already assigned: Left WR In, TE Corner, Right WR Go, drawn at 45% opacity. The carousel holds the slot's Inside menu (12 cards) and shows five of them: Comeback (cut off), Hook, Out (selected), In, Corner (cut off). |
 | `prototype-dark.html` | Same state in the dark theme. |
-| `prototype-desktop.html` | Same state at ≥900px: top bar, field stage, 440px panel with a "Slot WR" label row, all nine route cards in a 3×3 grid, a depth control, the button with an `Enter` hint, and a keyboard hint line. Below 900px it collapses to one column. |
+| `prototype-desktop.html` | Same state at ≥900px: top bar, field stage, 440px panel with a "Slot WR" label row, the slot's 12 route cards in a 4-column grid with key tags, a depth control, the button with an `Enter` hint, and a keyboard hint line. Below 900px it collapses to one column. |
 | `prototype-desktop-dark.html` | Same desktop state in the dark theme. |
+
+The WR and RB menus, a route with no depth and a route with a dimmed depth are not prototyped.
 
 ## Entry and exit
 
@@ -34,13 +36,13 @@ Root, header and field as on Protect: flex column, Cream `#F4EFE4` background, I
 3. **Panel** (`footer`), `flex-grow: 1` (313px), padding `14px 16px 22px`, flex column `space-between`.
    - Top group, flex column, gap 16px:
      - Step bar with `margin-bottom: 2px`.
-     - Route card carousel: wrapper `margin: 0 -16px; overflow: hidden` (full 390px bleed). Inner strip: flex row, gap 10px. The prototype offsets the strip by `margin-left: -55px`, which centers the selected card (Out) at x=195. The first and last visible cards are cut off by the screen edges.
-     - Depth segmented control.
+     - Route card carousel: wrapper `margin: 0 -16px; overflow: hidden` (full 390px bleed). Inner strip: flex row, gap 10px. The prototype offsets the strip by `margin-left: -361px`, which centers the selected card (Out, the sixth card) at x=195. The first and last visible cards are cut off by the screen edges.
+     - Depth segmented control, or the no-depth note in its place.
    - Primary button at the bottom.
 
 ### Desktop (≥900px, `prototype-desktop.html`)
 
-DESIGN.md "Layout › Desktop" and its desktop control variants (58px button, 4px step bars, 3×3 route cards with a filled label band) apply.
+DESIGN.md "Layout › Desktop" and its desktop control variants (58px button, 4px step bars, 4-column route cards with a filled label band) apply.
 
 - **Top bar** 64px, padding `0 28px`, 1px Sand Border bottom, flex `space-between`, gap 16px:
   - `OMAHA` wordmark: 24px 900, `letter-spacing .02em`.
@@ -51,8 +53,8 @@ DESIGN.md "Layout › Desktop" and its desktop control variants (58px button, 4p
   - **Panel** (`aside aria-label="Design the play"`): 1px Sand Border on the left, padding 28px, flex column, gap 22px:
     1. Step bar, desktop variant: gap 10px; bars 4px, radius 2px; labels 12px 800 uppercase, `letter-spacing .03em`, column gap 8px. Done bar Ink Green at 45% opacity; current bar Ink Green, current label Ink Green; inactive bar Sand Border, label Sage Muted.
     2. Receiver label row: flex `space-between`, centered. Left: selected receiver name, 13px 800 uppercase, `letter-spacing .04em`. Right: helper in 13px 700 Sage Muted, sentence case, no letter-spacing.
-    3. Route grid: `repeat(3, minmax(0,1fr))`, gap 10px, all nine cards.
-    4. Depth group: column, gap 10px. Label `Depth` (same style as the receiver label), then the depth control with 42px options.
+    3. Route grid: `repeat(4, minmax(0,1fr))`, gap 10px, the selected receiver's menu in route-tree order. Rows vary with the menu: 3 for WR (11 cards, the last row one short) and Inside (12), 2 for RB (6, the second row two short). Cards fill from the left.
+    4. Depth group: column, gap 10px. Label `Depth` (same style as the receiver label), then the depth control with 42px options, or the no-depth note at the same height.
     5. Spacer (`flex-grow: 1`).
     6. Button group: column, gap 10px. Primary button, then the hint line.
 - **Below 900px:** one column; stage padding 0; field `width: 100%`, `height: auto`, radius 0; panel padding 16px, no left border; top bar padding `0 16px`; spot and puzzle number hidden; keyboard hints (hint line and the `kbd` in the button) hidden.
@@ -61,7 +63,7 @@ DESIGN.md "Layout › Desktop" and its desktop control variants (58px button, 4p
 
 Phone: background Charcoal `#18201C`; text Cream. Header border, inactive step bars, card and track borders: Dark Border `#34403A`. Card and track fill: Dark Surface `#232C27`. Muted text and unselected options: Dark Muted `#A3B1A9`. Done and current step bars Cream; current step label Cream. Selected card border: 2px Cream. Selected depth option: Cream fill, Charcoal text. Field, mini-diagram turf and primary button unchanged.
 
-Desktop: the same mapping, plus top-bar and panel borders Dark Border; spot, meta and the label-row helper Dark Muted; rep pips Dark Border with a Cream ring on the current rep; route cards Dark Surface with a 2px Dark Border; selected card 2px Cream border with a Cream label band and Charcoal label; hint line Dark Muted with `kbd` keys on Dark Surface, 1px Dark Border, Cream text. Links Cream, hover Paper White. Stage, field and mini diagrams unchanged.
+Desktop: the same mapping, plus top-bar and panel borders Dark Border; spot, meta and the label-row helper Dark Muted; rep pips Dark Border with a Cream ring on the current rep; route cards Dark Surface with a 2px Dark Border; key tags Dark Surface, 1px Dark Border, Cream text; dimmed depth options Dark Muted at 40% opacity; no-depth note Dark Muted with a dashed Dark Border; selected card 2px Cream border with a Cream label band and Charcoal label; hint line Dark Muted with `kbd` keys on Dark Surface, 1px Dark Border, Cream text. Links Cream, hover Paper White. Stage, field and mini diagrams unchanged.
 
 ## Content and copy
 
@@ -70,14 +72,16 @@ Desktop: the same mapping, plus top-bar and panel borders Dark Border; spot, met
 | Header | `3rd & 10`, `own 45`, `Down 4 · 1:12` | Puzzle data |
 | Rep dots label | `Rep 1 of 4` | Rep index |
 | Step labels | `1 Protect`, `2 Routes`, `3 Read` | Static |
-| Route card names | `In`, `Slant`, `Out`, `Corner`, `Post`, `Go`, `Curl`, `Flat`, `Wheel` (rendered uppercase), in this order | Static route tree |
+| Route card names | The selected receiver's route menu (rendered uppercase), in route-tree order (Components › Route order) | `routeMenu` from the formation catalog |
 | Depth options | `5 yds`, `10 yds`, `15 yds` (rendered uppercase) | Static |
+| No-depth note | `No depth for the slant` (sentence case; the route name in lowercase) | Built from the selected route |
 | Primary button | `Next: read` (rendered uppercase) | Static |
 | Desktop receiver label | `Slot WR` (rendered uppercase) | Selected receiver's name (formation data) |
 | Desktop helper | `Tap any receiver on the field` | Static |
 | Desktop depth label | `Depth` | Static |
 | Desktop button hint | `Enter` (in a `kbd`) | Static |
-| Desktop hint line | `1`–`9` pick a route · `←` `→` depth (each key in a `kbd`; en dash between 1 and 9; middle dot separator) | Static |
+| Desktop card key tags | `0`–`9`, `D`, `W` (each card's route-tree key) | Static route tree |
+| Desktop hint line | `0`–`9` `D` `W` pick a route · `←` `→` depth (each key in a `kbd`; en dash between 0 and 9; middle dot separator) | Static |
 | Desktop puzzle number | `#148` | Puzzle data |
 | Route listbox label | `Routes for the slot receiver` | Built from the selected receiver |
 | Depth group label | `Out route depth` | Built from the selected route |
@@ -88,25 +92,50 @@ Receiver names used across the design steps: `Left WR`, `TE`, `Slot WR`, `Right 
 ## Components
 
 - **Step bar** (DESIGN.md "Step bar"). Phone: as on Protect. Protect is done (Ink Green bar, Sage Muted label), Routes is current (Ink Green bar and label), Read is inactive.
+- **Route order.** Every menu shows its routes in one route-tree order, so a route keeps its place and its key in every menu. The digits follow the classic coaching route tree, with Hook in the Curl's slot; Drag and Wheel have no tree number and come last.
+
+    | Key | Route | WR | Inside | RB |
+    |---|---|---|---|---|
+    | `0` | Hitch | ✓ | ✓ | |
+    | `1` | Flat | ✓ | ✓ | ✓ |
+    | `2` | Slant | ✓ | ✓ | |
+    | `3` | Comeback | ✓ | ✓ | |
+    | `4` | Hook | ✓ | ✓ | ✓ |
+    | `5` | Out | ✓ | ✓ | ✓ |
+    | `6` | In | ✓ | ✓ | ✓ |
+    | `7` | Corner | ✓ | ✓ | |
+    | `8` | Post | ✓ | ✓ | |
+    | `9` | Go (WR) / Seam (Inside, RB) | ✓ | ✓ | ✓ |
+    | `D` | Drag | ✓ | ✓ | |
+    | `W` | Wheel | | ✓ | ✓ |
+
+    Menus: WR 11 cards, Inside 12, RB 6 (Flat, Hook, Out, In, Seam, Wheel). Go and Seam are one path under two names; the menu decides which name the card shows.
 - **Route card carousel** (DESIGN.md "Route card carousel", `route-card`).
   - Phone card: 92×88px, `flex-shrink: 0`, `box-sizing: border-box`, radius 12px, 1px Sand Border, Paper White, `overflow: hidden`, flex column. Diagram SVG on top (90×60 inside the 1px border; 88×60 when selected, because of the 2px border), then a label area that fills the rest and centers the name: Figtree 800 13px uppercase, Ink Green. Selected: 2px Ink Green border.
-  - Desktop card: grid cell width, radius 10px, **2px** Sand Border, diagram SVG `width: 100%`, label band 34px tall. Selected: Ink Green border, and the label band is filled Ink Green with Cream text.
-  - Mini diagram (92×60 units): turf rect `#0F3A27`; line of scrimmage `M0 54H92`, stroke `#3B8EEA` at 60% opacity, width 1; receiver at (46, 54), r=4.5, fill `#0E2219`, stroke = the selected receiver's player color, width 1.8; route path with no fill, stroke = the receiver's route color, width 2, round caps and joins. Paths from the prototypes:
+  - Phone carousel: holds only the selected receiver's menu (6 to 12 cards), uses horizontal scroll snapping to card centers, and scrolls the selected card to the center when the selected receiver changes. With no route assigned it scrolls to the start.
+  - Desktop card: grid cell width (about 88px in the 440px panel), radius 10px, **2px** Sand Border, `position: relative`, diagram SVG `width: 100%`, label band 34px tall. Selected: Ink Green border, and the label band is filled Ink Green with Cream text. `COMEBACK`, the longest name, fits the band at 13px.
+  - Desktop key tag: a `kbd` absolutely placed 5px from the card's top-left corner, over the diagram: Figtree 700 11px, line-height 1, padding `2px 5px`, radius 5px (the hint-line `kbd` values), Paper White, 1px Sand Border, Ink Green text. Hidden below 900px with the other keyboard hints.
+  - Mini diagram (92×60 units): turf rect `#0F3A27`; line of scrimmage `M0 54H92`, stroke `#3B8EEA` at 60% opacity, width 1; receiver at (46, 54), r=4.5, fill `#0E2219`, stroke = the selected receiver's player color, width 1.8; route path with no fill, stroke = the receiver's route color, width 2, round caps and joins. Paths for a receiver on the right side of the formation (inside is left):
 
     | Route | Path |
     |---|---|
-    | In | `M46 50V28H22M27 23.5L22 28L27 32.5` |
-    | Slant | `M46 50V44L30 22M30.1 26.5L30 22L34.3 23.5` |
+    | Hitch | `M46 50V38L40 44M44.4 43.2L40 44L40.8 39.6` |
+    | Flat | `M46 50V47H72M67 42.5L72 47L67 51.5` |
+    | Slant | `M46 50V45L24 23M28.4 23.8L24 23L24.8 27.4` |
+    | Comeback | `M46 50V28L54 36M49.6 35.2L54 36L53.2 31.6` |
+    | Hook | `M46 50V26L40 33M44.4 32.3L40 33L40.1 28.5` |
     | Out | `M46 50V28H70M65 23.5L70 28L65 32.5` |
+    | In | `M46 50V28H22M27 23.5L22 28L27 32.5` |
     | Corner | `M46 50V30L64 12M59.6 12.8L64 12L63.2 16.4` |
     | Post | `M46 50V30L28 12M32.4 12.8L28 12L28.8 16.4` |
-    | Go | `M46 50V8M41.5 12.5L46 8L50.5 12.5` |
-    | Curl | `M46 50V26L40 31M44.5 30.6L40 31L41.2 26.7` |
-    | Flat | `M46 50V44H72M67 39.5L72 44L67 48.5` |
-    | Wheel | `M46 50Q70 46 70 12M65.5 16.5L70 12L74.5 16.5` |
+    | Go / Seam | `M46 50V8M41.5 12.5L46 8L50.5 12.5` |
+    | Drag | `M46 50V43H18M23 38.5L18 43L23 47.5` |
+    | Wheel | `M46 50V47H68V12M63.5 16.5L68 12L72.5 16.5` |
 
-    The diagrams are drawn for a receiver on the right side of the formation (Out goes right, In goes left). Mini-diagram arrowheads are 6–7 units (DESIGN.md "Field glyphs › Routes").
-- **Segmented control** (`segmented-control`) for depth. Track as on Protect (Paper White, 1px Sand Border, radius 12px, padding 3px, gap 3px). Options: phone 38px tall, desktop 42px; Figtree 800 14px uppercase, Sage Muted, radius 9px. Selected: Ink Green fill, Cream text.
+    The diagrams are icons of each route's shape, not drawn to scale and the same at every depth; the Hitch is drawn deeper than its 0–1 yd so it reads. For a receiver on the left side, mirror the diagram across x=46 (`scale(-1 1)` about the center), so In always points toward the ball. RB cards move the line of scrimmage up to y=42 and draw the RB at (36, 54); each path starts with the release `M39 51L46 42`, then continues with the commands after `M46 50` shifted up 12 units. Mini-diagram arrowheads are 6–7 units (DESIGN.md "Field glyphs › Routes").
+- **Segmented control** (`segmented-control`) for depth. Track as on Protect (Paper White, 1px Sand Border, radius 12px, padding 3px, gap 3px). Options: phone 38px tall, desktop 42px; Figtree 800 14px uppercase, Sage Muted, radius 9px. Selected: Ink Green fill, Cream text. The control always shows all three depths, so 10 yds stays in the middle:
+  - **Unavailable depth** (5 yds on Corner, Post and Comeback; any depth `availableDepths` drops near the goal line): Sage Muted at 40% opacity, `aria-disabled="true"`, not a hit target, skipped by the arrow keys.
+  - **No-depth note** (Slant, Drag, Hitch, Go/Seam, Flat, Wheel): the control is replaced by a box of the same outer height (46px phone, 50px desktop), radius 12px, transparent, 1px **dashed** Sand Border, centering one line in Figtree 600 14px Sage Muted, sentence case: `No depth for the slant`. It is plain text, not a control, and the panel never changes height.
 - **Primary button** (`button-primary`). Phone: 52px, radius 14px, Snap Orange, white Figtree 900 19px uppercase (DESIGN.md `typography.button`; the phone prototypes still show 16px, follow DESIGN.md). Hover/pressed Snap Orange Deep `#C94B20`. Desktop variant: 58px tall, radius 10px, Figtree 900 19px, full width, flex centered with gap 12px, with a `kbd` (`Enter`): 700 11px, padding `3px 7px`, radius 5px, background `rgba(255,255,255,.22)`, text inherits.
 - **Desktop hint line**: 12px 600 Sage Muted, centered, margin 0. Its `kbd`s: Paper White, 1px Sand Border, Ink Green text, 700 11px, padding `3px 7px`, radius 5px.
 - **Field** layers in paint order:
@@ -129,7 +158,10 @@ Receiver names used across the design steps: `Left WR`, `TE`, `Slot WR`, `Right 
 | State | Description |
 |---|---|
 | **Receiver selected, route assigned** (prototyped) | Gold ring on the receiver; its route at 2.4px; its card selected and scrolled to the center (phone); its depth selected; other assigned routes at 45%. |
-| **Receiver selected, no route yet** | Not prototyped. Gold ring on the receiver; no route drawn for it; no card selected. What the depth control shows is open. |
+| **Receiver selected, no route yet** | Not prototyped. Gold ring on the receiver; no route drawn for it; no card selected; carousel scrolled to the start. What the depth control shows is open. |
+| **WR, Inside or RB menu** | Not prototyped beyond Inside. The cards are the receiver's menu (11, 12 or 6) in route-tree order; the RB menu names Go as Seam. |
+| **Route with no depth** | Not prototyped. The no-depth note replaces the depth control at the same height. |
+| **Depth partly unavailable** | Not prototyped. Corner, Post and Comeback dim 5 yds; near the goal line, any depth whose break lands past the end-line margin is dimmed too. |
 | **No receiver selected** | Not prototyped. No gold ring; no card selected; no route at 2.4px. Whether this state can happen (or one receiver is auto-selected on entry), and what the carousel and depth control show, are open questions. Desktop has the helper `Tap any receiver on the field` for this purpose. |
 | **Unassigned route runner** | No route line is drawn for it. |
 | **Kept-in receiver** (RB in 6-man; RB and TE in 7-man) | Drawn normally, with its block line. It cannot be selected: tapping it does nothing. |
@@ -141,14 +173,17 @@ Receiver names used across the design steps: `Left WR`, `TE`, `Slot WR`, `Right 
 ## Interactions
 
 - **Tap a receiver** on the field: selects it if it is a route runner. Moves the gold ring, sets that route to 2.4px, drops the previously selected route to 45%, updates the cards (diagrams in the receiver's colors, its route selected) and the depth control. Receivers are 17 units across; give each selectable receiver a hit circle of at least r=23 units (about 44px on the 390px phone field). Where hit circles overlap, the nearest receiver center wins. The QB, linemen, defenders and kept-in receivers are not hit targets.
-- **Tap a route card**: assigns that route to the selected receiver and redraws it on the field.
-- **Swipe the carousel** horizontally (phone) to see all nine cards.
-- **Tap a depth option**: sets the selected receiver's break depth and redraws the route.
+- **Tap a route card**: assigns that route to the selected receiver and redraws it on the field. Depth on the new route:
+  - A route with no depth drops the depth.
+  - From no depth (or no route) to a route with a depth: 10 yds, or the available depth nearest 10 (the shallower one on a tie).
+  - From one route with a depth to another: the current depth if the new route allows it, else the nearest available depth.
+- **Swipe the carousel** horizontally (phone) to see the rest of the menu. It snaps to cards.
+- **Tap a depth option**: sets the selected receiver's break depth and redraws the route. Dimmed options do nothing.
 - **Tap Next: read**: go to Read.
 - **Tap "1 Protect" or "3 Read"** in the step bar: open that step. Never blocked.
 - **Desktop keyboard** (proposal; as shown in the hint line and button):
-  - `1`–`9`: pick a route; numbers follow grid order (1 In, 2 Slant, 3 Out, 4 Corner, 5 Post, 6 Go, 7 Curl, 8 Flat, 9 Wheel).
-  - `←` `→`: change depth.
+  - `0`–`9`, `D`, `W`: pick a route by its route-tree key (Components › Route order). The keys never change between receivers; a key for a route outside the selected receiver's menu does nothing.
+  - `←` `→`: change depth, skipping unavailable depths; nothing happens at either end, or for a route with no depth.
   - `Enter`: Next: read.
 - **Focus order**: step bar (Protect, Read) → selectable receivers on the field, left to right → route cards (listbox) → depth group → Next: read.
 
@@ -160,7 +195,8 @@ None.
 
 - Field SVG: `role="img"` with an `aria-label` that names the selected receiver, its route and its depth (example in Content and copy). Selectable receivers also need to be reachable and selectable by keyboard and screen reader, for example as focusable elements with `role="button"`, `aria-pressed` and a name such as "Slot WR, Out, 10 yards".
 - Route cards: `role="listbox"` with `aria-label="Routes for the <receiver>"`; each card `role="option"` with `aria-selected`; diagrams `aria-hidden`.
-- Depth: `role="radiogroup"` with `aria-label="<Route> route depth"`; options `role="radio"` with `aria-checked`.
+- Route cards on desktop carry `aria-keyshortcuts` with their key; the key tags are `aria-hidden` text inside the card.
+- Depth: `role="radiogroup"` with `aria-label="<Route> route depth"`; options `role="radio"` with `aria-checked`, and `aria-disabled="true"` on unavailable depths. The no-depth note is plain text and is read with the route (the field `aria-label` names no depth, e.g. `the slot receiver's slant`).
 - Touch targets (DESIGN.md "Layout › Touch targets"): at least 44×44px. Phone cards are 92×88. Depth options are 38px tall, so extend their hit area to at least 44px without changing the look. Receivers get a hit circle of at least r=23 SVG units (above).
 - Gold ring on turf: 6.7:1. The selected route is also marked by stroke width (2.4 vs 2 at 45%), not by color alone.
 - Contrast figures for text as on Protect. White on Snap Orange is 3.7:1; the 19px 900 button label counts as large text and passes AA.
@@ -168,25 +204,21 @@ None.
 
 ## Data
 
-- **Puzzle JSON:** header values; puzzle number (desktop); formation (role, display name, side of the formation and x/y for each eligible receiver); defense pre-snap alignment.
-- **Design state:** `blockers` and `lineCall` from Protect (these decide the route runners); `routes`: per route-runner receiver id, `{ route: In | Slant | Out | Corner | Post | Go | Curl | Flat | Wheel, depth: 5 | 10 | 15 }`. Kept between reps.
+- **Puzzle JSON:** header values; puzzle number (desktop); formation and flip (the catalog gives each letter its display name, side and route menu); defense pre-snap alignment.
+- **Design state:** `protection` from Protect (decides the route runners); `routes`: per route-runner letter, a `RouteCall` (game engine `contracts.md` › Design): `{ route: In | Out | Hook, depth: 5 | 10 | 15 }`, `{ route: Corner | Post | Comeback, depth: 10 | 15 }`, or `{ route: Slant | Drag | Hitch | Go | Seam | Flat | Wheel }` with no depth. Kept between reps.
+- **Engine helpers:** `routeMenu(puzzle, letter)` gives the cards; `availableDepths(puzzle, letter, route)` gives the enabled depth options (empty means the no-depth note); `routePath` draws the field route.
 - **UI state:** `selectedReceiverId` (route runners only).
-- **Route tree definition:** field geometry for each route at each depth for a receiver at any alignment and side, shared with the simulation so the drawn route matches the simulated one.
 - **Player palette:** ring color and route color per receiver letter.
 
 ## Open questions
 
 - Which receiver, if any, is selected when Routes opens (first visit, rep 2+, and returning from Read).
 - What the carousel and depth control show with no receiver selected, or with a selected receiver that has no route.
-- The default depth when a route is first picked.
-- Whether depth applies to every route. Go, Wheel and Flat may not use 5/10/15; if a route has no depth, what does the depth control show?
-- Whether the card diagrams (and route geometry) mirror for receivers on the left side of the formation. The prototype only shows the right-side slot WR.
 - Whether the phone screen gets a receiver name row like the desktop `Slot WR` label. On phone the selection is shown only by the gold ring.
 - Whether tapping a kept-in receiver gives any feedback (for example a hint that the receiver is blocking).
 - Whether picking a route moves the selection to the next unassigned receiver.
 - Whether a route can be cleared once assigned.
-- Carousel behavior: scroll snapping, and whether it scrolls the selected card to the center when the selection changes.
-- Desktop keyboard: what `←`/`→` do at 5 and 15 yds; how `←`/`→` and `Enter` interact with focus inside the route listbox and the depth radio group (which use arrow keys and Enter themselves); how to select a receiver from the keyboard (no shortcut is shown).
+- Desktop keyboard: how `←`/`→` and `Enter` interact with focus inside the route listbox and the depth radio group (which use arrow keys and Enter themselves); how to select a receiver from the keyboard (no shortcut is shown).
 - Step bar: how the steps show they can be tapped (prototypes draw it as static).
 
 ## Acceptance criteria
@@ -194,16 +226,16 @@ None.
 - [ ] Phone layout matches `prototype.html` at 390×844: 52px header, 390×479 field, panel padding 14/16/22, gap 16px, step bar margin-bottom 2px.
 - [ ] Tapping a route-runner receiver moves the gold ring (r=14, `#F4B13E`, 1.6) to it and draws its route at 2.4px; all other assigned routes render at 45% opacity.
 - [ ] Kept-in receivers (per blocker count) cannot be selected and keep their block line.
-- [ ] The phone carousel shows 92×88 cards with the mini diagram in the selected receiver's colors; the selected card has a 2px Ink Green border; the strip scrolls horizontally and bleeds to both screen edges.
-- [ ] All nine routes are available in the order In, Slant, Out, Corner, Post, Go, Curl, Flat, Wheel, using the diagram paths in this spec.
-- [ ] Picking a card assigns the route; picking a depth moves the break to y = 366 − depth × 12.8 on the field.
-- [ ] The depth control shows `5 yds`, `10 yds`, `15 yds` with 38px options (desktop 42px).
+- [ ] The phone carousel shows 92×88 cards with the mini diagram in the selected receiver's colors; the selected card has a 2px Ink Green border; the strip scrolls horizontally, snaps to cards, bleeds to both screen edges and centers the selected card when the receiver changes.
+- [ ] The cards are exactly the selected receiver's `routeMenu` (WR 11, Inside 12, RB 6) in route-tree order, with Go named Seam on Inside and RB menus, using the diagram paths in this spec; left-side receivers get mirrored diagrams and RB cards start from the backfield.
+- [ ] Picking a card assigns the route and sets its depth by the rules in Interactions; picking a depth moves the break to y = 366 − depth × 12.8 on the field.
+- [ ] The depth control shows `5 yds`, `10 yds`, `15 yds` with 38px options (desktop 42px); depths missing from `availableDepths` are dimmed and inert; a route with no depth shows `No depth for the <route>` in a dashed box of the same height.
 - [ ] `Next: read` is always enabled (Snap Orange, 52px, 19px label) and opens Read, even with unassigned route runners.
 - [ ] Tapping "1 Protect" or "3 Read" in the step bar opens that step without any gating.
 - [ ] Routes are drawn from the design state at the chosen depth (10 yds breaks at y=238), not copied from prototype paths.
 - [ ] The slide arrow is not drawn on this screen; the zigzag and RB block line are.
-- [ ] Desktop (≥900px) matches `prototype-desktop.html`: 64px top bar, `#0C3322` stage, 440px panel, 3×3 grid, `Slot WR` label row with `Tap any receiver on the field`, 58px button with `Enter`, hint line `1–9 pick a route · ← → depth`.
-- [ ] On desktop (proposed shortcuts), keys `1`–`9` pick routes in grid order, `←`/`→` change depth and `Enter` triggers Next: read.
+- [ ] Desktop (≥900px) matches `prototype-desktop.html`: 64px top bar, `#0C3322` stage, 440px panel, 4-column grid with key tags, `Slot WR` label row with `Tap any receiver on the field`, 58px button with `Enter`, hint line `0–9 D W pick a route · ← → depth`.
+- [ ] On desktop (proposed shortcuts), keys `0`–`9`, `D` and `W` pick routes by route-tree key and do nothing for routes outside the menu, `←`/`→` change depth skipping unavailable ones, and `Enter` triggers Next: read.
 - [ ] Below 900px the desktop layout collapses to one column and hides the hints, the spot and the puzzle number.
 - [ ] Selectable receivers have hit areas of at least 44px on phone.
 - [ ] Route listbox, depth radio group and receivers are operable by keyboard and announced with the receiver, route and depth.

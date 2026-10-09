@@ -58,7 +58,7 @@ These are settled for the UX, and specs assume them. Game rules in this table (p
 |---|---|
 | Formation and defense | Set by the puzzle. The player never picks a formation. |
 | Protection | Blocker count (5-, 6-, 7-man) and line call (slide left, man, slide right). 6-man always keeps the RB in; 7-man also keeps the TE and is hidden when there is no TE or the TE is split out. |
-| Routes | Tap a receiver on the field, pick a route from a carousel, pick a depth from 5/10/15 yards. No freehand drawing. |
+| Routes | Tap a receiver on the field, pick a route from a carousel of that receiver's route menu (WR, Inside or RB) in route-tree order, then pick a depth from 5/10/15 yards when the route takes one. Unavailable depths dim in place; a route with no depth shows a note instead of the control. Desktop keys follow the route tree (`0`–`9`, `D`, `W`). No freehand drawing. |
 | Read | The player sets a read order by tapping receivers in turn: a first read, then up to two more. The QB throws only to a receiver in the order; a read switched to blocking leaves it. |
 | Snap unlock | Protection starts on 5-man, man. Snap unlocks once every route runner has a route and a first read is picked. |
 | Between reps | Run It Back reopens the previous design for editing. |
