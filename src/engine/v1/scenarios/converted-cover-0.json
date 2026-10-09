@@ -1,0 +1,110 @@
+{
+  "puzzle": {
+    "engine": 1,
+    "number": 19,
+    "date": "2026-10-11",
+    "situation": {
+      "down": 3,
+      "distance": 10,
+      "spot": 45,
+      "hash": "middle",
+      "scoreDiff": -4,
+      "quarter": 4,
+      "clock": "1:12"
+    },
+    "goal": "first-down",
+    "briefing": "Third and ten. Zero coverage, six coming.",
+    "formation": {
+      "id": "gun-trey",
+      "flip": false
+    },
+    "defense": [
+      {
+        "id": "DL1",
+        "at": [-3.6, 1],
+        "assignment": "rush"
+      },
+      {
+        "id": "DL2",
+        "at": [-1, 1],
+        "assignment": "rush"
+      },
+      {
+        "id": "DL3",
+        "at": [1.2, 1],
+        "assignment": "rush"
+      },
+      {
+        "id": "DL4",
+        "at": [3.9, 1],
+        "assignment": "rush"
+      },
+      {
+        "id": "LB1",
+        "at": [0, 4.5],
+        "assignment": "rush"
+      },
+      {
+        "id": "CB1",
+        "at": [-11.75, 5],
+        "assignment": "man X"
+      },
+      {
+        "id": "CB2",
+        "at": [11.75, 5],
+        "assignment": "man Z"
+      },
+      {
+        "id": "NB",
+        "at": [8.125, 3],
+        "assignment": "man H"
+      },
+      {
+        "id": "LB2",
+        "at": [4.5, 4.5],
+        "assignment": "man Y"
+      },
+      {
+        "id": "LB3",
+        "at": [-3, 4.5],
+        "assignment": "man RB"
+      },
+      {
+        "id": "S2",
+        "at": [0, 10],
+        "assignment": "rush"
+      }
+    ],
+    "coverageName": "Cover 0",
+    "prosResult": "Converted"
+  },
+  "design": {
+    "protection": {
+      "blockers": 6,
+      "lineCall": "slide-right"
+    },
+    "routes": {
+      "X": {
+        "route": "In",
+        "depth": 10
+      },
+      "Z": {
+        "route": "Slant"
+      },
+      "Y": {
+        "route": "In",
+        "depth": 5
+      },
+      "H": {
+        "route": "Seam"
+      }
+    },
+    "readOrder": ["Y"]
+  },
+  "expect": {
+    "cause": "converted",
+    "decisive": null,
+    "yards": 12,
+    "target": "Y"
+  }
+}

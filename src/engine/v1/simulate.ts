@@ -18,6 +18,13 @@ import {
 } from "../contract";
 import { EngineError } from "../error";
 import {
+  chooseHeading,
+  headingVector,
+  interceptPoint,
+  staysInside,
+  type Heading,
+} from "./afterCatch";
+import {
   ballX,
   defenderIds,
   formations,
@@ -27,7 +34,7 @@ import {
   protections,
 } from "./formations";
 import { linemen, nearestGap, protect, type Blocker } from "./protection";
-import { routePath, routeTrack } from "./routes";
+import { outsideSign, routePath, routeTrack } from "./routes";
 import * as t from "./tuning";
 import { direction, distance, segmentDistance, stepToward } from "./vec";
 import { inZone, zoneCatalog, type Zone } from "./zones";
@@ -53,6 +60,8 @@ export type LogEvent = { tick: number } & (
       over: Letter[];
     }
   | { kind: "carry"; defender: DefenderId; letter: Letter }
+  | { kind: "read-next"; from: Letter; to: Letter }
+  | { kind: "cut"; letter: Letter; heading: Heading }
 );
 type Rush =
   | { kind: "blocked"; engage: Vec; releaseTick: number }
@@ -80,11 +89,19 @@ type ZonePlay = { zone: Zone; next: Letter | null; reactUntil: number } & (
 );
 type Read = { letter: Letter; track: Vec[]; throwTick: number };
 type Pass = { read: Read | null; forcedBy?: ForcedBy };
+// The ball carrier from the catch, his heading and the tick his cut hold ends.
+type Run = {
+  letter: Letter;
+  catchTick: number;
+  heading: Heading;
+  holdUntil: number;
+};
 type Ending =
   | { kind: "sack"; rusher: DefenderId }
   | { kind: "throwaway" }
-  | { kind: "catch"; spot: Vec }
-  | { kind: "breakup" | "interception"; defender: DefenderId };
+  | { kind: "breakup" | "interception"; defender: DefenderId }
+  | { kind: "tackle"; defender: DefenderId; spot: Vec }
+  | { kind: "touchdown" };
 
 const ticks = (seconds: number) => Math.round(seconds / TICK_SECONDS);
 const capTicks = ticks(t.REP_CAP_SECONDS);
@@ -92,6 +109,7 @@ const holdTicks = ticks(t.HOLD_TIME_SECONDS);
 const reactTicks = ticks(t.REACTION_DELAY_SECONDS);
 const readTicks = ticks(t.READ_TIME_SECONDS);
 const rubTicks = ticks(t.RUB_TIME_SECONDS);
+const cutHoldTicks = ticks(t.CUT_HOLD_SECONDS);
 const ballStep = t.BALL_SPEED_YARDS_PER_SECOND * TICK_SECONDS;
 // The cosine of a 45° turn, with room for rounding in headings taken from
 // track steps, since route turns are exact multiples of 45°.
@@ -188,6 +206,8 @@ export function simulateWithLog(
   const snapX = ballX(puzzle);
   const gaps = gapPoints(puzzle);
   const setSpot = { x: snapX, y: -t.QB_SET_DEPTH_YARDS };
+  const lineToGain = puzzle.situation.distance;
+  const goalLine = t.FIELD_LENGTH_YARDS - puzzle.situation.spot;
   const log: LogEvent[] = [];
 
   const planned = new Map(
@@ -320,6 +340,7 @@ export function simulateWithLog(
   let ball: Rep["ball"] = null;
   let forcedBy: ForcedBy | undefined;
   const breakers = new Set<DefenderId>();
+  let run: Run | null = null;
   let ending: Ending | null = null;
   let endTick = 0;
 
@@ -506,6 +527,12 @@ export function simulateWithLog(
         if (readIndex === order.length - 1) return outOfReads(tick);
         reads.push({ letter: read.letter, fromTick: readFrom, toTick: tick });
         readIndex++;
+        log.push({
+          tick,
+          kind: "read-next",
+          from: read.letter,
+          to: order[readIndex].letter,
+        });
         readFrom = tick;
         continue;
       }
@@ -548,25 +575,80 @@ export function simulateWithLog(
         };
     }
   };
-  // The nearest defender within the contest radius makes the play, ties by
-  // the fixed defender order.
-  const arrival = (to: Vec, target: Letter, tick: number): Ending => {
-    let maker: DefenderId | null = null;
+  // The nearest defender within the radius of a spot, ties by the fixed
+  // defender order.
+  const nearestWithin = (
+    spot: Vec,
+    radius: number,
+    tick: number,
+  ): DefenderId | null => {
+    let found: DefenderId | null = null;
     let nearest = Infinity;
     for (const id of defenderIds.filter((each) => defenders.includes(each))) {
-      const d = distance(at(id, tick), to);
-      if (d <= t.CONTEST_RADIUS_YARDS && d < nearest) {
+      const d = distance(at(id, tick), spot);
+      if (d <= radius && d < nearest) {
         nearest = d;
-        maker = id;
+        found = id;
       }
     }
-    if (maker === null) return { kind: "catch", spot: to };
+    return found;
+  };
+  // The nearest defender within the contest radius makes the play; with
+  // none, the ball is caught.
+  const arrival = (to: Vec, target: Letter, tick: number): Ending | null => {
+    const maker = nearestWithin(to, t.CONTEST_RADIUS_YARDS, tick);
+    if (maker === null) return null;
     const first =
       distance(at(maker, tick - 1), to) < distance(at(target, tick - 1), to);
     return {
       kind: breakers.has(maker) && first ? "interception" : "breakup",
       defender: maker,
     };
+  };
+  const moverAt = (id: DefenderId, tick: number) => ({
+    at: at(id, tick),
+    step: roleSpeed[role(id)] * TICK_SECONDS,
+  });
+  // He runs at the target line, the line to gain until he reaches it and
+  // then the goal line, holding each new heading for the cut hold unless it
+  // would cross the boundary margin.
+  const carry = (carrier: Run, tick: number): Vec => {
+    const prev = tick - 1;
+    const me = {
+      at: at(carrier.letter, prev),
+      step: letterSpeed(puzzle, carrier.letter) * TICK_SECONDS,
+    };
+    const inside = -outsideSign(puzzle, carrier.letter);
+    const held =
+      tick < carrier.holdUntil &&
+      staysInside(me, headingVector(carrier.heading, inside));
+    const heading = held
+      ? carrier.heading
+      : chooseHeading(
+          me,
+          inside,
+          defenders.map((id) => moverAt(id, prev)),
+          me.at.y >= lineToGain ? goalLine : lineToGain,
+        );
+    if (heading !== carrier.heading) {
+      log.push({ tick, kind: "cut", letter: carrier.letter, heading });
+      carrier.heading = heading;
+      carrier.holdUntil = tick + cutHoldTicks;
+    }
+    const dir = headingVector(heading, inside);
+    return { x: me.at.x + dir.x * me.step, y: me.at.y + dir.y * me.step };
+  };
+  // A pursuer aims where he would meet the carrier at the carrier's velocity
+  // over the last two snapshots.
+  const pursue = (id: DefenderId, carrier: Letter, tick: number): Vec => {
+    const prev = tick - 1;
+    const now = at(carrier, prev);
+    const before = at(carrier, prev - 1);
+    return interceptPoint(
+      now,
+      { x: now.x - before.x, y: now.y - before.y },
+      moverAt(id, prev),
+    );
   };
 
   for (let tick = 1; tick <= capTicks && ending === null; tick++) {
@@ -646,19 +728,35 @@ export function simulateWithLog(
     for (const letter of letters) {
       const route = planned.get(letter);
       tracks[letter].push(
-        route !== undefined
-          ? route.track[tick]
-          : stepToward(
-              at(letter, prev),
-              blockerTargets.get(letter) ?? at(letter, prev),
-              letterSpeed(puzzle, letter) * TICK_SECONDS,
-            ),
+        run?.letter === letter
+          ? carry(run, tick)
+          : route !== undefined
+            ? route.track[tick]
+            : stepToward(
+                at(letter, prev),
+                blockerTargets.get(letter) ?? at(letter, prev),
+                letterSpeed(puzzle, letter) * TICK_SECONDS,
+              ),
       );
     }
     for (const id of defenders) {
       const me = at(id, prev);
       const step = roleSpeed[role(id)] * TICK_SECONDS;
-      const point = breakers.has(id) ? ball?.to : undefined;
+      // Defenders who broke on the ball pursue from the catch, the rest
+      // after the reaction delay.
+      const carrier =
+        run !== null &&
+        (breakers.has(id)
+          ? tick > run.catchTick
+          : tick >= run.catchTick + reactTicks)
+          ? run.letter
+          : null;
+      const point =
+        carrier !== null
+          ? pursue(id, carrier, tick)
+          : breakers.has(id)
+            ? ball?.to
+            : undefined;
       const rush = rushes.get(id);
       const chase = chases.get(id);
       const play = zonePlays.get(id);
@@ -712,10 +810,31 @@ export function simulateWithLog(
         ending = { kind: "sack", rusher: sacker };
       }
     } else if (tick === ball.arriveTick) {
-      ending =
-        ball.target === null
-          ? { kind: "throwaway" }
-          : arrival(ball.to, ball.target, tick);
+      if (ball.target === null) ending = { kind: "throwaway" };
+      else {
+        ending = arrival(ball.to, ball.target, tick);
+        if (ending === null) {
+          run = {
+            letter: ball.target,
+            catchTick: tick,
+            heading: "upfield",
+            holdUntil: tick,
+          };
+          // Blocks end at the catch.
+          for (const rush of rushes.values())
+            if (rush.kind === "blocked")
+              rush.releaseTick = Math.min(rush.releaseTick, tick);
+        }
+      }
+    }
+    if (run !== null) {
+      const spot = at(run.letter, tick);
+      if (spot.y >= goalLine) ending = { kind: "touchdown" };
+      else {
+        const tackler = nearestWithin(spot, t.TACKLE_RADIUS_YARDS, tick);
+        if (tackler !== null)
+          ending = { kind: "tackle", defender: tackler, spot };
+      }
     }
   }
   if (ending === null) throw new EngineError("Rep reached the 20 s cap");
@@ -800,16 +919,25 @@ export function simulateWithLog(
           "interception-forced",
           ending.defender,
         );
-      case "catch": {
-        // The rep ends on the catch, so it converts only where it is caught.
-        const yards = Math.trunc(ending.spot.y);
-        const verdict =
-          yards >= puzzle.situation.distance ? "converted" : "short";
+      case "touchdown":
         return {
-          outcome: { kind: "completion", yards },
-          verdict,
-          cause: { code: verdict, decisive: null, thrownTo },
+          outcome: { kind: "completion", yards: Math.trunc(goalLine) },
+          verdict: "converted",
+          cause: { code: "touchdown", decisive: null, thrownTo },
         };
+      case "tackle": {
+        const yards = Math.trunc(ending.spot.y);
+        return yards >= lineToGain
+          ? {
+              outcome: { kind: "completion", yards },
+              verdict: "converted",
+              cause: { code: "converted", decisive: null, thrownTo },
+            }
+          : {
+              outcome: { kind: "completion", yards },
+              verdict: "short",
+              cause: { code: "short", decisive: ending.defender, thrownTo },
+            };
       }
     }
   })();
@@ -817,7 +945,8 @@ export function simulateWithLog(
     endTick,
     tracks,
     ball,
-    carrier: null,
+    carrier:
+      run === null ? null : { letter: run.letter, fromTick: run.catchTick },
     reads,
     thrownToRead: thrownTo === null ? null : design.readOrder.indexOf(thrownTo),
     ...result,
