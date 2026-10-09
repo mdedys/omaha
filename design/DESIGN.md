@@ -32,6 +32,8 @@ colors:
   turf: "#0F3A27"
   turf-stripe: "#113F2A"
   turf-stage: "#0C3322"
+  end-zone: "#6E2F16"
+  sideline-path: "#454B47"
   field-line: "#D5E0D9"
   field-number: "#A7B2AC"
   first-down-line: "#E2C044"
@@ -281,9 +283,14 @@ Every page has a dark prototype (`prototype-dark.html`, `prototype-desktop-dark.
 - **Out of reps:** the charcoal panel matches the dark page, so in dark mode it adds the orange ✕ outcome tile beside a 44px headline to keep it reading as the end of the puzzle.
 
 ### Field palette
-- **Turf** (#0F3A27) with **Turf Stripe** (#113F2A) bands every 5 yards; desktop stage behind the field is #0C3322.
-- **Field Line** (#D5E0D9 at 45% opacity) yard lines and hash marks; **Field Number** (#A7B2AC at 80%) yard numbers.
+- **Turf** (#0F3A27) with **Turf Stripe** (#113F2A) bands every 5 yards, counted from the nearer goal line: 0–5 is Turf, 5–10 Turf Stripe, and so on to the 45–50 stripe. **Turf Stage** (#0C3322) is the desktop stage beside the field.
+- **Field Line** (#D5E0D9 at 45% opacity) yard lines, sidelines and hash marks; **Field Number** (#A7B2AC at 80%) yard numbers at the 10s only. Nothing marks the goal line itself: no "G", no direction arrows, no try line.
+- **Goal line and end line:** Field Line at 85%, 2px.
+- **End zones:** painted **End Zone** burnt orange (#6E2F16), with no stripe bands, hash marks or numbers. The only marking is the OMAHA wordmark, Figtree 900 uppercase at 70 units with 3 units of letter spacing, Snap Orange on Dark at 16%, centered in the end zone. It reads upright in the end zone the offense attacks and turns 180° in its own. It stays quieter than every player, route and zone. No team names or logos.
+- **Past the end line:** a 2-yard **Sideline Path** (#454B47), a 4.8-unit wall in Defender Fill (#071710), then the crowd. On desktop the path, wall and crowd span the full stage width; the field SVG draws them past its viewBox with `overflow="visible"` and the stage clips them.
+- **Crowd:** static pixel-art stands drawn with `shape-rendering="crispEdges"` on a 3.2-unit grid (a quarter yard), the whole group at 60% opacity. Each fan is a 2×2-cell head over a 3×2-cell shirt, 4 cells apart, with about 14% of seats empty. Rows are 5 cells deep, alternate Turf Stage and #0A2D1E, and offset by half a fan. Shirts are mostly home orange (#C9572A, #A8481F), with #E8E1D2, Sand Strong, Charcoal, #2E5E4F and Sage Muted. Heads use #E3BF98, #C6956A, #946042 and #5E3B26. Each seat is a fixed hash of its row and column, so the crowd never changes and phone and desktop match seat for seat. No receiver, zone or read colors, and no team uniforms.
 - **First-down line** (#E2C044, 2px; 3.5px on a converted result) and **line of scrimmage** (#3B8EEA, 2px). When labeled (tutorial), the line-of-scrimmage label uses **Scrimmage Label** (#7FB6F2) and the first-down label uses the first-down color.
+- **The yellow line is the line to gain.** On a touchdown goal, whether goal to go or from farther out, it sits on the goal line in place of the white one, and no first-down line is drawn.
 - **Protection zigzag** (#06100B): the pass-protection zigzag under the offensive line.
 
 ### Player palette
@@ -301,7 +308,7 @@ Madden zone colors, because players already know them:
 - Pre-snap position of every defender with a path: 3px ring in #7E8B85.
 
 ### Named Rules
-**The One Action Rule.** One orange button per screen. Elsewhere orange is limited to outcome tiles, blitz arrows, large stat numbers on cream (share, pros reveal) and on charcoal (out of reps), and small status accents in Snap Orange Text (a "today" or "open" label, the goal icon). On a failed-rep panel, stat numbers turn charcoal so orange keeps meaning "failed" and "do this next".
+**The One Action Rule.** One orange button per screen. Elsewhere orange is limited to outcome tiles, blitz arrows, large stat numbers on cream (share, pros reveal) and on charcoal (out of reps), and small status accents in Snap Orange Text (a "today" or "open" label, the goal icon). The End Zone paint and the crowd's home-orange shirts are field surfaces, not Snap Orange, and never carry a signal. On a failed-rep panel, stat numbers turn charcoal so orange keeps meaning "failed" and "do this next".
 
 **The Color Means Something Rule.** Player, route, zone and outcome colors are a language. Never reuse a receiver color, a zone color or gold for decoration.
 
@@ -347,6 +354,11 @@ Madden zone colors, because players already know them:
 **Touch targets:** at least 44×44px everywhere. Where the visual is smaller (segmented options, replay speed options, the scrubber thumb, field players), extend the hit area without changing the drawing; receivers get a hit circle of at least r=23 SVG units.
 
 **Field geometry (SVG units, viewBox 0 0 403 495):** line of scrimmage y=366; first-down line y=238 (10 yards = 128 units, 1 yard ≈ 12.8); yard lines every 64 units; hash marks at x 141–155 and 247–261. Offensive line at x 160–244.
+- The viewBox width is the engine's 31.5-yard field, sideline to sideline. The field is full length with 10-yard end zones, and the yard numbers sit 4 yards inside each sideline.
+- The line of scrimmage is at y=366 in every puzzle, so a point n yards downfield is at y = 366 − 12.8n. The goal line is at 366 − 12.8 × (yards to goal) and the end line 128 units beyond it. The sideline path runs 25.6 units past the end line, the wall 4.8 units past that, and the crowd fills the rest.
+- Goal to go from the 10 puts the end line at y 110; from the 1, at y 225, leaving the top 45% for the path and the crowd. Phone and desktop use the same viewBox, so the framing is identical.
+- Backed up at the offense's own 10, its goal line falls on the bottom edge (y 494), so its end zone shows only where the camera reaches farther back, as in live play.
+- Prototypes: [field/prototype-goal-to-go.html](field/prototype-goal-to-go.html) (phone) and [field/prototype-goal-to-go-desktop.html](field/prototype-goal-to-go-desktop.html), 2nd & goal from the 6.
 
 ## Elevation & Depth
 
