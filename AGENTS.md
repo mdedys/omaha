@@ -15,7 +15,7 @@ There is no test runner yet. Before calling work done, run `pnpm lint`, `pnpm fm
 
 ## Where to look
 
-- **What to build next:** open [GitHub issues](https://github.com/mdedys/omaha/issues). The game engine comes before the front end.
+- **What to build next:** open [GitHub issues](https://github.com/mdedys/omaha/issues). The engine contract and stub come first; screens build against the stub while v1 is built.
 - **How a screen looks and feels:** the screen's folder under `design/` (`spec.md` plus prototype HTML), indexed in [design/README.md](design/README.md).
 - **Tokens, type, components, field art:** [design/DESIGN.md](design/DESIGN.md).
 - **Game logic** (rules, simulation, scoring, puzzle format): the game engine's `wayfinder:map` issue on GitHub, then the engine spec it produces.
@@ -39,12 +39,12 @@ The decisions table in `design/README.md` is settled for UX; raise a question in
 - **MVP is pass plays only.** The puzzle sets the formation and defense; the player never picks them.
 - **No real team logos, uniforms or player likenesses.**
 - **Phone-first.** Design for 390px wide and touch, then scale up to desktop. Support light and dark themes.
-- **The game engine** (simulation, read progression, scoring) is built before the front end.
+- **The engine contract and stub come first; screens build against the stub while v1 is built.**
 
 ## Code conventions
 
 - TypeScript, React 19 and SVG. Don't add a game engine or canvas library.
-- Formatting is oxfmt with an 80-column print width; `docs/`, `design/`, `public/` and `.impeccable/` are excluded from formatting.
+- Formatting is oxfmt with an 80-column print width; `docs/`, `design/`, `public/`, `.impeccable/` and ephemeral `.mashing-skills/` run artifacts are excluded from formatting.
 - Lint is oxlint with the `react`, `typescript` and `oxc` plugins.
 - Don't edit files in `design/` unless the task is a design change.
 
