@@ -14,10 +14,12 @@ a{color:#F4EFE4}a:hover{color:#fff}
 .on .bar,.done .bar{background:#F4EFE4}.on .lbl{color:#F4EFE4}
 .opt{height:52px;box-sizing:border-box;border-radius:12px;border:1px solid #34403A;background:#232C27;display:flex;align-items:center;gap:10px;padding:0 12px;color:#F4EFE4;font-family:Figtree,sans-serif;text-align:left;cursor:pointer}
 .opt.sel{border:2px solid #F4EFE4;padding:0 11px}
+.opt.full{background:transparent;border-color:#34403A;color:#A3B1A9;cursor:default}.opt.full .rt{color:#A3B1A9}.opt.full>svg:first-child{opacity:.45}
 .opt .tx{flex-grow:1;display:flex;flex-direction:column;gap:3px}
 .opt .nm{font-size:14px;font-weight:600;line-height:1}
 .opt .rt{font-size:12px;color:#A3B1A9;line-height:1}
 .cta{height:52px;border:none;border-radius:14px;background:#E05A2B;color:#FFFFFF;font:700 17px Figtree,sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;text-transform:uppercase;font-weight:900;letter-spacing:.01em}
+.qhead{display:flex;justify-content:space-between;align-items:baseline;gap:12px}.qhint{font-size:12px;font-weight:600;color:#A3B1A9;white-space:nowrap}
 </style>
 </head>
 <body>
@@ -31,7 +33,7 @@ a{color:#F4EFE4}a:hover{color:#fff}
   </span>
 </header>
 
-<svg width="390" height="479" viewBox="0 0 403 495" role="img" aria-label="Field: full play drawn, tight end marked as the first read" style="display: block; flex-shrink: 0;">
+<svg width="390" height="479" viewBox="0 0 403 495" role="img" aria-label="Field: full play drawn, read order tight end, then right receiver, then left receiver" style="display: block; flex-shrink: 0;">
   <defs>
     <pattern id="hash" width="403" height="12.8" patternUnits="userSpaceOnUse" y="47"><path d="M141 0.5H155M247 0.5H261" stroke="#D5E0D9" stroke-opacity=".55" stroke-width="1"></path></pattern>
   </defs>
@@ -51,17 +53,17 @@ a{color:#F4EFE4}a:hover{color:#fff}
   </g>
 
   <g fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M54 359V229H170M163 223L170 229L163 235" stroke="#EAC54F"></path>
+    <path d="M54 359V229H170M163 223L170 229L163 235" stroke="#EAC54F" stroke-width="2.4"></path>
     <path d="M265 358V302L333 236M324.1 237.4L333 236L331.3 244.8" stroke="#B7A6F5" stroke-width="2.4"></path>
     <path d="M321 380V238H375M368 232L375 238L368 244" stroke="#F27C8E"></path>
-    <path d="M385 372V176M379 183L385 176L391 183" stroke="#55AEF5"></path>
+    <path d="M385 372V176M379 183L385 176L391 183" stroke="#55AEF5" stroke-width="2.4"></path>
     <path d="M180 425L258 386M255.3 380.6L260.7 391.4" stroke="#5BDB8C"></path>
   </g>
 
   <path d="M156 376L162 383L168 376L174 383L180 376L186 383L192 376L198 383L204 376L210 383L216 376L222 383L228 376L234 383L240 376L246 383L252 376" fill="none" stroke="#06100B" stroke-width="1.5" stroke-linejoin="round"></path>
   <g fill="#A4AAAF" stroke="#DADDE0" stroke-width="1.2"><circle cx="160" cy="366" r="8"></circle><circle cx="181" cy="366" r="8"></circle><circle cx="202" cy="366" r="8"></circle><circle cx="223" cy="366" r="8"></circle><circle cx="244" cy="366" r="8"></circle></g>
 
-  <circle cx="265" cy="367" r="14" fill="none" stroke="#F4B13E" stroke-width="1.6"></circle>
+  <g fill="none" stroke="#F4B13E" stroke-width="1.6"><circle cx="265" cy="367" r="14"></circle><circle cx="385" cy="381" r="14"></circle><circle cx="54" cy="368" r="14"></circle></g>
   <g font-family="Figtree, sans-serif" font-size="6.5" font-weight="700" text-anchor="middle">
     <g transform="translate(54 368)"><circle r="8.5" fill="#0E2219" stroke="#EAC54F" stroke-width="2.2"></circle><text y="2.3" fill="#fff">WR</text></g>
     <g transform="translate(265 367)"><circle r="8.5" fill="#0E2219" stroke="#8E73F2" stroke-width="2.2"></circle><text y="2.3" fill="#fff">TE</text></g>
@@ -69,7 +71,7 @@ a{color:#F4EFE4}a:hover{color:#fff}
     <g transform="translate(385 381)"><circle r="8.5" fill="#0E2219" stroke="#55AEF5" stroke-width="2.2"></circle><text y="2.3" fill="#fff">WR</text></g>
     <g transform="translate(172 431)"><circle r="8.5" fill="#0E2219" stroke="#5BDB8C" stroke-width="2.2"></circle><text y="2.3" fill="#fff">RB</text></g>
     <g transform="translate(201 431)"><circle r="8.5" fill="#F2F5F3"></circle><text y="2.3" fill="#0A1410">QB</text></g>
-    <g transform="translate(278 354)"><circle r="6.5" fill="#F4B13E"></circle><text y="2.4" font-size="8" fill="#0A1410">1</text></g>
+    <g transform="translate(278 354)"><circle r="6.5" fill="#F4B13E"></circle><text y="2.4" font-size="8" fill="#0A1410">1</text></g><g transform="translate(372 368)"><circle r="6.5" fill="#F4B13E"></circle><text y="2.4" font-size="8" fill="#0A1410">2</text></g><g transform="translate(67 355)"><circle r="6.5" fill="#F4B13E"></circle><text y="2.4" font-size="8" fill="#0A1410">3</text></g>
   </g>
 </svg>
 
@@ -80,12 +82,12 @@ a{color:#F4EFE4}a:hover{color:#fff}
       <div class="step done"><span class="bar"></span><span class="lbl">2 Routes</span></div>
       <div class="step on"><span class="bar"></span><span class="lbl">3 Read</span></div>
     </nav>
-    <h2 style="margin: 0; font-size: 16px; font-weight: 600;">Who does the QB look to first?</h2>
-    <div role="radiogroup" aria-label="First read" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px;">
-      <button class="opt" role="radio" aria-checked="false"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="5.5" fill="#0E2219" stroke="#EAC54F" stroke-width="2"></circle></svg><span class="tx"><span class="nm">Left WR</span><span class="rt">In</span></span></button>
-      <button class="opt sel" role="radio" aria-checked="true"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="5.5" fill="#0E2219" stroke="#8E73F2" stroke-width="2"></circle></svg><span class="tx"><span class="nm">TE</span><span class="rt">Corner</span></span><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="9" fill="#F4EFE4"></circle><path d="M6 10.2L8.8 13L14 7.6" fill="none" stroke="#18201C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></button>
-      <button class="opt" role="radio" aria-checked="false"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="5.5" fill="#0E2219" stroke="#F0607A" stroke-width="2"></circle></svg><span class="tx"><span class="nm">Slot WR</span><span class="rt">Out</span></span></button>
-      <button class="opt" role="radio" aria-checked="false"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="5.5" fill="#0E2219" stroke="#55AEF5" stroke-width="2"></circle></svg><span class="tx"><span class="nm">Right WR</span><span class="rt">Go</span></span></button>
+    <div class="qhead"><h2 style="margin: 0; font-size: 16px; font-weight: 600;">Who does the QB look to?</h2><span class="qhint">Pick in order · up to 3</span></div>
+    <div role="group" aria-label="Read order" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px;">
+      <button class="opt sel" aria-pressed="true" aria-label="Left WR, In, read 3"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="5.5" fill="#0E2219" stroke="#EAC54F" stroke-width="2"></circle></svg><span class="tx"><span class="nm">Left WR</span><span class="rt">In</span></span><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="9" fill="#F4B13E"></circle><text x="10" y="14" text-anchor="middle" font-family="Figtree, sans-serif" font-size="11" font-weight="800" fill="#0A1410">3</text></svg></button>
+      <button class="opt sel" aria-pressed="true" aria-label="TE, Corner, read 1"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="5.5" fill="#0E2219" stroke="#8E73F2" stroke-width="2"></circle></svg><span class="tx"><span class="nm">TE</span><span class="rt">Corner</span></span><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="9" fill="#F4B13E"></circle><text x="10" y="14" text-anchor="middle" font-family="Figtree, sans-serif" font-size="11" font-weight="800" fill="#0A1410">1</text></svg></button>
+      <button class="opt full" aria-pressed="false" aria-disabled="true" aria-label="Slot WR, Out"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="5.5" fill="#0E2219" stroke="#F0607A" stroke-width="2"></circle></svg><span class="tx"><span class="nm">Slot WR</span><span class="rt">Out</span></span></button>
+      <button class="opt sel" aria-pressed="true" aria-label="Right WR, Go, read 2"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="5.5" fill="#0E2219" stroke="#55AEF5" stroke-width="2"></circle></svg><span class="tx"><span class="nm">Right WR</span><span class="rt">Go</span></span><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="9" fill="#F4B13E"></circle><text x="10" y="14" text-anchor="middle" font-family="Figtree, sans-serif" font-size="11" font-weight="800" fill="#0A1410">2</text></svg></button>
     </div>
   </div>
   <button class="cta"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15l12-7.5z"></path></svg>Snap</button>

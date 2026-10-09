@@ -76,14 +76,16 @@ kbd{font:700 11px Figtree,sans-serif;padding:3px 7px;border-radius:5px;backgroun
 
 .ropt{height:60px;box-sizing:border-box;border-radius:12px;border:1px solid #DCD3C1;background:#FFFFFF;display:flex;align-items:center;gap:12px;padding:0 16px;color:#244A3E;font-family:Figtree,sans-serif;text-align:left;cursor:pointer;width:100%}
 .ropt.sel{border:2px solid #244A3E;padding:0 15px}
+.ropt.full{background:transparent;border-color:#DCD3C1;color:#5A6B62;cursor:default}.ropt.full .rt{color:#5A6B62}.ropt.full>svg:first-child{opacity:.45}
 .ropt .tx{flex-grow:1;display:flex;flex-direction:column;gap:4px}.ropt .nm{font-size:16px;font-weight:700;line-height:1}.ropt .rt{font-size:13px;color:#5A6B62;line-height:1}
+.qhead{display:flex;justify-content:space-between;align-items:baseline;gap:12px}.qhint{font-size:13px;font-weight:600;color:#5A6B62;white-space:nowrap}
 </style>
 </head>
 <body>
 <div class="app">
 <header class="top"><span class="brand">OMAHA</span><span class="sit"><b>3rd &amp; 10</b><span>own 45</span></span><span class="meta"><span class="num">#148</span><span>Down 4 · 1:12</span><span class="pips" aria-label="Rep 1 of 4"><i class="ring"></i><i></i><i></i><i></i></span></span></header>
 <div class="body">
-<div class="stage"><svg class="field" viewBox="0 0 403 495" role="img" aria-label="Field: full play drawn, tight end marked as the first read">
+<div class="stage"><svg class="field" viewBox="0 0 403 495" role="img" aria-label="Field: full play drawn, read order tight end, then right receiver, then left receiver">
   <defs>
     <pattern id="hash" width="403" height="12.8" patternUnits="userSpaceOnUse" y="47"><path d="M141 0.5H155M247 0.5H261" stroke="#D5E0D9" stroke-opacity=".55" stroke-width="1"></path></pattern>
   </defs>
@@ -103,17 +105,17 @@ kbd{font:700 11px Figtree,sans-serif;padding:3px 7px;border-radius:5px;backgroun
   </g>
 
   <g fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M54 359V229H170M163 223L170 229L163 235" stroke="#EAC54F"></path>
+    <path d="M54 359V229H170M163 223L170 229L163 235" stroke="#EAC54F" stroke-width="2.4"></path>
     <path d="M265 358V302L333 236M324.1 237.4L333 236L331.3 244.8" stroke="#B7A6F5" stroke-width="2.4"></path>
     <path d="M321 380V238H375M368 232L375 238L368 244" stroke="#F27C8E"></path>
-    <path d="M385 372V176M379 183L385 176L391 183" stroke="#55AEF5"></path>
+    <path d="M385 372V176M379 183L385 176L391 183" stroke="#55AEF5" stroke-width="2.4"></path>
     <path d="M180 425L258 386M255.3 380.6L260.7 391.4" stroke="#5BDB8C"></path>
   </g>
 
   <path d="M156 376L162 383L168 376L174 383L180 376L186 383L192 376L198 383L204 376L210 383L216 376L222 383L228 376L234 383L240 376L246 383L252 376" fill="none" stroke="#06100B" stroke-width="1.5" stroke-linejoin="round"></path>
   <g fill="#A4AAAF" stroke="#DADDE0" stroke-width="1.2"><circle cx="160" cy="366" r="8"></circle><circle cx="181" cy="366" r="8"></circle><circle cx="202" cy="366" r="8"></circle><circle cx="223" cy="366" r="8"></circle><circle cx="244" cy="366" r="8"></circle></g>
 
-  <circle cx="265" cy="367" r="14" fill="none" stroke="#F4B13E" stroke-width="1.6"></circle>
+  <g fill="none" stroke="#F4B13E" stroke-width="1.6"><circle cx="265" cy="367" r="14"></circle><circle cx="385" cy="381" r="14"></circle><circle cx="54" cy="368" r="14"></circle></g>
   <g font-family="Figtree, sans-serif" font-size="6.5" font-weight="700" text-anchor="middle">
     <g transform="translate(54 368)"><circle r="8.5" fill="#0E2219" stroke="#EAC54F" stroke-width="2.2"></circle><text y="2.3" fill="#fff">WR</text></g>
     <g transform="translate(265 367)"><circle r="8.5" fill="#0E2219" stroke="#8E73F2" stroke-width="2.2"></circle><text y="2.3" fill="#fff">TE</text></g>
@@ -121,15 +123,15 @@ kbd{font:700 11px Figtree,sans-serif;padding:3px 7px;border-radius:5px;backgroun
     <g transform="translate(385 381)"><circle r="8.5" fill="#0E2219" stroke="#55AEF5" stroke-width="2.2"></circle><text y="2.3" fill="#fff">WR</text></g>
     <g transform="translate(172 431)"><circle r="8.5" fill="#0E2219" stroke="#5BDB8C" stroke-width="2.2"></circle><text y="2.3" fill="#fff">RB</text></g>
     <g transform="translate(201 431)"><circle r="8.5" fill="#F2F5F3"></circle><text y="2.3" fill="#0A1410">QB</text></g>
-    <g transform="translate(278 354)"><circle r="6.5" fill="#F4B13E"></circle><text y="2.4" font-size="8" fill="#0A1410">1</text></g>
+    <g transform="translate(278 354)"><circle r="6.5" fill="#F4B13E"></circle><text y="2.4" font-size="8" fill="#0A1410">1</text></g><g transform="translate(372 368)"><circle r="6.5" fill="#F4B13E"></circle><text y="2.4" font-size="8" fill="#0A1410">2</text></g><g transform="translate(67 355)"><circle r="6.5" fill="#F4B13E"></circle><text y="2.4" font-size="8" fill="#0A1410">3</text></g>
   </g>
 </svg></div>
 <aside class="panel" aria-label="Design the play">
 <nav class="steps" aria-label="Play steps"><div class="done"><i></i><span>1 Protect</span></div><div class="done"><i></i><span>2 Routes</span></div><div class="now"><i></i><span>3 Read</span></div></nav>
-<h2 style="margin: 0; font-size: 20px; font-weight: 700;">Who does the QB look to first?</h2>
-<div role="radiogroup" aria-label="First read" style="display: flex; flex-direction: column; gap: 10px;"><button class="ropt" role="radio" aria-checked="false"><svg width="16" height="16" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="5.5" fill="#0E2219" stroke="#EAC54F" stroke-width="2"></circle></svg><span class="tx"><span class="nm">Left WR</span><span class="rt">In</span></span></button><button class="ropt sel" role="radio" aria-checked="true"><svg width="16" height="16" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="5.5" fill="#0E2219" stroke="#8E73F2" stroke-width="2"></circle></svg><span class="tx"><span class="nm">TE</span><span class="rt">Corner</span></span><svg width="22" height="22" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="9" fill="#244A3E"></circle><path d="M6 10.2L8.8 13L14 7.6" fill="none" stroke="#F4EFE4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></button><button class="ropt" role="radio" aria-checked="false"><svg width="16" height="16" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="5.5" fill="#0E2219" stroke="#F0607A" stroke-width="2"></circle></svg><span class="tx"><span class="nm">Slot WR</span><span class="rt">Out</span></span></button><button class="ropt" role="radio" aria-checked="false"><svg width="16" height="16" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="5.5" fill="#0E2219" stroke="#55AEF5" stroke-width="2"></circle></svg><span class="tx"><span class="nm">Right WR</span><span class="rt">Go</span></span></button></div>
+<div class="qhead"><h2 style="margin: 0; font-size: 20px; font-weight: 700;">Who does the QB look to?</h2><span class="qhint">Pick in order · up to 3</span></div>
+<div role="group" aria-label="Read order" style="display: flex; flex-direction: column; gap: 10px;"><button class="ropt sel" aria-pressed="true" aria-label="Left WR, In, read 3"><svg width="16" height="16" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="5.5" fill="#0E2219" stroke="#EAC54F" stroke-width="2"></circle></svg><span class="tx"><span class="nm">Left WR</span><span class="rt">In</span></span><svg width="22" height="22" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="9" fill="#F4B13E"></circle><text x="10" y="14" text-anchor="middle" font-family="Figtree, sans-serif" font-size="11" font-weight="800" fill="#0A1410">3</text></svg></button><button class="ropt sel" aria-pressed="true" aria-label="TE, Corner, read 1"><svg width="16" height="16" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="5.5" fill="#0E2219" stroke="#8E73F2" stroke-width="2"></circle></svg><span class="tx"><span class="nm">TE</span><span class="rt">Corner</span></span><svg width="22" height="22" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="9" fill="#F4B13E"></circle><text x="10" y="14" text-anchor="middle" font-family="Figtree, sans-serif" font-size="11" font-weight="800" fill="#0A1410">1</text></svg></button><button class="ropt full" aria-pressed="false" aria-disabled="true" aria-label="Slot WR, Out"><svg width="16" height="16" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="5.5" fill="#0E2219" stroke="#F0607A" stroke-width="2"></circle></svg><span class="tx"><span class="nm">Slot WR</span><span class="rt">Out</span></span></button><button class="ropt sel" aria-pressed="true" aria-label="Right WR, Go, read 2"><svg width="16" height="16" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="5.5" fill="#0E2219" stroke="#55AEF5" stroke-width="2"></circle></svg><span class="tx"><span class="nm">Right WR</span><span class="rt">Go</span></span><svg width="22" height="22" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="9" fill="#F4B13E"></circle><text x="10" y="14" text-anchor="middle" font-family="Figtree, sans-serif" font-size="11" font-weight="800" fill="#0A1410">2</text></svg></button></div>
 <div class="grow"></div>
-<div style="display: flex; flex-direction: column; gap: 10px;"><button class="cta"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15l12-7.5z"></path></svg>Snap <kbd>Enter</kbd></button><p class="hint" style="margin: 0;"><kbd>1</kbd>–<kbd>4</kbd> pick the first read</p></div>
+<div style="display: flex; flex-direction: column; gap: 10px;"><button class="cta"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15l12-7.5z"></path></svg>Snap <kbd>Enter</kbd></button><p class="hint" style="margin: 0;"><kbd>1</kbd>–<kbd>4</kbd> add or drop a read</p></div>
 </aside>
 </div>
 </div>

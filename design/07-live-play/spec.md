@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Play the rep the player just designed. The snap animates top-down: players move from their pre-snap spots to their end spots, a gold vision cone follows the quarterback's current read, and the ball flies from the throw to the catch point. A caption area narrates each phase in the trash-talk voice. When the play ends, the result appears, the defense's play art fades in, and the last frame is exactly the Result screen (08-result).
+Play the rep the player just designed. The snap animates top-down: players move from their pre-snap spots to their end spots, a gold vision cone follows the quarterback's current read as he works down the read order, and the ball flies from the throw to the catch point. A caption area narrates each phase in the trash-talk voice. When the play ends, the result appears, the defense's play art fades in, and the last frame is exactly the Result screen (08-result).
 
 The play shows players and the ball only. No route lines and no zones until the reveal.
 
@@ -76,9 +76,9 @@ Caption phases. On phone the word is 26 px and the line 13 px 600. On desktop th
 | Phase | Word | Prototype line (example) | Inputs the line needs |
 |---|---|---|---|
 | Set | `Set` (fixed) | "Six in protection. Nobody touches the QB." | Protection: blocker count, line call, who stays in (RB, TE) |
-| Snap | `Snap` (fixed) | "Eyes locked on the tight end." | First read receiver |
-| Throw | `Throw` (fixed) | "Corner route. Let it rip." | Targeted receiver, their route and depth |
-| Outcome | Generated. Example: `Broken up` | "Swatted. The safety was parked there." | Outcome kind, yards gained versus the line to gain, cause (for example the defender role that made the play and how), targeted receiver |
+| Snap | `Snap` (fixed) | "Eyes locked on the tight end." | The current read. The line swaps each time the QB moves to the next read, for example "Tight end's blanketed. Eyes to the right side." |
+| Throw | `Throw` (fixed) | "Corner route. Let it rip." | Targeted receiver, their route and depth, and whether the throw is forced (pressure or out of reads). On a throwaway there is no receiver, for example "Nobody open. Into the seats." |
+| Outcome | Generated. Examples: `Broken up`, `Thrown away` | "Swatted. The safety was parked there." | Outcome kind, yards gained versus the line to gain, cause (for example the defender role that made the play and how), targeted receiver |
 
 Captions are generated per rep from the design and the simulation. The prototype strings are examples, not final copy. Every line follows the voice rule: cause first, jab second.
 
@@ -105,6 +105,7 @@ Sheet and result-panel copy: see 08-result.
 |---|---|---|
 | Set | 0–0.8 s | All players at pre-snap spots (the same positions as the Read step). Caption "Set". No cone, no ball. Skip enabled. |
 | Snap (play running) | 0.8 s to the throw | Players move along their paths. Cone visible, aimed at the current read. Caption "Snap". |
+| Next read (not prototyped) | at each read change before the throw | The cone turns from the old read to the new one (see Motion), then tracks it. The Snap caption line swaps to name the new read. The phase word stays "Snap". |
 | Throw (ball in the air) | throw to catch (3.1–3.7 s) | Ball flies from the QB to the catch point. Cone stops turning, then fades. Caption "Throw". |
 | Outcome | catch to reveal (3.7–4.8 s) | Ball rests at the catch point. Players finish their paths (motion ends at 4.2 s). Caption shows the outcome word and line. |
 | Reveal | 4.8–5.3 s | Phone: sheet slides up, camera pans, shade, play art and badges fade in. Desktop: the panel swaps to the result layer, then play art and badges fade in. See Motion. |
@@ -112,7 +113,9 @@ Sheet and result-panel copy: see 08-result.
 | Skipped | any time before the reveal ends | Result screen at once: final frame, play art, badges, the result sheet (phone) or result panel (desktop). No caption sequence. |
 | Reduced motion | on entry | Same as Skipped, from the first frame. |
 | Interception (not prototyped here) | — | Same sequence. The final frame keeps the football at the interception point, because a result draws the football only on an interception (DESIGN.md Ball). |
-| Sack (not prototyped) | — | No throw, so there is no Throw phase and no ball. The outcome phase starts at the sack time from the simulation. When the cone ends is an open question. |
+| Sack (not prototyped) | — | Set → Snap → outcome. No throw, so there is no Throw phase and no ball. The cone stays on the read the QB is on until the sack, then fades out within 0.3 s. The outcome phase starts at the sack time from the simulation. |
+| Throwaway (not prototyped) | — | Every read was covered when the order ran out. Throw phase as usual, with no receiver: the cone fades, and the ball flies to its landing spot just past the nearest sideline, level with the QB. Outcome word `Thrown away`. The final frame matches the 08-result throwaway state. |
+| Forced throw (not prototyped) | — | Same sequence as a throw. The Throw caption line says the throw is forced ("Nothing clean. He forces it to the tight end."). |
 | Converted or final rep (not prototyped here) | — | The last frame must match the Result screen. On a converted rep that means a 3.5 px first-down line. On a converted rep or the final rep it also means the coverage key pill. How they appear during the reveal is an open question. |
 | Sheet or panel variant | — | Cream, ink green or charcoal by outcome and reps left, per 08-result. |
 
@@ -132,7 +135,8 @@ The prototypes loop every 10 s. The app plays once. Times are from screen entry.
 | 0 | Set caption, pre-snap frame | — |
 | 0.8 s | Snap: caption "Snap". All players start moving. The cone appears on the QB, aimed at the first read. | Cone opacity 0→1 over 0.8–0.9 s. |
 | 0.8–4.2 s | Players move from their first to last waypoint | Prototype: every player starts and ends together and moves at constant speed along a straight-segment path (SMIL `calcMode="linear"`). The QB drops 9 units (y 431→440). Linemen drop 4 units (y 366→370). |
-| 0.8 s → throw | Cone tracks the current read's position | Prototype keyframes: −45.9° at 0.8 s, −64.5° at 2.425 s, −61.5° at 3.1 s, which is the TE's position at those moments. The angle then holds. |
+| 0.8 s → throw | Cone tracks the current read's position | Prototype keyframes: −45.9° at 0.8 s, −64.5° at 2.425 s, −61.5° at 3.1 s, which is the TE's position at those moments. The angle then holds. The prototype throws on the first read, so it never moves between reads. |
+| each read change | Cone turns to the next read over 0.15 s, `cubic-bezier(.2,.8,.2,1)`, along the shorter arc, then tracks that read. The Snap caption line swaps at the same moment. | Not prototyped. The change times come from the simulation's read spans. |
 | 3.1 s (snap + 2.3 s) | Throw: caption "Throw". The ball appears at the QB's position. | Appears instantly. |
 | throw → throw + 0.3 s | Cone fades out, finishing within 0.3 s of the throw | Prototype fades 1→0 over 3.2–3.4 s. |
 | 3.1–3.7 s | Ball flight, 0.6 s, along the quadratic ball path | Linear timing. Prototype path `M201 432 Q246 300 312 257`. |
@@ -146,7 +150,7 @@ The prototypes loop every 10 s. The app plays once. Times are from screen entry.
 | 4.8–5.3 s, both | Play art (ball path, zones, start dots, drop, man, rush and blitz paths) and receiver badges opacity 0→1 | 0.5 s, linear |
 | 5.3 s | Result screen | — |
 
-Timing rule for the app: Set (0.8 s), the 0.6 s pause after motion ends and the 0.5 s reveal are fixed design values. Throw time, catch time, flight time, motion end and sack time come from the simulation. The prototype values (throw at snap + 2.3 s, 0.6 s flight, 3.4 s of play) match DESIGN.md Motion and serve as the fixture.
+Timing rule for the app: Set (0.8 s), the 0.6 s pause after motion ends and the 0.5 s reveal are fixed design values. Throw time, catch time, flight time, read changes, motion end and sack time come from the simulation. The 0.15 s cone turn is a fixed design value. The prototype values (throw at snap + 2.3 s, 0.6 s flight, 3.4 s of play) match DESIGN.md Motion and serve as the fixture.
 
 **Reduced motion** (`prefers-reduced-motion: reduce`): skip the animation and show the Result screen exactly as it ends, with play art, badges, shade and pills on phone, and the result panel on desktop. The prototypes have no reduced-motion handling.
 
@@ -184,7 +188,7 @@ interface BallFlight {
   catchAt: number;            // prototype 2.9 (0.6 s flight)
   from: Point;                // the QB's position at throwAt
   control: Point;             // quadratic control point; the result screen draws the same curve dashed
-  to: Point;                  // catch, breakup or interception point
+  to: Point;                  // catch, breakup or interception point, or a throwaway's landing spot
 }
 
 interface ReadSpan { from: number; to: number; targetId: string } // the cone aims at targetId's current position
@@ -194,7 +198,7 @@ interface RepPlayback {
   players: PlayerTrack[];
   ball: BallFlight | null;    // null on a sack
   sackAt?: number;            // set on a sack
-  reads: ReadSpan[];          // MVP: one span, first read, 0 → throwAt
+  reads: ReadSpan[];          // one span per read reached, in read order; the last ends at throwAt, or sackAt on a sack
   outcome: RepOutcome;        // shared with 08-result
   receiverFeedback: { receiverId: string; status: 'open' | 'contested' | 'covered' }[];
   playArt: DefensePlayArt;    // defined in 08-result
@@ -204,7 +208,7 @@ interface RepOutcome {
   kind: 'incomplete' | 'short' | 'converted' | 'sack' | 'interception';
   yards: number;              // signed; 0 on incomplete and interception
   timeInPocket: number;       // seconds, snap to throw or sack
-  targetId?: string;
+  targetId?: string;          // absent on a sack and a throwaway
   cause: string;              // machine code for the decisive reason (e.g. 'safety-breakup'); drives captions and the result line
   decisiveDefenderId?: string;
 }
@@ -216,20 +220,18 @@ Other inputs:
 |---|---|
 | Situation strings, puzzle number, line of scrimmage y, first-down line y, yard numbers | Puzzle data |
 | Pre-snap positions | Puzzle data (formation and defensive alignment). They equal each track's first waypoint. |
-| Protection summary, first read, routes and depths | The player's design (design state store) |
+| Protection summary, read order, routes and depths | The player's design (design state store) |
 | Caption words and lines | Generated per rep from the design and `RepPlayback` (owner open) |
 | Rep number, reps left (for the sheet, panel and pips) | Design state store |
 
 ## Open questions
 
-1. **Read progression** (README, engine session). If the player sets a 1-2-3 order, the cone moves between reads. `reads` already allows several spans. The Read step and the cone behaviour need confirming.
-2. **Play length.** Is the play always 3.4 s with the throw at 2.3 s, or does each simulation set its own timing?
-3. **Captions.** Does the engine or the front end write the caption lines and the result line? What is the set of outcome words? They are play-by-play by design ("Broken up"), separate from the sheet verdict ("INCOMPLETE").
-4. **Sack sequence.** Confirm Set → Snap → outcome with no Throw phase, and say whether the cone runs until the sack.
-5. **Converted and final-rep reveal.** How do the 3.5 px first-down line and the coverage key pill arrive in the reveal (fade with the play art, or appear at the end)?
-6. **Desktop "Final · defense revealed" pill.** The desktop Result screen shows it; `prototype-desktop.html` never does, even after the swap. When does it appear?
-7. **Touchdown** (README). A rep that scores needs its own outcome caption and result treatment.
-8. **Back navigation.** What do the browser and OS back actions do during live play?
+1. **Play length.** Is the play always 3.4 s with the throw at 2.3 s, or does each simulation set its own timing?
+2. **Captions.** Does the engine or the front end write the caption lines and the result line? What is the set of outcome words? They are play-by-play by design ("Broken up"), separate from the sheet verdict ("INCOMPLETE").
+3. **Converted and final-rep reveal.** How do the 3.5 px first-down line and the coverage key pill arrive in the reveal (fade with the play art, or appear at the end)?
+4. **Desktop "Final · defense revealed" pill.** The desktop Result screen shows it; `prototype-desktop.html` never does, even after the swap. When does it appear?
+5. **Touchdown** (README). A rep that scores needs its own outcome caption and result treatment.
+6. **Back navigation.** What do the browser and OS back actions do during live play?
 
 ## Acceptance criteria
 
@@ -239,7 +241,8 @@ Other inputs:
 - [ ] No route lines, zones, start dots, badges or ball path are visible before the reveal starts.
 - [ ] Caption sequence on the prototype fixture: "Set" 0–0.8 s, "Snap" 0.8–3.1 s, "Throw" 3.1–3.7 s, the outcome from 3.7 s. Each swap is instant and announced through `aria-live="polite"`.
 - [ ] Players start at their pre-snap spots (matching 06-read) and end at the final-frame spots (matching 08-result), moving between `PlayerTrack` waypoints.
-- [ ] The vision cone (176 units, ±13°, gold 70%→0%) appears at the snap, always aims at the current read target's current position, stops turning at the throw, and has fully faded within 0.3 s after the throw.
+- [ ] The vision cone (176 units, ±13°, gold 70%→0%) appears at the snap, always aims at the current read target's current position, turns to the next read over 0.15 s at each read change, stops turning at the throw, and has fully faded within 0.3 s after the throw or the sack.
+- [ ] On a fixture that reaches a second read, the Snap caption line swaps to name the new read at the read change.
 - [ ] The football (rx 4.2, ry 2.7, rotated along its flight) appears at the QB's position at the throw, follows the quadratic ball path in exactly `catchAt − throwAt` seconds, and rests at the end point until the reveal.
 - [ ] Phone reveal: starts 0.6 s after motion ends and lasts 0.5 s. The sheet rises from −420 px with `cubic-bezier(.2,.8,.2,1)`, the camera pans 180 field units, the shade reaches `rgba(6,13,10,.22)`, and play art and badges fade 0→1.
 - [ ] Desktop reveal: at the same moment the panel switches to the 08-result desktop panel, and play art and badges fade in over 0.5 s.
@@ -247,6 +250,7 @@ Other inputs:
 - [ ] Skip (click, tap, Enter or Space) and desktop `Esc`, at any point before the reveal, show the Result screen at once with no animation.
 - [ ] With `prefers-reduced-motion: reduce`, the Result screen shows immediately, with no movement.
 - [ ] A sack fixture shows no ball and no "Throw" caption.
+- [ ] A throwaway fixture shows the Throw phase with no receiver, the ball landing just past the nearest sideline, the outcome word `Thrown away`, and a final frame matching the 08-result throwaway state.
 - [ ] An interception fixture ends with the football at the interception point.
 - [ ] The animation plays once and does not loop.
 - [ ] Skip has accessible name "Skip to result" and receives focus on entry.

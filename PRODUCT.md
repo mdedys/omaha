@@ -20,7 +20,7 @@ TypeScript + React + SVG, no game engine. React renders the briefing, menus and 
 
 ## Product Purpose
 
-Omaha is a daily football puzzle. Each day's puzzle recreates one game-deciding play from the past week of the NFL. The player is the offensive coordinator: they design a pass play (protection, routes, primary read) from the puzzle's set formation against a hidden defensive call and get up to 4 reps to convert. A deterministic simulation resolves each rep. Then the game reveals what the real team called and the percentage of players who beat it.
+Omaha is a daily football puzzle. Each day's puzzle recreates one game-deciding play from the past week of the NFL. The player is the offensive coordinator: they design a pass play (protection, routes, read order) from the puzzle's set formation against a hidden defensive call and get up to 4 reps to convert. A deterministic simulation resolves each rep. Then the game reveals what the real team called and the percentage of players who beat it.
 
 Success means a daily habit during the NFL season, measured in streaks, return visits and share cards posted to group chats.
 
@@ -37,7 +37,7 @@ The nearest competitor is Monday QB (monday-qb.com). It covers a whole drive and
 - **Daily ritual:** one shared puzzle per day, published at midnight US Eastern so every time zone gets it at the same moment.
 - **Season-bound:** puzzles track the current NFL week, Thursday night through Monday night, and the season ends at the Super Bowl.
 - **Sharing:** a spoiler-free emoji share card, one tile per rep showing its outcome (incomplete / short / converted), shared through the native share sheet on mobile.
-- **Phone-first touch input:** three steps in a bottom bar. Protect (blocker count and line call toggles), Routes (tap a receiver on the field, swipe a carousel of route cards, pick a 5/10/15-yard depth), Read (pick the first read), then a large Snap button. On desktop the mouse does the same things.
+- **Phone-first touch input:** three steps in a bottom bar. Protect (blocker count and line call toggles), Routes (tap a receiver on the field, swipe a carousel of route cards, pick a 5/10/15-yard depth), Read (tap up to three receivers in the order the QB reads them), then a large Snap button. On desktop the mouse does the same things.
 - **Replays:** replay, slow-mo and scrub controls after each rep, so the player can study why a play worked or failed.
 
 ## Capabilities and Constraints
@@ -46,7 +46,7 @@ The nearest competitor is Monday QB (monday-qb.com). It covers a whole drive and
 
 - Daily puzzle with up to 4 reps.
 - Pass plays only.
-- A small formation set (each puzzle sets its formation; the player never picks one), a route tree, basic protection options and a primary read.
+- A small formation set (each puzzle sets its formation; the player never picks one), a route tree, basic protection options and a read order of up to three receivers.
 - A handful of coverages (Cover 0/1/2/3/4, man and zone) with a pre-snap disguise.
 - A result screen with the real-call reveal and the share card.
 - The "% beat the pros" stat.

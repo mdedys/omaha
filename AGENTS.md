@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Omaha is a daily football puzzle: the player designs one pass play (protection, routes, first read) against a hidden defense and gets up to 4 reps to convert. See [README.md](README.md) for the overview.
+Omaha is a daily football puzzle: the player designs one pass play (protection, routes, read order) against a hidden defense and gets up to 4 reps to convert. See [README.md](README.md) for the overview.
 
 ## Commands
 

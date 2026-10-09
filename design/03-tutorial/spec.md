@@ -113,7 +113,7 @@ All copy is static. Record it exactly; the casing shown is the source text (CSS 
 - List:
   1. `Protect` — `Who stays in to block, and which way the line slides.`
   2. `Routes` — `A route and a depth for every receiver.`
-  3. `Read` — `Who the quarterback looks to first.`
+  3. `Read` — `Who the quarterback looks at, in order.`
 - Field `aria-label`: `A full play drawn: the line sliding left, four routes, and the tight end marked as the first read`
 - CTA: `Next`
 
