@@ -1,32 +1,31 @@
 # App shell
 
-**Status:** Live. Today the root URL serves the stock Vite + React starter page. #60 replaces it with Omaha's routed scaffold, the DESIGN.md light and dark themes, and Landing. When #60 lands, rewrite the sub-features below to fit the scaffold.
-
-The shell is what a player gets on opening the site: the document titled `omaha`, a React app mounted in `#root`, a page that follows the system light or dark preference, and an interactive UI with no console errors.
+The shell opens Landing at `/`, follows the system theme and navigates between four URLs without replacing the browser document. All screens except Landing remain explicitly labelled placeholders.
 
 ## Sub-features
 
-- `shell-load` means `/` renders the React app with the title `omaha` and no console errors.
-- `shell-interactive` means a click changes rendered state. Today that is the starter's `Count is N` button.
-- `shell-theme` means the page background follows `prefers-color-scheme`: today `#fff` in light and `#16171d` in dark.
+- `shell-load`: `/` renders Landing with document title `omaha` and no console errors.
+- `shell-navigation`: Landing links open `/puzzles`, `/how-to-play` and `/puzzle/<n>`; browser Back and Forward traverse those same-document entries.
+- `shell-direct-entry`: direct entry at each placeholder route works; an unknown route renders Landing.
+- `shell-theme`: system light and dark preferences select cream (#F4EFE4) and charcoal (#18201C) paper surfaces. Field and CTA colors stay unchanged.
 
 ## How to get to it (user POV)
 
-- Open the site root `/` in a phone or desktop browser.
+- Open `/` on phone or desktop.
+- Follow Landing's links, or open one of the four URLs directly.
 
 ## Driving it with drive.mjs
 
-Preconditions:
+Precondition: `doctor.sh` exits `0`.
 
-- `doctor.sh` exits `0`.
-
-- **Load (light).** Open `/`. Run `drive.mjs shell expect-title=omaha expect-role=heading:"Get started"`. Both steps say `ok`, `00-loaded.png` shows the starter hero, and `console.log` has no `[error]` or `[pageerror]` lines.
-- **Interact.** Click the counter. Add `click=button:"Count is 0" expect="Count is 1" shot=clicked` to the same drive. `aria.yml` shows `button "Count is 1"`.
-- **Dark theme.** Repeat with `--theme dark`. Run `drive.mjs shell --theme dark expect-title=omaha shot=dark`. The screenshot background is near-black (`#16171d`), not white.
-- **Desktop.** Run `drive.mjs shell --viewport desktop expect-role=heading:Documentation expect-role=heading:"Connect with us" shot=desktop`. The two sections sit side by side with a divider between them; at 1024px and narrower, phone included, they stack.
+- **Load:** `drive.mjs shell expect-title=omaha expect-role=heading:Omaha expect-role=link:"Play today's puzzle" shot=landing`.
+- **Navigation:** `drive.mjs shell-nav expect-role=link:"Play today's puzzle" shot=before click=link:"Play today's puzzle" expect="This screen is not available yet." shot=destination click=link:"Back to Landing" expect-role=heading:Omaha shot=returned`.
+- **Direct entry:** separate drives with `goto=/puzzles expect-role=heading:"All puzzles"`, `goto=/how-to-play expect-role=heading:"How to play"`, `goto=/puzzle/2 expect-role=heading:"Puzzle #2"`, and `goto=/unknown expect-role=heading:Omaha`.
+- **Theme/layout:** repeat load with `--viewport phone` / `--viewport desktop` and `--theme light` / `--theme dark`. Capture the whole Landing composition.
+- The Playwright suite (`pnpm test:e2e`) additionally asserts the URLs, document continuity and browser Back/Forward, which drive.mjs does not expose as steps.
 
 ## Gotchas
 
-- The starter has six external links (Explore Vite, Learn more, GitHub, Discord, X.com, Bluesky), all opening a new tab. Don't click them: they leave the app and need the network.
-- React `StrictMode` double-invokes effects in dev. A side effect seen twice in `console.log` may be StrictMode, not a bug.
-- This whole file describes throwaway starter content. If `/` no longer shows "Get started", the scaffold has landed and this file is stale.
+- React StrictMode cancels the first development fetch before starting the active request.
+- Static deployment needs an index.html fallback for SPA paths, but must still serve JSON and font assets as files.
+- Placeholder destinations do not prove Protect controls, Puzzles or Tutorial behavior.

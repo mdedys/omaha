@@ -6,7 +6,7 @@ The name comes from Peyton Manning's audible call at the line.
 
 ## Status
 
-Pre-MVP. The visual design is done and lives in [design/](design/README.md). The app is a Vite + React + TypeScript starter shell. The engine contract and Gun Trey stub are ready for screen development while v1 is built; work is tracked in [GitHub issues](https://github.com/mdedys/omaha/issues).
+Pre-MVP. The visual design lives in [design/](design/README.md). The app shell and Landing are implemented in React and SVG, with system light/dark themes and a static daily puzzle source. The other three routes are labelled placeholders. The engine contract and Gun Trey stub are ready for screen development while v1 is built; work is tracked in [GitHub issues](https://github.com/mdedys/omaha/issues).
 
 ## Getting started
 
@@ -17,14 +17,28 @@ pnpm install
 pnpm dev
 ```
 
-| Command          | What it does                     |
-| ---------------- | -------------------------------- |
-| `pnpm dev`       | Start the Vite dev server        |
-| `pnpm build`     | Type-check and build to `dist/`  |
-| `pnpm preview`   | Serve the production build       |
-| `pnpm lint`      | Lint with oxlint                 |
-| `pnpm fmt`       | Format with oxfmt                |
-| `pnpm fmt:check` | Check formatting without writing |
+| Command          | What it does                           |
+| ---------------- | -------------------------------------- |
+| `pnpm dev`       | Start the Vite dev server              |
+| `pnpm build`     | Type-check and build to `dist/`        |
+| `pnpm preview`   | Serve the production build             |
+| `pnpm lint`      | Lint with oxlint                       |
+| `pnpm fmt`       | Format with oxfmt                      |
+| `pnpm fmt:check` | Check formatting without writing       |
+| `pnpm test`      | Run the engine unit tests              |
+| `pnpm test:e2e`  | Run phone and desktop Playwright tests |
+
+Install Chromium before the first browser run with `pnpm exec playwright install chromium`.
+
+## Shell and daily puzzles
+
+`/` renders Landing; `/puzzles`, `/how-to-play` and `/puzzle/:n` render placeholders until those screens land. Links use browser history without reloading; unknown paths render Landing. Static hosting must rewrite non-asset URLs to `index.html` so direct entry into those routes works.
+
+`public/puzzles/index.json` is an array of `{ number, date }` entries. Landing selects the newest ISO date on or before today in `America/New_York`, independently of index order, then fetches `/puzzles/<number>.json` and parses it through `loadPuzzle`. The fixtures are synthetic situations and contain no real team or player names. A puzzle includes engine data plus authored `goalText` for the Landing goal row. Field position is yards from the offense's own goal line; spots beyond midfield display as `opp <100 - spot>`. Goal-to-go displays when distance reaches the opposing goal line.
+
+The hero is fixed playbook art, not a preview of the selected formation. Figtree weights 500–900 are self-hosted through `@fontsource/figtree`. Loading, fetch/engine errors and no eligible puzzle retain the wordmark, hero and secondary navigation but hide the play CTA. Stored progress and first-visit behavior belong to #57.
+
+Playwright runs both 390×844 and 1280×800 projects in the pull-request `checks` job. Its tests use browser-controlled time and network interception for date boundaries and unavailable states; the manual [verification map](.agents/skills/verify-omaha/features/README.md) drives the actual committed fixtures.
 
 ## Engine contract and stub
 
@@ -62,9 +76,9 @@ Other valid designs deterministically select by X's route, with Hitch using the
 first fixture. Replays are authored for the example puzzle, not recalculated
 from another puzzle's defense or routes. Score and reveal helpers apply the
 contract's real rules. Production builds include an exported engine-loader
-entry and its dynamic stub chunk without wiring the starter app to the engine.
-Engine files have scoped oxlint walls against React imports and nondeterministic
-math or clocks. There are no permanent stub tests or test runner yet.
+entry and its dynamic stub chunk; Landing also loads the selected puzzle through
+that boundary. Engine files have scoped oxlint walls against React imports and
+nondeterministic math or clocks. Engine tests run with Vitest.
 
 ## Stack
 

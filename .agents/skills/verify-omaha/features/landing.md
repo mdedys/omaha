@@ -1,38 +1,38 @@
 # Landing
 
-**Status:** Not built (#60). Landing lives at `/`, and an unknown path also renders it. Report this feature as skipped until the screen exists.
-
-Landing shows today's puzzle: the wordmark, a hero field drawing, and a puzzle card with down, distance, spot, briefing and goal from the puzzle data. Its primary CTA starts rep 1. Spec: `design/01-landing/spec.md`.
+Landing is live at `/` and unknown paths. It shows the newest published Eastern-date puzzle, a fixed hero field and the wordmark, with navigation to three labelled route placeholders. Spec: `design/01-landing/spec.md`.
 
 ## Sub-features
 
-- `landing-card` means the puzzle card renders the fixture's number, down and distance, spot, briefing and goal.
-- `landing-play` means "Play today's puzzle" opens Protect on rep 1 with 5-man and Man selected.
-- `landing-nav` means "All puzzles" opens Puzzles at `/puzzles` and "How to play" opens Tutorial step 1 at `/how-to-play`, without a full page reload. Browser back returns to Landing.
-- `landing-states` means Landing shows a loading state while the puzzle loads, an error state on a failed fetch, and a no-puzzle state when no puzzle is dated today or earlier.
-- `landing-focus` means phone focus order is CTA → All puzzles → How to play.
-- `landing-progress` means stored reps used, or a finished puzzle, changes the card and CTA (spec states 2–4). Blocked on #57: nothing reads or writes local storage until it lands.
+- `landing-card`: number, down/distance, spot, briefing and authored goal render from the selected public JSON.
+- `landing-play`: "Play today's puzzle" opens `/puzzle/<n>` without reloading. Protect controls remain #61/#62.
+- `landing-nav`: both secondary links, plus the duplicate desktop top-bar links, navigate to `/puzzles` and `/how-to-play`.
+- `landing-states`: loading covers index and puzzle fetch; failed fetch or EngineError shows error; no eligible date shows no-puzzle. Hero, wordmark and secondary navigation remain, and the primary CTA is absent.
+- `landing-focus`: phone order is CTA → All puzzles → How to play. Desktop order is top-bar All puzzles → top-bar How to play → CTA → panel All puzzles → panel How to play. Enter and Space activate every link.
+- `landing-layout`: 390×844 has the 520px hero and bottom-pinned 392px sheet without scrolling; desktop has the 64px bar, centered field stage and 520px panel.
+- `landing-progress`: not built, #57. No local storage is read or written.
 
 ## How to get to it (user POV)
 
-- Open the site root (the installed PWA opens here too).
-- Use the back button from Puzzles.
-- Close Share, if the open question in the Share spec settles that way.
+- Open the site root or an unknown URL.
+- Use browser Back or the placeholder's "Back to Landing" link.
 
 ## Driving it with drive.mjs
 
-Preconditions:
+Precondition: `doctor.sh` exits `0`.
 
-- `doctor.sh` exits `0`, and `/` shows Landing rather than the starter page.
-
-- **Card.** Run `drive.mjs landing expect-role=region:"Today's puzzle" shot=card`. Use `complementary` instead of `region` on desktop, where the panel is an `aside`. The screenshot shows the down and distance and the spot from the served puzzle's JSON (the Gun Trey stub fixture is 3rd & 10, own 45).
-- **Play.** Add `click=link:"Play today's puzzle"`. The spec makes every Landing control a link; fall back to the `button` role only if the screen differs. The play screen opens. Once Protect's controls land (#62), add `expect-role=radiogroup:Blockers` and check that `aria.yml` shows `radio "5-man" [checked]` and `radio "Man" [checked]`.
-- **Nav.** In separate drives, `click=link:"All puzzles"` and `click=link:"How to play"`, then `shot=`. Until Puzzles (#70) and Tutorial (#69) land, each target is a placeholder, so the screenshot proves only that Landing navigated away. `drive.mjs` has no URL assertion.
-- **Hero.** `aria.yml` contains `img "A play drawn on the field: four receivers' routes and the running back's check-down"`.
-- **Desktop.** Run with `--viewport desktop`. Check the 64px top bar and 520px panel, and that the nav links are each at least 44×44.
+- **Card:** `drive.mjs landing expect-role=heading:Omaha expect-role=link:"Play today's puzzle" shot=card`. Inspect the screenshot and `aria.yml` against the newest eligible `public/puzzles/index.json` entry. Puzzle 1 is 3rd & 10, own 45, first-down goal; puzzle 2 is 2nd & goal, opp 6, touchdown goal.
+- **Hero:** `aria.yml` must contain `img "A play drawn on the field: four receivers' routes and the running back's check-down"`.
+- **Phone focus:** add `press=Tab shot=cta-focus press=Tab shot=all-focus press=Tab shot=help-focus press=Space expect-role=heading:"How to play" shot=activated`.
+- **Desktop focus:** with `--viewport desktop`, tab through the two top-bar links, CTA and two panel links, capturing each focus. The links each have at least 44×44px hit areas.
+- **Play:** capture before and after `click=link:"Play today's puzzle" expect="This screen is not available yet."`; this proves navigation only.
+- **Theme/layout:** run the card recipe for both viewports in light and dark. Inspect against all four prototypes, with spec corrections for field centering and desktop CTA 58px / 10px radius / 19px label.
+- **Failure/date paths:** `pnpm test:e2e` uses controlled browser time and intercepted index/puzzle responses to cover Eastern summer/winter midnight, unsorted indexes, authored changes, independent pending requests, network/HTTP errors, engine rejection and empty/future-only indexes. Do not edit fixtures just to drive failures manually.
 
 ## Gotchas
 
-- Card copy comes from `public/puzzles/<n>.json`, picked as the newest `public/puzzles/index.json` entry dated on or before today in US Eastern time. Assert that puzzle's values, not prototype strings copied from the HTML.
-- No real team or player names may appear. Grep `aria.yml` for them as part of the proof.
-- Once #57 lands, the in-progress and finished states (2–4) need local storage set by actually playing reps in the same drive. Don't inject it.
+- Desktop duplicates mean drive.mjs's unqualified link click may be ambiguous. Use the keyboard recipe for desktop navigation; Playwright covers both pairs by scoped/indexed accessible queries.
+- Hero art is deliberately fixed and is not derived from the puzzle formation.
+- Goal copy may wrap beside the rep indicator; there is no character-limit contract.
+- Fixtures are synthetic and must not name real teams or players. The stub simulation is not yet a recalculated simulation for these fixtures.
+- Stored progress, finished and first-visit states remain #57, not part of this delivery.

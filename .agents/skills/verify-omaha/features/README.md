@@ -31,8 +31,8 @@ Each feature file starts with an H1 and one paragraph on what the player sees. I
 
 | Feature                     | Status                   | Builds in                                 |
 | --------------------------- | ------------------------ | ----------------------------------------- |
-| [App shell](./app-shell.md) | Live (Vite starter page) | #60 replaces it                           |
-| [Landing](./landing.md)     | Not built                | #60                                       |
+| [App shell](./app-shell.md) | Live                     | #60                                       |
+| [Landing](./landing.md)     | Live (not-started state) | #60; stored progress remains #57          |
 | [Protect](./protect.md)     | Not built                | #61 (play screen), #62 (controls)         |
 | [Routes](./routes.md)       | Not built                | #63                                       |
 | [Read and snap](./read.md)  | Not built                | #64                                       |
