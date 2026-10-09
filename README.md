@@ -36,10 +36,11 @@ loading a version chunk. Version 1 currently loads the fixture-backed stub,
 not the real simulation.
 
 `src/engine/stub/gun-trey.json` is a complete example puzzle. The stub parses
-assignment strings into tagged objects and checks field types, but full puzzle
-validation and other formations belong to v1. Design screens use `preSnap`,
-`routeMenu`, `availableDepths`, `protections` and `routePath` before calling
-`simulate`; impossible designs throw `EngineError`.
+assignment strings into tagged objects, checks field types, and requires exactly
+11 defenders with unique roster IDs. Full puzzle validation and other formations
+belong to v1. Design screens use `preSnap`, `routeMenu`, `availableDepths`,
+`protections` and `routePath` before calling `simulate`; impossible designs throw
+`EngineError`.
 
 For the example puzzle, use five blockers, a `man` line call, read order `["X"]`,
 and routes Y = Seam, Z = Go, H = Seam, RB = Flat. X selects these authored replay

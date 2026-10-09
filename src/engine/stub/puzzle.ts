@@ -80,6 +80,10 @@ export function parsePuzzle(json: unknown): Puzzle {
   if (typeof formation.flip !== "boolean" || !Array.isArray(raw.defense)) {
     throw new EngineError("Expected formation flip and defense array");
   }
+  if (raw.defense.length !== 11) {
+    throw new EngineError("Expected exactly 11 defenders");
+  }
+  const seenDefenderIds = new Set<string>();
   return {
     engine: number(raw.engine),
     number: number(raw.number),
@@ -104,8 +108,13 @@ export function parsePuzzle(json: unknown): Puzzle {
       if (!Array.isArray(defender.at) || defender.at.length !== 2) {
         throw new EngineError("Expected a defender coordinate pair");
       }
+      const id = member(defender.id, defenderIds);
+      if (seenDefenderIds.has(id)) {
+        throw new EngineError("Duplicate defender id");
+      }
+      seenDefenderIds.add(id);
       return {
-        id: member(defender.id, defenderIds),
+        id,
         at: { x: number(defender.at[0]), y: number(defender.at[1]) },
         assignment: assignment(defender.assignment),
       };
