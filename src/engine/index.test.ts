@@ -2,7 +2,7 @@ import { describe, expect, expectTypeOf, it } from "vitest";
 import type { Design, Engine, Rep } from "./contract";
 import { EngineError } from "./error";
 import { loadPuzzle } from "./index";
-import gunTrey from "./stub/gun-trey.json";
+import gunTrey from "../../public/puzzles/1.json";
 
 describe("loadPuzzle", () => {
   it.each([

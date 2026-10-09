@@ -5,7 +5,7 @@ const versions: Record<
   number,
   () => Promise<{ parsePuzzle(json: unknown): Puzzle; engine: Engine }>
 > = {
-  1: () => import("./stub"),
+  1: () => import("./v1"),
 };
 
 export async function loadPuzzle(

@@ -6,7 +6,7 @@ The name comes from Peyton Manning's audible call at the line.
 
 ## Status
 
-Pre-MVP. The visual design lives in [design/](design/README.md). The app shell and Landing are implemented in React and SVG, with system light/dark themes and a static daily puzzle source. The other three routes are labelled placeholders. The engine contract and Gun Trey stub are ready for screen development. v1's pre-snap catalogs, validation, design helpers, scoring and disclosure tiers are implemented; the simulation is still being built. Work is tracked in [GitHub issues](https://github.com/mdedys/omaha/issues).
+Pre-MVP. The visual design lives in [design/](design/README.md). The app shell and Landing are implemented in React and SVG, with system light/dark themes and a static daily puzzle source. The other three routes are labelled placeholders. Version 1 of the engine (pre-snap catalogs, validation, design helpers, the simulation, scoring and disclosure tiers) runs behind the engine contract. Work is tracked in [GitHub issues](https://github.com/mdedys/omaha/issues).
 
 ## Getting started
 
@@ -40,56 +40,30 @@ The hero is fixed playbook art, not a preview of the selected formation. Figtree
 
 Playwright runs both 390×844 and 1280×800 projects in the pull-request `checks` job. Its tests use browser-controlled time and network interception for date boundaries and unavailable states; the manual [verification map](.agents/skills/verify-omaha/features/README.md) drives the actual committed fixtures.
 
-## Engine contract and stub
+## Engine contract
 
 Screens import types from `src/engine/contract.ts`, `EngineError` from
 `src/engine/error.ts`, and `loadPuzzle` from `src/engine/index.ts`. Load a raw
 puzzle with `await loadPuzzle(json)` to get `{ puzzle, engine }`; every engine
 method after loading is synchronous and pure. Unknown versions reject before
-loading a version chunk. Version 1 currently loads the fixture-backed stub,
-not the real simulation.
+loading a version chunk. Version 1 loads `src/engine/v1/`.
 
-`src/engine/stub/gun-trey.json` is a complete example puzzle. The stub parses
-assignment strings into tagged objects, checks field types, and requires exactly
-11 defenders with unique roster IDs. v1 adds full puzzle validation and the seven
-formations. Design screens use `preSnap`, `routeMenu`, `availableDepths`,
-`protections` and `routePath` before calling `simulate`; impossible designs throw
-`EngineError`.
-
-For the example puzzle, use five blockers, a `man` line call, read order `["X"]`,
-and routes Y = Seam, Z = Go, H = Seam, RB = Flat. X selects these authored replay
-fixtures (depths in yards):
-
-- In 5: `sack-free-rusher`
-- Slant: `sack-beat-block`
-- Hook 5: `throwaway`
-- Out 5: `breakup-closed`
-- Corner 10: `breakup-forced`
-- Post 10: `interception-closed`
-- Drag: `interception-forced`
-- Go: `short`
-- Comeback 10: `converted`
-- Flat: `touchdown`
-
-The forced breakup uses pressure; the forced interception uses out-of-reads.
-Other valid designs deterministically select by X's route, with Hitch using the
-first fixture. Replays are authored for the example puzzle, not recalculated
-from another puzzle's defense or routes. Score and reveal helpers apply the
-contract's real rules. Production builds include an exported engine-loader
-entry and its dynamic stub chunk; Landing also loads the selected puzzle through
+Design screens use `preSnap`, `routeMenu`, `availableDepths`, `protections` and
+`routePath` before calling `simulate`; impossible designs throw `EngineError`.
+Each scenario in `src/engine/v1/scenarios/` is a complete example puzzle with a
+design and its expected rep. Production builds include an exported engine-loader
+entry and its dynamic v1 chunk; Landing also loads the selected puzzle through
 that boundary. Engine files have scoped oxlint walls against React imports and
 nondeterministic math or clocks. Engine behavior tests run in the CI `checks`
 job via `pnpm test`.
 
 ### v1 authoring helpers
 
-Until the version map switches, engine authors and tests import `{ parsePuzzle,
-engine }` directly from `src/engine/v1/index.ts`. `parsePuzzle(json)` validates
+v1's `parsePuzzle(json)` validates
 every required field, the formation and defensive assignment catalogs, the
 eleven-player roster, a distance of at least one yard, field limits and the
 goal-to-go equivalence: a touchdown goal requires `spot + distance === 100`,
 and that sum requires a touchdown goal.
-The public `loadPuzzle` continues to load the stub for version 1.
 
 v1 supports Gun Trey, Gun Doubles, Gun Trips, Gun Spread, Gun Empty, Gun Doubles
 12 and Ace, each flipped or unflipped on all three hashes. Outside receivers
@@ -117,10 +91,9 @@ Ace's RB depth is fixed at seven yards by the resolved formation rule in
 not by a prototype measurement. Its tuning source is `free`;
 `PROTOTYPE_NOTES.md` specifies a seven-yard QB set depth, but no Ace RB depth.
 
-v1's `simulate` rejects impossible designs using the helpers' rules. A valid
-design then throws an explicit `EngineError` because the tick loop is not yet
-available; it never returns an authored or fabricated rep. Scoring and play-art
-disclosure are usable independently of simulation.
+v1's `simulate` rejects impossible designs using the helpers' rules, then runs
+the play tick by tick. Scoring and play-art disclosure are usable independently
+of simulation.
 
 ## Stack
 
