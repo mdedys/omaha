@@ -120,7 +120,7 @@ Receiver names used across the design steps: `Left WR`, `TE`, `Slot WR`, `Right 
   5. Linemen.
   6. **Selection ring**: `circle r=14`, no fill, stroke Read Gold `#F4B13E`, width 1.6, centered on the selected receiver, drawn under the player glyphs.
   7. Receivers and QB.
-  - Route colors (DESIGN.md Player palette): Left WR `#EAC54F`, TE `#B7A6F5`, Slot WR `#F27C8E`, Right WR `#55AEF5`, RB `#5BDB8C`.
+  - Route colors by receiver letter (DESIGN.md Player palette): X `#EAC54F`, Y `#B7A6F5`, H `#F27C8E`, Z `#55AEF5`, RB `#5BDB8C`. A flipped formation moves a receiver to the other side; its color stays with its letter.
   - Routes start just outside the receiver's ring (for example `M321 380` for the slot WR at y=389). The break depth is measured from the line of scrimmage: y = 366 − depth × 12.8 (5 yds → y=302, 10 yds → y=238, 15 yds → y=174). Draw every route from the design state and the route tree at the chosen depth, never from prototype paths. Arrowheads are open chevrons about 9 units long at ±40° (DESIGN.md "Field glyphs › Routes").
   - Example paths from the prototype: Slot WR Out 10 yds `M321 380V238H375M368 232L375 238L368 244`; Left WR In `M54 359V229H170M163 223L170 229L163 235` (breaks at y=229, about 10.7 yds; a prototype drawing inaccuracy, the app draws a 10-yd In at y=238); TE Corner `M265 358V302L333 236M324.1 237.4L333 236L331.3 244.8`; Right WR Go `M385 372V176M379 183L385 176L391 183`.
 
@@ -172,7 +172,7 @@ None.
 - **Design state:** `blockers` and `lineCall` from Protect (these decide the route runners); `routes`: per route-runner receiver id, `{ route: In | Slant | Out | Corner | Post | Go | Curl | Flat | Wheel, depth: 5 | 10 | 15 }`. Kept between reps.
 - **UI state:** `selectedReceiverId` (route runners only).
 - **Route tree definition:** field geometry for each route at each depth for a receiver at any alignment and side, shared with the simulation so the drawn route matches the simulated one.
-- **Player palette:** ring color and route color per receiver role.
+- **Player palette:** ring color and route color per receiver letter.
 
 ## Open questions
 

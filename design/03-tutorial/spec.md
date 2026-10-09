@@ -52,7 +52,7 @@ Phone baseline 390×844. Background `cream`, text `ink-green`. Every step has th
 **Step 2** (`prototype-2.html`)
 - Field SVG 390×440 (viewBox `0 0 390 440`). Stripes at y 20, 148, 276 (64px) and 404 (36px). First-down line y 212, line of scrimmage y 340, both 2px.
   - Protection zigzag under the line (x 154–250, y 350–357, stroke `protection-zigzag` 1.5px) and a slide arrow pointing left at y 367 (x 250 → 146, `lineman-stroke` 2px, open arrowhead).
-  - Routes 2.2px with open arrowheads: Left WR (`left-wr`), TE (`tight-end-route`, 2.8px as the selected route), Slot WR (`slot-wr-route`), Right WR (`right-wr`), RB block line ending in a T (`running-back`).
+  - Routes 2.2px with open arrowheads: X (`receiver-x`), Y (`receiver-y-route`, 2.8px as the selected route), H (`receiver-h-route`), Z (`receiver-z`), RB block line ending in a T (`receiver-rb`).
   - Linemen at y 340; receivers and QB per DESIGN.md Player palette; QB at 200,404, RB at 170,404.
   - Read marker on the TE: 14-unit `read-gold` ring (1.6px) and a gold "1" badge (r 6.5, 8px 700 `quarterback-text`) at 275,328.
   - No situation pill.

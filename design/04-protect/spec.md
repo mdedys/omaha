@@ -96,7 +96,7 @@ DESIGN.md "Layout › Desktop" and its desktop control variants apply. Same styl
   2. Defenders at the puzzle's pre-snap positions: r=7.5, fill `#071710`, Cream stroke 2.2.
   3. **Protection zigzag** (always drawn): `M156 376L162 383L168 376 … L252 376` (alternating y 376/383 every 6 units from x=156 to x=252), no fill, stroke Protection zigzag `#06100B`, width 1.5, round joins.
   4. **Slide arrow** (slide left shown): horizontal line `M252 393H148` with chevron `M154 387L148 393L154 399`, no fill, stroke Lineman stroke `#DADDE0` (DESIGN.md "Field glyphs › Protection"), width 2, round caps and joins.
-  5. **RB block line** (6-man shown): `M180 425L258 386` plus the T bar `M255.3 380.6L260.7 391.4` (about 12 units, perpendicular to the line), no fill, stroke Running Back `#5BDB8C`, width 2, round caps. It runs from the RB to just outside the end lineman on the edge opposite the slide (DESIGN.md "Field glyphs › Protection").
+  5. **RB block line** (6-man shown): `M180 425L258 386` plus the T bar `M255.3 380.6L260.7 391.4` (about 12 units, perpendicular to the line), no fill, stroke Receiver RB `#5BDB8C`, width 2, round caps. It runs from the RB to just outside the end lineman on the edge opposite the slide (DESIGN.md "Field glyphs › Protection").
   6. Linemen: r=8, fill `#A4AAAF`, stroke `#DADDE0` 1.2, at y=366, x = 160, 181, 202, 223, 244.
   7. Receivers (r=8.5, fill `#0E2219`, 2.2 ring in the player color, white 6.5px 700 label `WR`/`TE`/`RB`) and QB (r=8.5, fill `#F2F5F3`, label `QB` in `#0A1410`). Positions from puzzle data. Labels: `text-anchor: middle`, `y=2.3`.
 

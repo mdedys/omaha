@@ -43,13 +43,13 @@ colors:
   lineman: "#A4AAAF"
   lineman-stroke: "#DADDE0"
   receiver-fill: "#0E2219"
-  left-wr: "#EAC54F"
-  tight-end: "#8E73F2"
-  tight-end-route: "#B7A6F5"
-  slot-wr: "#F0607A"
-  slot-wr-route: "#F27C8E"
-  right-wr: "#55AEF5"
-  running-back: "#5BDB8C"
+  receiver-x: "#EAC54F"
+  receiver-y: "#8E73F2"
+  receiver-y-route: "#B7A6F5"
+  receiver-h: "#F0607A"
+  receiver-h-route: "#F27C8E"
+  receiver-z: "#55AEF5"
+  receiver-rb: "#5BDB8C"
   quarterback: "#F2F5F3"
   quarterback-text: "#0A1410"
   defender-fill: "#071710"
@@ -295,7 +295,8 @@ Every page has a dark prototype (`prototype-dark.html`, `prototype-desktop-dark.
 
 ### Player palette
 Each eligible receiver keeps one color from the first screen to the last; routes use a lighter tint where the ring color would vanish.
-- **Left WR** #EAC54F · **TE** #8E73F2 (route #B7A6F5) · **Slot WR** #F0607A (route #F27C8E) · **Right WR** #55AEF5 · **RB** #5BDB8C.
+- **X** (outside WR) #EAC54F · **Y** (TE) #8E73F2 (route #B7A6F5) · **H** (slot WR or second TE) #F0607A (route #F27C8E) · **Z** (outside WR) #55AEF5 · **RB** #5BDB8C.
+- Colors follow the receiver letter, never the side of the field. In a flipped formation X lines up on the right and stays yellow; the formation supplies display names such as "Right WR".
 - Receivers: filled #0E2219 with a 2.2px ring in their color and a white position label.
 - **Linemen:** solid #A4AAAF discs with a #DADDE0 stroke. **QB:** solid #F2F5F3 disc with dark label.
 - **Defenders:** #071710 disc with a 2.2px cream ring, no label.
