@@ -43,6 +43,14 @@ export type Assignment =
   | { kind: "man"; target: Letter }
   | { kind: "zone"; zone: ZoneId }
   | { kind: "rush"; gap?: Gap };
+export type FormationId =
+  | "gun-trey"
+  | "gun-doubles"
+  | "gun-trips"
+  | "gun-spread"
+  | "gun-empty"
+  | "gun-doubles-12"
+  | "ace";
 export type Puzzle = {
   engine: number;
   number: number;
@@ -58,7 +66,7 @@ export type Puzzle = {
   };
   goal: "first-down" | "touchdown";
   briefing: string;
-  formation: { id: "gun-trey"; flip: boolean };
+  formation: { id: FormationId; flip: boolean };
   defense: { id: DefenderId; at: Vec; assignment: Assignment }[];
   coverageName: string;
   prosResult: string;
