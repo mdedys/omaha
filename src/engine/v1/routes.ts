@@ -31,6 +31,13 @@ export function availableDepths(
     puzzle.situation.spot;
   return depths.filter((depth) => depth <= end);
 }
+// The sign of x toward a receiver's own sideline from the ball.
+export function outsideSign(puzzle: Puzzle, letter: Letter): number {
+  return (
+    Math.sign(receiverSpot(puzzle, letter).x - ballX(puzzle)) ||
+    (puzzle.formation.flip ? 1 : -1)
+  );
+}
 export function routePath(
   puzzle: Puzzle,
   letter: Letter,
@@ -59,8 +66,7 @@ export function routePath(
   }
   const alignment = receiverSpot(puzzle, letter);
   const ball = ballX(puzzle);
-  const side =
-    Math.sign(alignment.x - ball) || (puzzle.formation.flip ? 1 : -1);
+  const side = outsideSign(puzzle, letter);
   const start =
     letter === "RB"
       ? {

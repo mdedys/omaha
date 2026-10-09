@@ -1,0 +1,114 @@
+{
+  "puzzle": {
+    "engine": 1,
+    "number": 20,
+    "date": "2026-10-11",
+    "situation": {
+      "down": 3,
+      "distance": 10,
+      "spot": 45,
+      "hash": "middle",
+      "scoreDiff": -4,
+      "quarter": 4,
+      "clock": "1:12"
+    },
+    "goal": "first-down",
+    "briefing": "Third and ten. Man across the board.",
+    "formation": {
+      "id": "gun-trey",
+      "flip": false
+    },
+    "defense": [
+      {
+        "id": "DL1",
+        "at": [-3.6, 1],
+        "assignment": "rush"
+      },
+      {
+        "id": "DL2",
+        "at": [-1, 1],
+        "assignment": "rush"
+      },
+      {
+        "id": "DL3",
+        "at": [1.2, 1],
+        "assignment": "rush"
+      },
+      {
+        "id": "DL4",
+        "at": [3.9, 1],
+        "assignment": "rush"
+      },
+      {
+        "id": "LB1",
+        "at": [2, 4.5],
+        "assignment": "man Y"
+      },
+      {
+        "id": "LB2",
+        "at": [-2, 4.5],
+        "assignment": "man RB"
+      },
+      {
+        "id": "CB1",
+        "at": [-11.25, 6],
+        "assignment": "man X"
+      },
+      {
+        "id": "CB2",
+        "at": [11.25, 6],
+        "assignment": "man Z"
+      },
+      {
+        "id": "NB",
+        "at": [7.5, 4],
+        "assignment": "man H"
+      },
+      {
+        "id": "S1",
+        "at": [0, 13],
+        "assignment": "zone deep-middle"
+      },
+      {
+        "id": "S2",
+        "at": [-4, 9],
+        "assignment": "zone hook-M"
+      }
+    ],
+    "coverageName": "Cover 1",
+    "prosResult": "Converted"
+  },
+  "design": {
+    "protection": {
+      "blockers": 5,
+      "lineCall": "man"
+    },
+    "routes": {
+      "X": {
+        "route": "Out",
+        "depth": 5
+      },
+      "Z": {
+        "route": "Flat"
+      },
+      "Y": {
+        "route": "Out",
+        "depth": 5
+      },
+      "H": {
+        "route": "Drag"
+      },
+      "RB": {
+        "route": "Hook",
+        "depth": 5
+      }
+    },
+    "readOrder": ["Y"]
+  },
+  "expect": {
+    "cause": "converted",
+    "decisive": null,
+    "yards": 12,
+    "target": "Y"
+  }
+}

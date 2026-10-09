@@ -1,0 +1,111 @@
+{
+  "puzzle": {
+    "engine": 1,
+    "number": 21,
+    "date": "2026-10-11",
+    "situation": {
+      "down": 3,
+      "distance": 10,
+      "spot": 45,
+      "hash": "middle",
+      "scoreDiff": -4,
+      "quarter": 4,
+      "clock": "1:12"
+    },
+    "goal": "first-down",
+    "briefing": "Third and ten. Two deep, five under.",
+    "formation": {
+      "id": "gun-trey",
+      "flip": false
+    },
+    "defense": [
+      {
+        "id": "DL1",
+        "at": [-3.6, 1],
+        "assignment": "rush"
+      },
+      {
+        "id": "DL2",
+        "at": [-1, 1],
+        "assignment": "rush"
+      },
+      {
+        "id": "DL3",
+        "at": [1.2, 1],
+        "assignment": "rush"
+      },
+      {
+        "id": "DL4",
+        "at": [3.9, 1],
+        "assignment": "rush"
+      },
+      {
+        "id": "LB1",
+        "at": [-4, 4.5],
+        "assignment": "zone hook-L"
+      },
+      {
+        "id": "LB2",
+        "at": [1, 5],
+        "assignment": "zone hook-M"
+      },
+      {
+        "id": "NB",
+        "at": [7.5, 4],
+        "assignment": "zone hook-R"
+      },
+      {
+        "id": "CB1",
+        "at": [-12.25, 5],
+        "assignment": "zone flat-L"
+      },
+      {
+        "id": "CB2",
+        "at": [12.25, 5],
+        "assignment": "zone flat-R"
+      },
+      {
+        "id": "S1",
+        "at": [-8, 12],
+        "assignment": "zone deep-half-L"
+      },
+      {
+        "id": "S2",
+        "at": [8, 12],
+        "assignment": "zone deep-half-R"
+      }
+    ],
+    "coverageName": "Cover 2",
+    "prosResult": "Converted"
+  },
+  "design": {
+    "protection": {
+      "blockers": 6,
+      "lineCall": "man"
+    },
+    "routes": {
+      "X": {
+        "route": "Corner",
+        "depth": 10
+      },
+      "Z": {
+        "route": "Hook",
+        "depth": 10
+      },
+      "Y": {
+        "route": "Hook",
+        "depth": 5
+      },
+      "H": {
+        "route": "Slant"
+      }
+    },
+    "readOrder": ["Z", "H", "X"]
+  },
+  "expect": {
+    "cause": "converted",
+    "decisive": null,
+    "yards": 12,
+    "target": "Z"
+  }
+}
