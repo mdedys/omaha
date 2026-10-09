@@ -14,6 +14,7 @@ import {
   type Role,
   type RoutePath,
   type Vec,
+  type ZoneId,
 } from "../contract";
 import { EngineError } from "../error";
 import {
@@ -29,7 +30,7 @@ import { linemen, nearestGap, protect, type Blocker } from "./protection";
 import { routePath, routeTrack } from "./routes";
 import * as t from "./tuning";
 import { direction, distance, segmentDistance, stepToward } from "./vec";
-import { zoneCatalog } from "./zones";
+import { inZone, zoneCatalog, type Zone } from "./zones";
 
 export type LogEvent = { tick: number } & (
   | { kind: "pickup"; blocker: Blocker; rusher: DefenderId }
@@ -39,15 +40,26 @@ export type LogEvent = { tick: number } & (
   | { kind: "hold-release"; rusher: DefenderId }
   | { kind: "pressure"; rusher: DefenderId }
   | { kind: "sack"; rusher: DefenderId }
-  | { kind: "defender-react"; defender: DefenderId; reason: "break" | "throw" }
+  | {
+      kind: "defender-react";
+      defender: DefenderId;
+      reason: "break" | "throw" | "zone";
+    }
   | { kind: "rubbed"; defender: DefenderId; by: Letter }
+  | {
+      kind: "zone-choose";
+      defender: DefenderId;
+      chosen: Letter;
+      over: Letter[];
+    }
+  | { kind: "carry"; defender: DefenderId; letter: Letter }
 );
 type Rush =
   | { kind: "blocked"; engage: Vec; releaseTick: number }
   | { kind: "free"; gap: Vec; reachedGap: boolean };
-// A man defender's chase: his pre-snap offset, his pre-snap depth and the
-// cushion left of it, the receiver heading he last reacted to, the heading he
-// holds while reacting to a break, and the runner rubbing him.
+// A man or carrying defender's chase: his offset and depth where it starts
+// and the cushion left of it, the receiver heading he last reacted to, the
+// heading he holds while reacting to a break, and the runner rubbing him.
 type Chase = {
   letter: Letter;
   offsetX: number;
@@ -59,6 +71,13 @@ type Chase = {
   rubbedBy: Letter | null;
   slowUntil: number;
 };
+// A zone defender's landmark and ellipse and the receiver he reacts to next,
+// when the reaction delay ends: an underneath defender's man in his zone and
+// the point he aims at, or a deep defender's carry.
+type ZonePlay = { zone: Zone; next: Letter | null; reactUntil: number } & (
+  | { kind: "underneath"; target: Letter | null; aim: Vec }
+  | { kind: "deep"; carry: Chase | null }
+);
 type Read = { letter: Letter; track: Vec[]; throwTick: number };
 type Pass = { read: Read | null; forcedBy?: ForcedBy };
 type Ending =
@@ -132,8 +151,10 @@ function routePaths(puzzle: Puzzle, design: Design): Map<Letter, RoutePath> {
   return paths;
 }
 
-function playArt(puzzle: Puzzle): DefensePlayArt {
-  const catalog = zoneCatalog(puzzle);
+function playArt(
+  puzzle: Puzzle,
+  catalog: Record<ZoneId, Zone>,
+): DefensePlayArt {
   const art: DefensePlayArt = { zones: [], assignments: {} };
   for (const defender of puzzle.defense) {
     const assignment = defender.assignment;
@@ -250,24 +271,43 @@ export function simulateWithLog(
     Math.min(
       ...defenders.map((id) => distance(at(letter, tick), at(id, tick))),
     );
+  const chaseFrom = (me: Vec, letter: Letter, receiver: Vec): Chase => ({
+    letter,
+    offsetX: me.x - receiver.x,
+    depth: me.y,
+    cushion: me.y - receiver.y,
+    heading: null,
+    resumeTick: 0,
+    hold: { x: 0, y: 0 },
+    rubbedBy: null,
+    slowUntil: 0,
+  });
+  const catalog = zoneCatalog(puzzle);
   const chases = new Map<DefenderId, Chase>();
+  const zonePlays = new Map<DefenderId, ZonePlay>();
   for (const defender of puzzle.defense) {
     const assignment = defender.assignment;
-    if (assignment.kind !== "man" || !runners.includes(assignment.target))
-      continue;
-    const receiver = spots[assignment.target];
     const me = spots[defender.id];
-    chases.set(defender.id, {
-      letter: assignment.target,
-      offsetX: me.x - receiver.x,
-      depth: me.y,
-      cushion: me.y - receiver.y,
-      heading: null,
-      resumeTick: 0,
-      hold: { x: 0, y: 0 },
-      rubbedBy: null,
-      slowUntil: 0,
-    });
+    if (assignment.kind === "man" && runners.includes(assignment.target))
+      chases.set(
+        defender.id,
+        chaseFrom(me, assignment.target, spots[assignment.target]),
+      );
+    if (assignment.kind !== "zone") continue;
+    const zone = catalog[assignment.zone];
+    zonePlays.set(
+      defender.id,
+      assignment.zone.startsWith("deep")
+        ? { kind: "deep", zone, next: null, reactUntil: 0, carry: null }
+        : {
+            kind: "underneath",
+            zone,
+            next: null,
+            reactUntil: 0,
+            target: null,
+            aim: zone.center,
+          },
+    );
   }
   const order: Read[] = design.readOrder.flatMap((letter) => {
     const route = planned.get(letter);
@@ -351,6 +391,92 @@ export function simulateWithLog(
       x: me.x + length * (-out.x * cos - side * out.y * sin),
       y: me.y + length * (-out.y * cos + side * out.x * sin),
     };
+  };
+
+  // An underneath defender plays a receiver in his zone and otherwise sits at
+  // the landmark; he only ever aims at a point inside his zone. Among two or
+  // more he locks onto the nearest one shallower than himself, else the
+  // nearest, until that one leaves. Each change of target waits the reaction
+  // delay.
+  const underneathTarget = (
+    id: DefenderId,
+    play: Extract<ZonePlay, { kind: "underneath" }>,
+    tick: number,
+  ): Vec => {
+    const prev = tick - 1;
+    const me = at(id, prev);
+    if (tick < play.reactUntil) return play.aim;
+    if (tick === play.reactUntil) {
+      play.target = play.next;
+      log.push({ tick, kind: "defender-react", defender: id, reason: "zone" });
+    }
+    const inside = runners.filter((letter) =>
+      inZone(play.zone, at(letter, prev)),
+    );
+    if (play.target === null || !inside.includes(play.target)) {
+      let pick = inside[0] ?? null;
+      if (inside.length > 1) {
+        const shallower = inside.filter((letter) => at(letter, prev).y < me.y);
+        pick = (shallower.length > 0 ? shallower : inside).reduce(
+          (best, letter) =>
+            distance(at(letter, prev), me) < distance(at(best, prev), me)
+              ? letter
+              : best,
+        );
+        log.push({
+          tick,
+          kind: "zone-choose",
+          defender: id,
+          chosen: pick,
+          over: inside.filter((letter) => letter !== pick),
+        });
+      }
+      if (pick !== play.target) {
+        play.next = pick;
+        play.reactUntil = tick + reactTicks;
+        return play.aim;
+      }
+    }
+    play.aim = play.target === null ? play.zone.center : at(play.target, prev);
+    return play.aim;
+  };
+  // A deep defender drops to his landmark. Before the throw, a receiver in
+  // his zone within the carry distance of his depth is a threat; after the
+  // reaction delay he carries the deepest one, ties nearer the middle, like
+  // man and never rubbed, for the rest of the play.
+  const deepTarget = (
+    id: DefenderId,
+    play: Extract<ZonePlay, { kind: "deep" }>,
+    tick: number,
+  ): Vec => {
+    const prev = tick - 1;
+    const me = at(id, prev);
+    if (tick === play.reactUntil && play.next !== null) {
+      play.carry = chaseFrom(me, play.next, at(play.next, prev));
+      log.push({ tick, kind: "defender-react", defender: id, reason: "zone" });
+      log.push({ tick, kind: "carry", defender: id, letter: play.next });
+    }
+    if (play.carry !== null) return chaseTarget(id, play.carry, tick);
+    if (ball === null && tick > play.reactUntil) {
+      const threats = runners
+        .filter((letter) => {
+          const receiver = at(letter, prev);
+          return (
+            inZone(play.zone, receiver) &&
+            receiver.y >= me.y - t.CARRY_DISTANCE_YARDS
+          );
+        })
+        .sort(
+          (a, b) =>
+            at(b, prev).y - at(a, prev).y ||
+            Math.abs(at(a, prev).x) - Math.abs(at(b, prev).x),
+        );
+      if (threats.length > 0) {
+        play.next = threats[0];
+        play.reactUntil = tick + reactTicks;
+      }
+    }
+    return play.zone.center;
   };
 
   // Every read is past its throw point once the order runs out. He forces the
@@ -535,6 +661,7 @@ export function simulateWithLog(
       const point = breakers.has(id) ? ball?.to : undefined;
       const rush = rushes.get(id);
       const chase = chases.get(id);
+      const play = zonePlays.get(id);
       tracks[id].push(
         point !== undefined
           ? stepToward(me, point, step)
@@ -542,7 +669,15 @@ export function simulateWithLog(
             ? stepToward(me, rushTarget(id, rush), step)
             : chase !== undefined
               ? manStep(id, chase, tick)
-              : me,
+              : play !== undefined
+                ? stepToward(
+                    me,
+                    play.kind === "deep"
+                      ? deepTarget(id, play, tick)
+                      : underneathTarget(id, play, tick),
+                    step,
+                  )
+                : me,
       );
     }
     const qb = at("QB", tick);
@@ -688,7 +823,7 @@ export function simulateWithLog(
     ...result,
     timeInPocketTicks: ballOut,
     feedback,
-    playArt: playArt(puzzle),
+    playArt: playArt(puzzle, catalog),
   };
   return { rep, log };
 }

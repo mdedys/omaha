@@ -647,8 +647,8 @@ describe("receiver feedback", () => {
     );
     expect(rep.feedback.find((each) => each.letter === "X")).toEqual({
       letter: "X",
-      badge: "contested",
-      separation: 2.5,
+      badge: "open",
+      separation: Math.sqrt(1.5 * 1.5 + 3 * 3),
       tick: 10,
     });
   });
@@ -660,7 +660,7 @@ describe("receiver feedback", () => {
     const z = rep.feedback.find((each) => each.letter === "Z");
     expect(z?.tick).toBe(33);
     expect(z?.badge).toBe("open");
-    expect(z?.separation).toBeCloseTo(14.775, 9);
+    expect(z?.separation).toBeCloseTo(4.935901640024852, 9);
   });
   it("measures a runner who never became throwable on the sack tick", () => {
     const rep = engine.simulate(
@@ -755,6 +755,20 @@ const close = (spot: Vec) => ({
 });
 const ticksFrom = (first: number, last: number) =>
   Array.from({ length: last - first + 1 }, (_, i) => first + i);
+
+// X's Comeback 15 is the only read, so the ball comes out at tick 59, far
+// from the right-side zones.
+const xComeback: Partial<Record<Letter, RouteCall>> = { X: comeback15 };
+const zoneEvents = (log: LogEvent[], defender: DefenderId) =>
+  log.filter(
+    (event) =>
+      ((event.kind === "defender-react" && event.reason === "zone") ||
+        event.kind === "zone-choose" ||
+        event.kind === "carry") &&
+      event.defender === defender,
+  );
+const lbStep = 5.49 * 0.05;
+const cbStep = 6.5 * 0.05;
 
 describe("man coverage", () => {
   it("keeps his pre-snap inside offset from the receiver", () => {
@@ -871,7 +885,6 @@ describe("the rub", () => {
         ["Y"],
       ),
     );
-  const lbStep = 5.49 * 0.05;
   it("logs a rub when a chase step would pass within the contact radius of another route runner", () => {
     const { log } = rub();
     expect(log.filter((event) => event.kind === "rubbed")).toEqual([
@@ -910,6 +923,423 @@ describe("the rub", () => {
         ),
       );
   });
+});
+
+describe("underneath zones", () => {
+  // LB1 drops into hook-M, which no route crosses; LB2 sits on the hook-R
+  // landmark as Y's Seam runs through it.
+  const seamThroughHook = () =>
+    simulateWithLog(
+      puzzle([
+        ...lateSack,
+        ["LB1", 0, 1, "zone hook-M"],
+        ["LB2", 5, 6.5, "zone hook-R"],
+      ]),
+      design(
+        6,
+        "man",
+        { ...xComeback, Y: { route: "Seam" }, H: { route: "Flat" } },
+        ["X"],
+      ),
+    );
+  // LB2 starts above hook-R and reaches its landmark at tick 15. Y's Hook 5
+  // enters first; H's Seam and Z's Slant cross the zone while Y is in it.
+  const threeThroughHook = () =>
+    simulateWithLog(
+      puzzle([...lateSack, ["LB2", 5, 10.5, "zone hook-R"]]),
+      design(
+        6,
+        "man",
+        {
+          ...xComeback,
+          Y: { route: "Hook", depth: 5 },
+          H: { route: "Seam" },
+          Z: { route: "Slant" },
+        },
+        ["X"],
+      ),
+    );
+  const inHookR = (spot: Vec) => distance(spot, { x: 5, y: 6.5 }) <= 3.5 + 1e-9;
+
+  it("drops to his landmark at his role speed", () => {
+    const { LB1 } = seamThroughHook().rep.tracks;
+    expect(ticksFrom(1, 21).map((tick) => LB1[tick])).toEqual([
+      ...ticksFrom(1, 20).map((tick) => close({ x: 0, y: 1 + tick * lbStep })),
+      { x: 0, y: 6.5 },
+    ]);
+  });
+  it("sits at his landmark with no receiver in his zone", () => {
+    const { rep } = seamThroughHook();
+    expect(
+      ticksFrom(21, rep.endTick).map((tick) => rep.tracks.LB1[tick]),
+    ).toEqual(Array(rep.endTick - 20).fill({ x: 0, y: 6.5 }));
+  });
+  it("plays a receiver in his zone after the reaction delay", () => {
+    const { rep, log } = seamThroughHook();
+    const { LB2, Y } = rep.tracks;
+    // Y is in hook-R from tick 13 to 36.
+    expect(zoneEvents(log, "LB2")[0]).toEqual({
+      tick: 20,
+      kind: "defender-react",
+      defender: "LB2",
+      reason: "zone",
+    });
+    for (const tick of ticksFrom(20, 37))
+      expect(LB2[tick]).toEqual(
+        close(toward(LB2[tick - 1], Y[tick - 1], lbStep)),
+      );
+  });
+  it("holds inside his zone while the receiver he played runs out of it", () => {
+    const { LB2, Y } = seamThroughHook().rep.tracks;
+    expect([inHookR(Y[36]), inHookR(Y[37])]).toEqual([true, false]);
+    expect(ticksFrom(38, 43).map((tick) => LB2[tick])).toEqual(
+      Array(6).fill(Y[36]),
+    );
+  });
+  it("lets the receiver go and returns to his landmark", () => {
+    const { rep, log } = seamThroughHook();
+    const { LB2 } = rep.tracks;
+    expect(zoneEvents(log, "LB2")[1]).toEqual({
+      tick: 44,
+      kind: "defender-react",
+      defender: "LB2",
+      reason: "zone",
+    });
+    for (const tick of ticksFrom(44, rep.endTick))
+      expect(LB2[tick]).toEqual(
+        close(toward(LB2[tick - 1], { x: 5, y: 6.5 }, lbStep)),
+      );
+  });
+  it("locks onto the nearest receiver shallower than him over a nearer deeper one", () => {
+    // At tick 32, Y's Flat is 2.43 yd away and shallower than NB, H's Out
+    // 1.89 yd away and deeper.
+    const { log } = simulateWithLog(
+      puzzle([...lateSack, ["NB", 13.25, 4, "zone flat-R"]]),
+      design(
+        6,
+        "man",
+        {
+          ...xComeback,
+          Y: { route: "Flat" },
+          H: { route: "Out", depth: 5 },
+          Z: { route: "Hook", depth: 5 },
+        },
+        ["X"],
+      ),
+    );
+    expect(log.filter((event) => event.kind === "zone-choose")).toEqual([
+      {
+        tick: 33,
+        kind: "zone-choose",
+        defender: "NB",
+        chosen: "Y",
+        over: ["H"],
+      },
+    ]);
+  });
+  it("takes the nearer receiver when none is shallower than him", () => {
+    // When Y leaves at tick 29, Z (4.0 yd) and H (5.6 yd) are both deeper.
+    const { log } = threeThroughHook();
+    expect(log.filter((event) => event.kind === "zone-choose")).toEqual([
+      {
+        tick: 30,
+        kind: "zone-choose",
+        defender: "LB2",
+        chosen: "Z",
+        over: ["H"],
+      },
+    ]);
+  });
+  it("keeps his receiver while others enter, re-picking only when he leaves", () => {
+    const { rep, log } = threeThroughHook();
+    const { H, Y } = rep.tracks;
+    expect([
+      inHookR(H[19]),
+      inHookR(H[20]),
+      inHookR(Y[28]),
+      inHookR(Y[29]),
+    ]).toEqual([false, true, true, false]);
+    expect(
+      zoneEvents(log, "LB2").map((event) => [event.tick, event.kind]),
+    ).toEqual([
+      [20, "defender-react"],
+      [30, "zone-choose"],
+      [36, "defender-react"],
+      [50, "defender-react"],
+    ]);
+  });
+  it("never leaves his zone once at his landmark", () => {
+    const { rep } = threeThroughHook();
+    const { LB2 } = rep.tracks;
+    expect({
+      arrival: LB2.findIndex((spot) => spot.x === 5 && spot.y === 6.5),
+      outside: ticksFrom(15, rep.endTick).filter((tick) => !inHookR(LB2[tick])),
+    }).toEqual({ arrival: 15, outside: [] });
+  });
+});
+
+describe("deep zones", () => {
+  // CB2 sits on the deep-third-R landmark. Z's In 10 comes within 6 yd of his
+  // depth at tick 30 and leaves the zone at tick 51; Y's Comeback 15 turns
+  // across CB2's path at tick 54. The ball is out at tick 59.
+  const inCarried = () =>
+    simulateWithLog(
+      puzzle([...lateSack, ["CB2", 10.5, 15, "zone deep-third-R"]]),
+      design(
+        6,
+        "man",
+        {
+          ...xComeback,
+          Y: comeback15,
+          H: { route: "Flat" },
+          Z: { route: "In", depth: 10 },
+        },
+        ["X"],
+      ),
+    );
+  // Where CB2 trails Z: his offset from Z when the carry starts at tick 37,
+  // and the 5 yd from Z's depth to his own.
+  const trail = (rep: Rep, tick: number) => ({
+    x: rep.tracks.Z[tick - 1].x + 10.5 - rep.tracks.Z[36].x,
+    y: rep.tracks.Z[tick - 1].y + 5,
+  });
+
+  it.each([
+    {
+      how: "in",
+      // Z is in deep-third-R from tick 25 and 9.25 yd deep at tick 30.
+      defender: ["CB2", 10.5, 15, "zone deep-third-R"] as Spot,
+      routes: { Z: { route: "In", depth: 10 } } as Partial<
+        Record<Letter, RouteCall>
+      >,
+      carry: { tick: 37, kind: "carry", defender: "CB2", letter: "Z" },
+    },
+    {
+      how: "entering",
+      // H's In 10 runs 10 yd deep and enters deep-third-M at tick 50.
+      defender: ["S1", 0, 15, "zone deep-third-M"] as Spot,
+      routes: { H: { route: "In", depth: 10 } } as Partial<
+        Record<Letter, RouteCall>
+      >,
+      carry: { tick: 57, kind: "carry", defender: "S1", letter: "H" },
+    },
+  ])(
+    "carries a receiver $how his zone within the carry distance of his depth",
+    ({ defender, routes, carry }) => {
+      const { log } = simulateWithLog(
+        puzzle([...lateSack, defender]),
+        design(
+          6,
+          "man",
+          {
+            ...xComeback,
+            Y: { route: "Out", depth: 5 },
+            H: { route: "Flat" },
+            Z: { route: "Out", depth: 5 },
+            ...routes,
+          },
+          ["X"],
+        ),
+      );
+      expect(log.filter((event) => event.kind === "carry")).toEqual([carry]);
+    },
+  );
+  it("trails the receiver he carries like man, out of his zone", () => {
+    const { rep } = inCarried();
+    // Deep-third-R's inside edge is 5.25 yd from the middle at his depth.
+    expect(
+      ticksFrom(54, 58).map((tick) => rep.tracks.CB2[tick].x < 5.25),
+    ).toEqual(Array(5).fill(true));
+    for (const tick of ticksFrom(38, 58))
+      expect(rep.tracks.CB2[tick]).toEqual(close(trail(rep, tick)));
+  });
+  it("keeps carrying after the throw", () => {
+    const { rep } = inCarried();
+    expect(rep.ball?.throwTick).toBe(59);
+    for (const tick of ticksFrom(60, rep.endTick))
+      expect(rep.tracks.CB2[tick]).toEqual(close(trail(rep, tick)));
+  });
+  it("starts no carry after the throw", () => {
+    // CB2 drops from 50 yd; without the throw at tick 59, Z's Go would come
+    // within 6 yd of his depth at tick 69.
+    const { rep, log } = simulateWithLog(
+      puzzle([...lateSack, ["CB2", 10.5, 50, "zone deep-third-R"]]),
+      design(
+        6,
+        "man",
+        { ...xComeback, Y: { route: "Out", depth: 5 }, H: { route: "Flat" } },
+        ["X"],
+      ),
+    );
+    expect({
+      carries: log.filter((event) => event.kind === "carry"),
+      end: rep.tracks.CB2[rep.endTick],
+    }).toEqual({
+      carries: [],
+      end: close({ x: 10.5, y: 50 - rep.endTick * cbStep }),
+    });
+  });
+  it("carries the deeper of two deep threats", () => {
+    // At tick 33, H's Seam (9.225 yd) and Y's (9.037 yd) both come within
+    // 6 yd of S1's depth; Y is nearer the middle.
+    const { log } = simulateWithLog(
+      puzzle([...lateSack, ["S1", 7.875, 15, "zone deep-half-R"]]),
+      design(
+        6,
+        "man",
+        {
+          ...xComeback,
+          Y: { route: "Seam" },
+          H: { route: "Seam" },
+          Z: { route: "Out", depth: 5 },
+        },
+        ["X"],
+      ),
+    );
+    expect(log.filter((event) => event.kind === "carry")).toEqual([
+      { tick: 40, kind: "carry", defender: "S1", letter: "H" },
+    ]);
+  });
+  it("carries the deep threat nearer the middle when two are level", () => {
+    // S1 drops from 31.5 yd; at tick 50 H's and Z's Ins are both 10 yd deep
+    // in deep-middle and come within 6 yd of his depth.
+    const { rep, log } = simulateWithLog(
+      puzzle([...lateSack, ["S1", 0, 31.5, "zone deep-middle"]]),
+      design(
+        6,
+        "man",
+        {
+          ...xComeback,
+          Y: { route: "Out", depth: 5 },
+          H: { route: "In", depth: 10 },
+          Z: { route: "In", depth: 10 },
+        },
+        ["X"],
+      ),
+    );
+    expect([rep.tracks.H[50].y, rep.tracks.Z[50].y]).toEqual([10, 10]);
+    expect(log.filter((event) => event.kind === "carry")).toEqual([
+      { tick: 57, kind: "carry", defender: "S1", letter: "H" },
+    ]);
+  });
+});
+
+describe("zone drops and the rub", () => {
+  it("drops a DL with a zone assignment to his landmark", () => {
+    const { rep, log } = simulateWithLog(
+      puzzle([...lateSack, ["DL1", -3.6, 1, "zone hook-L"]]),
+      design(6, "man", xComeback, ["X"]),
+    );
+    const step = 4.77 * 0.05;
+    expect({
+      first: rep.tracks.DL1[1],
+      end: rep.tracks.DL1[rep.endTick],
+      blocked: blocks(log).filter((block) => block.includes("DL1")),
+    }).toEqual({
+      first: close(toward({ x: -3.6, y: 1 }, { x: -5, y: 6.5 }, step)),
+      end: { x: -5, y: 6.5 },
+      blocked: [],
+    });
+  });
+  it.each([
+    {
+      who: "an underneath defender",
+      // LB2 leaves Y for Z at tick 36, stepping within 0.4 yd of Y.
+      defender: ["LB2", 5, 10.5, "zone hook-R"] as Spot,
+      routes: {
+        Y: { route: "Hook", depth: 5 },
+        H: { route: "Seam" },
+        Z: { route: "Slant" },
+      } as Partial<Record<Letter, RouteCall>>,
+      id: "LB2" as DefenderId,
+      ticks: [36, 37],
+      step: lbStep,
+    },
+    {
+      who: "a carrying defender",
+      // CB2 carries Z's In across Y's Comeback at tick 54.
+      defender: ["CB2", 10.5, 15, "zone deep-third-R"] as Spot,
+      routes: {
+        Y: comeback15,
+        H: { route: "Flat" },
+        Z: { route: "In", depth: 10 },
+      } as Partial<Record<Letter, RouteCall>>,
+      id: "CB2" as DefenderId,
+      ticks: [54, 55, 56, 57],
+      step: cbStep,
+    },
+  ])("$who is never rubbed", ({ defender, routes, id, ticks, step }) => {
+    const { rep, log } = simulateWithLog(
+      puzzle([...lateSack, defender]),
+      design(6, "man", { ...xComeback, ...routes }, ["X"]),
+    );
+    const track = rep.tracks[id];
+    for (const tick of ticks)
+      expect(
+        segmentDistance(track[tick - 1], track[tick], rep.tracks.Y[tick - 1]),
+      ).toBeLessThan(0.75);
+    expect({
+      rubbed: log.filter((event) => event.kind === "rubbed"),
+      steps: ticks.map((tick) => distance(track[tick - 1], track[tick])),
+    }).toEqual({
+      rubbed: [],
+      steps: ticks.map(() => expect.closeTo(step, 9)),
+    });
+  });
+  it.each([
+    {
+      events: "a zone choice and a carry",
+      defense: [
+        ["LB2", 5, 10.5, "zone hook-R"],
+        ["S1", 0, 15, "zone deep-middle"],
+      ] as Spot[],
+      routes: {
+        ...xComeback,
+        Y: { route: "Hook", depth: 5 },
+        H: { route: "Seam" },
+        Z: { route: "Slant" },
+      } as Partial<Record<Letter, RouteCall>>,
+      read: "X" as Letter,
+      supporting: ["zone-choose LB2 at 30", "carry S1 at 44"],
+    },
+    {
+      events: "a rub and a carry",
+      defense: [
+        ["LB1", 13.75, 1, "man Z"],
+        ["CB1", -10.5, 15, "zone deep-third-L"],
+      ] as Spot[],
+      routes: {
+        X: { route: "Go" },
+        Y: comeback15,
+        H: { route: "Hook", depth: 5 },
+        Z: { route: "Drag" },
+      } as Partial<Record<Letter, RouteCall>>,
+      read: "Y" as Letter,
+      supporting: ["rubbed LB1 at 37", "carry CB1 at 37"],
+    },
+  ])(
+    "keeps $events out of the cause",
+    ({ defense, routes, read, supporting }) => {
+      const { rep, log } = simulateWithLog(
+        puzzle([...lateSack, ...defense]),
+        design(6, "man", routes, [read]),
+      );
+      expect(
+        log.flatMap((event) =>
+          event.kind === "zone-choose" ||
+          event.kind === "carry" ||
+          event.kind === "rubbed"
+            ? [`${event.kind} ${event.defender} at ${event.tick}`]
+            : [],
+        ),
+      ).toEqual(supporting);
+      expect(rep.cause).toEqual({
+        code: "converted",
+        decisive: null,
+        thrownTo: read,
+      });
+    },
+  );
 });
 
 describe("reads", () => {
