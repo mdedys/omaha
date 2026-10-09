@@ -20,6 +20,8 @@ Product context lives in [../PRODUCT.md](../PRODUCT.md) and [../GAME_CONCEPT.md]
 | [10-pros-reveal](10-pros-reveal/spec.md) | How the pros did | phone, desktop · light and dark |
 | [11-share](11-share/spec.md) | Share result and link-preview card | phone, desktop · light and dark; 1200×630 card |
 
+Field art that applies to every screen lives in [field/](field/): `prototype-goal-to-go.html` (phone) and `prototype-goal-to-go-desktop.html` show the end zone, the goal line as the line to gain, the end line, the sideline path and the crowd at 2nd & goal from the 6 (light). The rules are in DESIGN.md's Field palette and Layout › Field geometry.
+
 Open any `*.html` directly in a browser; each file is self-contained apart from the Google Fonts link. Phone prototypes are fixed at 390×844. Desktop prototypes need a window at least 900px wide.
 
 The prototypes are snapshots of the design canvas at https://claude.ai/artifact/5whUJ41gEbZ2b2Mt9vQ8j6. If the canvas and these files disagree, these files and the specs win.
@@ -66,6 +68,8 @@ These are settled for the UX, and specs assume them. Game rules in this table (p
 | Voice | Trash talk everywhere, cause first, jab second. |
 | Themes | Light (cream) and dark (charcoal). The field and the share card are identical in both. |
 | Sharing | One tile per rep: orange incomplete/sack/interception, gold short, green converted. |
+| Line to gain | The yellow line marks what converts the puzzle: the first-down line, or the goal line on a touchdown goal. |
+| End zones | Burnt orange paint with a faint OMAHA wordmark, never a team name or logo. The line of scrimmage stays put in goal to go; past the end line are a grey sideline path and a static pixel-art crowd. |
 
 ## Open questions (owned by the game engine work)
 
