@@ -34,7 +34,7 @@ Preconditions:
 ## Gotchas
 
 - Receivers are named by the engine's `displayName`, which follows the formation flip: X is "Left WR" unflipped and "Right WR" flipped. Read the names from `aria.yml` instead of assuming a side.
-- Assert the menu order against the spec's route-tree table, not against the stub's `routeMenu`. The stub's menus in `src/engine/stub/catalog.ts` are not in route-tree order.
+- Assert the menu order against the spec's route-tree table, not against whatever `routeMenu` returns, so a wrong engine order shows up as a failure.
 - Routes are drawn from design state, not prototype paths. The break sits at y = 366 − depth × 12.8, so a 10-yard break is at field y=238. Judge it in the screenshot against the yard lines, not against the prototype.
 - The carousel holds only the selected receiver's menu and scrolls horizontally on phone. Cards past the fold need the carousel scrolled or the option clicked by name (Playwright scrolls it into view).
 - The slide arrow is not drawn on this screen, but the zigzag and RB block line are.
