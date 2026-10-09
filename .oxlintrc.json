@@ -4,5 +4,40 @@
   "rules": {
     "react/rules-of-hooks": "error",
     "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
+  },
+  "overrides": [
+    {
+      "files": ["src/engine/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "paths": ["react", "react-dom"],
+            "patterns": ["react/*", "react-dom/*"]
+          }
+        ],
+        "no-restricted-globals": ["error", "Date"],
+        "no-restricted-properties": [
+          "error",
+          {
+            "object": "Math",
+            "allowProperties": [
+              "sqrt",
+              "abs",
+              "sign",
+              "min",
+              "max",
+              "floor",
+              "ceil",
+              "round",
+              "trunc",
+              "fround"
+            ]
+          },
+          { "object": "performance", "property": "now" },
+          { "object": "globalThis", "property": "Date" }
+        ]
+      }
+    }
+  ]
 }
