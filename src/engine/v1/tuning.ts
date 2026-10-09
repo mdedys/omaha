@@ -47,3 +47,39 @@ export const CURL_RADIUS_X_YARDS = 3.5;
 export const FLAT_DEPTH_ZONE_YARDS = 4;
 export const FLAT_RADIUS_X_YARDS = 2.5;
 export const FLAT_RADIUS_Y_YARDS = 4;
+// Range: fixed at 20 s; source: prototype (engine-error cap).
+export const REP_CAP_SECONDS = 20;
+// Role speeds, yards per second; range: WR 10 yd past the line in about 1.6 s,
+// every other role at its prototype ratio to the WR; source: prototype.
+export const WR_SPEED_YARDS_PER_SECOND = 6.5;
+export const TE_SPEED_YARDS_PER_SECOND = 5.78;
+export const RB_SPEED_YARDS_PER_SECOND = 6.14;
+export const OL_SPEED_YARDS_PER_SECOND = 4.33;
+export const DL_SPEED_YARDS_PER_SECOND = 4.77;
+export const LB_SPEED_YARDS_PER_SECOND = 5.49;
+export const CB_SPEED_YARDS_PER_SECOND = 6.5;
+export const S_SPEED_YARDS_PER_SECOND = 6.21;
+// Range: 4–5 yd/s, set about 0.5 s after a shotgun snap; source: prototype.
+export const QB_DROP_SPEED_YARDS_PER_SECOND = 4;
+// Range: about 7 yd; source: prototype.
+export const QB_SET_DEPTH_YARDS = 7;
+// Route breaks; range: free; source: prototype.
+export const HARD_BREAK_SECONDS = 0.15;
+export const SOFT_BREAK_SECONDS = 0.05;
+export const BREAK_SPEED_FACTOR = 0.5;
+// Range: free; source: prototype.
+export const REACTION_DELAY_SECONDS = 0.3;
+// Range: 2.5–4.5 s; source: ESPN (2.5 s pass-block win).
+export const HOLD_TIME_SECONDS = 2.5;
+// Range: at most 1.5 yd; source: NGS.
+export const SACK_RADIUS_YARDS = 1.5;
+// Range: about 2 yd; source: prototype.
+export const PRESSURE_RADIUS_YARDS = 2;
+// Where a block is met: the rusher at the pass-set depth behind his gap, his
+// blocker the engage offset behind him; range: free; source: prototype.
+export const PASS_SET_DEPTH_YARDS = 1;
+export const ENGAGE_OFFSET_YARDS = 0.7;
+// Badges: open at or past the open separation, contested at or past the
+// contest radius; range: 3 yd and about 1 yd; source: prototype.
+export const OPEN_SEPARATION_YARDS = 3;
+export const CONTEST_RADIUS_YARDS = 1;
