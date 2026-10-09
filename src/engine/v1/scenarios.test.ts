@@ -10,8 +10,8 @@ import {
   type PlayerId,
   type Rep,
 } from "../contract";
+import { loadPuzzle } from "../index";
 import { defenderIds, letters } from "./formations";
-import { engine, parsePuzzle } from "./index";
 import { linemen } from "./protection";
 import { simulateWithLog, type LogEvent } from "./simulate";
 
@@ -150,15 +150,18 @@ function firstDifference(stored: string | undefined, hashes: string[]) {
 describe("v1 scenarios", () => {
   it.each(scenarios)(
     "$name gives its expected rep",
-    ({ puzzle, design, expect: wanted }) => {
-      const { rep, log } = simulateWithLog(parsePuzzle(puzzle), design);
+    async ({ puzzle: json, design, expect: wanted }) => {
+      const { puzzle, engine } = await loadPuzzle(json);
+      const rep = engine.simulate(puzzle, design);
+      const { log } = simulateWithLog(puzzle, design);
       expect(observed(rep, log, wanted)).toEqual(wanted);
     },
   );
   it.each(scenarios)(
     "$name matches its golden hashes",
-    async ({ name, puzzle, design }) => {
-      const rep = engine.simulate(parsePuzzle(puzzle), design);
+    async ({ name, puzzle: json, design }) => {
+      const { puzzle, engine } = await loadPuzzle(json);
+      const rep = engine.simulate(puzzle, design);
       const hashes = await tickHashes(rep);
       const file = `./scenarios/${name}.sha256`;
       await expect(`${hashes.join("\n")}\n`).toMatchFileSnapshot(

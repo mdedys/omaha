@@ -155,7 +155,7 @@ describe("v1 puzzle boundary", () => {
     expectTypeOf(engine).toEqualTypeOf<Engine>();
     expectTypeOf(parsePuzzle).toEqualTypeOf<(json: unknown) => Puzzle>();
     const loaded = await loadPuzzle(rawPuzzle());
-    expect(loaded.engine.preSnap(loaded.puzzle).Y).toEqual({ x: 4, y: 0 });
+    expect(loaded.engine.preSnap(loaded.puzzle).Y).toEqual({ x: 4.5, y: -0.5 });
     expect(engine.preSnap(puzzle()).Y).toEqual({ x: 4.5, y: -0.5 });
   });
   it.each(formationIds)("parses both orientations of %s", (id) => {
