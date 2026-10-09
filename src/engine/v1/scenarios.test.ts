@@ -5,6 +5,7 @@ import {
   type CauseCode,
   type DefenderId,
   type Design,
+  type ForcedBy,
   type Letter,
   type PlayerId,
   type Rep,
@@ -20,6 +21,7 @@ type Expected = {
   cause: CauseCode;
   decisive: DefenderId | null;
   yards: number;
+  forcedBy?: ForcedBy;
   badges?: Partial<Record<Letter, Badge>>;
   target?: Letter | null;
   times?: Partial<Record<Moment, Range>>;
@@ -73,6 +75,7 @@ function observed(rep: Rep, wanted: Expected) {
     cause: rep.cause.code,
     decisive: rep.cause.decisive,
     yards: rep.outcome.yards,
+    ...(wanted.forcedBy !== undefined ? { forcedBy: rep.cause.forcedBy } : {}),
     ...(wanted.target !== undefined
       ? { target: rep.ball?.target ?? null }
       : {}),
@@ -98,15 +101,17 @@ const playerOrder: readonly PlayerId[] = [
   ...linemen,
   ...defenderIds,
 ];
-// Each tick's state as every player's x and y, float64 little-endian, in a
-// fixed player order.
+// Each tick's state as every player's x and y, then the ball's flight from
+// the throw on, float64 little-endian, in a fixed order.
 async function tickHashes(rep: Rep): Promise<string[]> {
   const ids = playerOrder.filter((id) => Object.hasOwn(rep.tracks, id));
   const hashes: string[] = [];
   for (let tick = 0; tick <= rep.endTick; tick++) {
-    const bytes = new DataView(new ArrayBuffer(ids.length * 16));
-    ids.forEach((id, index) => {
-      const spot = rep.tracks[id][tick];
+    const spots = ids.map((id) => rep.tracks[id][tick]);
+    if (rep.ball !== null && tick >= rep.ball.throwTick)
+      spots.push(rep.ball.from, rep.ball.to);
+    const bytes = new DataView(new ArrayBuffer(spots.length * 16));
+    spots.forEach((spot, index) => {
       bytes.setFloat64(index * 16, spot.x, true);
       bytes.setFloat64(index * 16 + 8, spot.y, true);
     });
