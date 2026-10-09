@@ -13,7 +13,7 @@ One day's challenge: a situation, a formation, a look, a defensive call, a goal 
 The game state a puzzle starts from: down, distance, spot, hash, score, clock and timeouts.
 
 **Goal**:
-What a rep must achieve to convert: a first down or a touchdown.
+What a rep must achieve to convert: a first down or a touchdown. Each puzzle names its goal. A goal-to-go puzzle always has a touchdown goal, but any puzzle may have one, for example when a first down no longer helps.
 _Avoid_: success condition, objective
 
 **Look**:
@@ -214,7 +214,7 @@ The defense's assignments drawn over a rep's final frame: zones, drop lines, and
 _Avoid_: defense reveal
 
 **Yards gained**:
-Whole yards from the line of scrimmage to where the play ends, with any fraction dropped, so 9.6 yards counts as 9. Rep verdicts, the bonus and every stat use it.
+Whole yards from the line of scrimmage to where the play ends, with any fraction dropped, so 9.6 yards counts as 9 and a 6.4-yard loss as −6. Rep verdicts, the bonus and every stat use it.
 
 ### Scoring
 
