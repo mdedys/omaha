@@ -61,7 +61,7 @@ DESIGN.md "Layout › Desktop" and its desktop control variants apply. Same styl
     3. Line call group: same structure, label `Line call`, helper `RB takes the right edge`, segmented control with 42px options and the same arrow icons (gap 6px).
     4. Spacer (`flex-grow: 1`).
     5. Button group (column, gap 10px): primary button `Next: routes` with `kbd` `Enter`, then the hint line.
-- **Below 900px:** one column; stage padding 0; field `width: 100%`, `height: auto`, radius 0; panel padding 16px, no left border; top bar padding `0 16px`; spot and puzzle number hidden; hint line and button `kbd` hidden.
+- **Below 900px:** use the phone layout above, not the simplified desktop-prototype fallback: 52px header with the spot visible, full-width field, step bar inside the panel below it. Hide the desktop wordmark, puzzle number and keyboard hints. The task's phone situation requirement and DESIGN.md's shipped-layout rule supersede the prototype fallback's hidden spot.
 
 ## Content and copy
 
@@ -156,7 +156,7 @@ None.
 - RB block line geometry for slide right and for other formations (the prototype gives one example path).
 - Whether the field on Protect shows routes already designed (rep 2+ or after returning from Routes). The prototype shows none.
 - What happens to routes and the read when the blocker count changes after they are set: for example, the read is the RB and the player switches to 6-man.
-- Step bar: how the steps show they can be tapped (prototypes draw it as static).
+- Step bar affordance is settled: native buttons with a pointer cursor, raised-surface hover, a 3px accent focus-visible outline and at least 44×44px targets. All three buttons remain keyboard reachable, including the selected step, with `aria-current="step"` identifying it. Activation is never gated.
 - How the player leaves the puzzle from this screen. The header has no back or menu control.
 - Desktop keyboard: what `7` does when 7-man is hidden; how `←`/`→` and `Enter` interact with focus inside a radio group or on a button (which use those keys themselves).
 
@@ -175,9 +175,17 @@ None.
 - [ ] Tapping "2 Routes" or "3 Read" in the step bar opens that step without any gating.
 - [ ] Desktop (≥900px) matches `prototype-desktop.html`: 64px top bar, `#0C3322` stage, 440px panel, 4px step bars, labeled groups with 42px options, 58px button with `Enter`, hint line `5 6 7 blockers · ← M → line call`.
 - [ ] On desktop, `5`/`6`/`7`, `←`/`M`/`→` and `Enter` work as listed in Interactions.
-- [ ] Below 900px the desktop layout collapses to one column and hides the hints, the spot and the puzzle number.
+- [ ] Below 900px the shipped phone layout preserves the spot; desktop wordmark, puzzle number and keyboard hints are hidden.
 - [ ] Segmented options have hit areas at least 44px tall.
 - [ ] Run it back opens this screen with the previous rep's blockers and line call selected, and with the routes and read still in the design state.
 - [ ] Both radio groups work with keyboard (Tab into the group, arrows to change); line call options are announced as "Slide left", "Man", "Slide right".
 - [ ] The field `aria-label` changes when protection changes.
 - [ ] Dark theme matches `prototype-dark.html` and `prototype-desktop-dark.html`; the field is pixel-identical between themes.
+
+## Play-screen frame decisions
+
+The frame is live independently of Protect's controls. A numbered route loads that puzzle through the engine loader, starts an in-memory rep-1 session with the domain `Design` draft (5-man, man, no routes, empty read order), and opens Protect. Protect, Routes and Read each show an explicitly unavailable-controls placeholder until their pieces land. Step activation retains the draft; reloading resets the session. Protection zigzags, arrows, block lines, primary buttons and shortcuts are not part of the frame.
+
+The field's frame-stage accessible name describes only down, distance, spot and the pre-snap alignment, not hidden assignments or coverage. Protection-specific descriptions arrive with the controls. Four visible rep pips form the accessible “Rep 1 of 4” group. Desktop retains the named “Design the play” aside; phone places the step navigation in the panel beneath the field.
+
+The header exit remains an open question for the Protect-controls piece. The frame adds no exit button or history replacement: browser back returns to the actual originating page.
