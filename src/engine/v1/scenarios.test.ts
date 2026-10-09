@@ -13,6 +13,7 @@ import {
 import { defenderIds, letters } from "./formations";
 import { engine, parsePuzzle } from "./index";
 import { linemen } from "./protection";
+import { simulateWithLog, type LogEvent } from "./simulate";
 
 type Range = [number, number];
 const moments = ["throw", "sack", "catch"] as const;
@@ -25,6 +26,7 @@ type Expected = {
   badges?: Partial<Record<Letter, Badge>>;
   target?: Letter | null;
   times?: Partial<Record<Moment, Range>>;
+  events?: Partial<LogEvent>[];
 };
 type Scenario = { puzzle: unknown; design: Design; expect: Expected };
 
@@ -70,7 +72,16 @@ function observedTimes(
   }
   return times;
 }
-function observed(rep: Rep, wanted: Expected) {
+// An expected event matches a logged one with the same value for each field
+// it names.
+const logged = (log: LogEvent[], event: Partial<LogEvent>) =>
+  log.some((each) =>
+    Object.entries(event).every(
+      ([key, value]) =>
+        JSON.stringify(Reflect.get(each, key)) === JSON.stringify(value),
+    ),
+  );
+function observed(rep: Rep, log: LogEvent[], wanted: Expected) {
   return {
     cause: rep.cause.code,
     decisive: rep.cause.decisive,
@@ -91,6 +102,9 @@ function observed(rep: Rep, wanted: Expected) {
       : {}),
     ...(wanted.times !== undefined
       ? { times: observedTimes(rep, wanted.times) }
+      : {}),
+    ...(wanted.events !== undefined
+      ? { events: wanted.events.filter((event) => logged(log, event)) }
       : {}),
   };
 }
@@ -137,8 +151,8 @@ describe("v1 scenarios", () => {
   it.each(scenarios)(
     "$name gives its expected rep",
     ({ puzzle, design, expect: wanted }) => {
-      const rep = engine.simulate(parsePuzzle(puzzle), design);
-      expect(observed(rep, wanted)).toEqual(wanted);
+      const { rep, log } = simulateWithLog(parsePuzzle(puzzle), design);
+      expect(observed(rep, log, wanted)).toEqual(wanted);
     },
   );
   it.each(scenarios)(

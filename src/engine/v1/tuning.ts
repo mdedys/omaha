@@ -101,3 +101,8 @@ export const BALL_BREAK_RADIUS_YARDS = 6;
 // How far shallower than a deep defender a receiver in his zone may be and
 // still be carried; range: free; source: prototype.
 export const CARRY_DISTANCE_YARDS = 6;
+// Range: about 1 yd, never above the contest radius; source: prototype.
+export const TACKLE_RADIUS_YARDS = 1;
+// How long the ball carrier keeps a new heading; range: keep 0.3 s; source:
+// prototype.
+export const CUT_HOLD_SECONDS = 0.3;

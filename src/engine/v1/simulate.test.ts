@@ -39,8 +39,12 @@ function puzzle(
     formation?: FormationId;
     flip?: boolean;
     hash?: string;
+    spot?: number;
+    distance?: number;
   } = {},
 ): Puzzle {
+  const spot = options.spot ?? 45;
+  const distance = options.distance ?? 10;
   const named = new Set(defense.map(([id]) => id));
   const fill = allIds
     .filter((id) => !named.has(id))
@@ -52,14 +56,14 @@ function puzzle(
     date: "2026-10-11",
     situation: {
       down: 3,
-      distance: 10,
-      spot: 45,
+      distance,
+      spot,
       hash: options.hash ?? "middle",
       scoreDiff: 0,
       quarter: 4,
       clock: "1:12",
     },
-    goal: "first-down",
+    goal: spot + distance === 100 ? "touchdown" : "first-down",
     briefing: "",
     formation: {
       id: options.formation ?? "gun-trey",
@@ -189,7 +193,7 @@ describe("rep assembly", () => {
     const d = design(5, "man");
     const first = engine.simulate(p, d);
     const second = engine.simulate(p, d);
-    expect(first.endTick).toBe(55);
+    expect(first.endTick).toBe(169);
     expect(second).toEqual(first);
   });
   it("leaves the ball and the read thrown to empty on a sack", () => {
@@ -252,13 +256,15 @@ describe("routes and the QB's drop", () => {
         // The RB's path starts at his release point; he runs there first.
         const points =
           letter === "RB" ? [spots.RB, ...path.points] : path.points;
-        const off = rep.tracks[letter].map((spot) =>
-          Math.min(
-            ...points
-              .slice(1)
-              .map((end, i) => segmentDistance(points[i], end, spot)),
-          ),
-        );
+        const off = rep.tracks[letter]
+          .slice(0, coverageEnd(rep) + 1)
+          .map((spot) =>
+            Math.min(
+              ...points
+                .slice(1)
+                .map((end, i) => segmentDistance(points[i], end, spot)),
+            ),
+          );
         expect(Math.max(...off)).toBeLessThan(1e-9);
       }
     },
@@ -274,7 +280,7 @@ describe("routes and the QB's drop", () => {
       const p = puzzle(lateSack);
       const rep = engine.simulate(p, design(5, "man", { X: call }));
       const last = engine.routePath(p, "X", call).points.at(-1);
-      const track = rep.tracks.X;
+      const track = rep.tracks.X.slice(0, coverageEnd(rep) + 1);
       const arrived = track.findIndex(
         (spot) => spot.x === last?.x && spot.y === last?.y,
       );
@@ -755,6 +761,9 @@ const close = (spot: Vec) => ({
 });
 const ticksFrom = (first: number, last: number) =>
   Array.from({ length: last - first + 1 }, (_, i) => first + i);
+// The catch tick, after which coverage gives way to pursuit, or the end of a
+// rep with no catch.
+const coverageEnd = (rep: Rep) => rep.carrier?.fromTick ?? rep.endTick;
 
 // X's Comeback 15 is the only read, so the ball comes out at tick 59, far
 // from the right-side zones.
@@ -776,9 +785,11 @@ describe("man coverage", () => {
       puzzle([...lateSack, ["CB1", -9.75, 7, "man X"]]),
       design(5, "man", {}, ["Z"]),
     );
-    expect(rep.tracks.CB1.map((spot, i) => spot.x - rep.tracks.X[i].x)).toEqual(
-      Array(rep.endTick + 1).fill(2),
-    );
+    expect(
+      rep.tracks.CB1.slice(0, coverageEnd(rep) + 1).map(
+        (spot, i) => spot.x - rep.tracks.X[i].x,
+      ),
+    ).toEqual(Array(coverageEnd(rep) + 1).fill(2));
   });
   it("holds his depth until the receiver eats the cushion, then trails by the trail distance", () => {
     const rep = engine.simulate(
@@ -786,8 +797,9 @@ describe("man coverage", () => {
       design(5, "man", {}, ["Z"]),
     );
     const { CB1, X } = rep.tracks;
-    expect(CB1.slice(1).map((spot) => spot.y)).toEqual(
-      X.slice(0, -1).map((spot) => expect.closeTo(Math.max(7, spot.y + 1), 9)),
+    const end = coverageEnd(rep);
+    expect(CB1.slice(1, end + 1).map((spot) => spot.y)).toEqual(
+      X.slice(0, end).map((spot) => expect.closeTo(Math.max(7, spot.y + 1), 9)),
     );
   });
   it("keeps the shrunk cushion while a Comeback comes back toward the line", () => {
@@ -814,8 +826,8 @@ describe("man coverage", () => {
       puzzle([...lateSack, ["CB1", -11.75, 7, "man X"]]),
       design(5, "man", { X: hitch }, ["Z"]),
     );
-    expect(rep.tracks.X[rep.endTick]).toEqual({ x: -11.75, y: 1 });
-    expect(rep.tracks.CB1[rep.endTick]).toEqual({ x: -11.75, y: 2 });
+    expect(rep.tracks.X[coverageEnd(rep)]).toEqual({ x: -11.75, y: 1 });
+    expect(rep.tracks.CB1[coverageEnd(rep)]).toEqual({ x: -11.75, y: 2 });
   });
   it.each([
     { call: { route: "Slant" } as RouteCall, turn: "45°", react: 16 },
@@ -867,8 +879,8 @@ describe("man coverage", () => {
       design(5, "man", { X: hitch }, ["Z"]),
     );
     expect({
-      CB1: rep.tracks.CB1[rep.endTick],
-      S1: rep.tracks.S1[rep.endTick],
+      CB1: rep.tracks.CB1[coverageEnd(rep)],
+      S1: rep.tracks.S1[coverageEnd(rep)],
     }).toEqual({ CB1: { x: -11.75, y: 2 }, S1: { x: -8.75, y: 2 } });
   });
 });
@@ -912,7 +924,7 @@ describe("the rub", () => {
   it("rejoins his chase once the rub time is over", () => {
     const { rep } = rub();
     const { LB1, Z } = rep.tracks;
-    for (const tick of ticksFrom(49, rep.endTick))
+    for (const tick of ticksFrom(49, coverageEnd(rep)))
       expect(LB1[tick]).toEqual(
         close(
           toward(
@@ -971,8 +983,8 @@ describe("underneath zones", () => {
   it("sits at his landmark with no receiver in his zone", () => {
     const { rep } = seamThroughHook();
     expect(
-      ticksFrom(21, rep.endTick).map((tick) => rep.tracks.LB1[tick]),
-    ).toEqual(Array(rep.endTick - 20).fill({ x: 0, y: 6.5 }));
+      ticksFrom(21, coverageEnd(rep)).map((tick) => rep.tracks.LB1[tick]),
+    ).toEqual(Array(coverageEnd(rep) - 20).fill({ x: 0, y: 6.5 }));
   });
   it("plays a receiver in his zone after the reaction delay", () => {
     const { rep, log } = seamThroughHook();
@@ -1005,7 +1017,7 @@ describe("underneath zones", () => {
       defender: "LB2",
       reason: "zone",
     });
-    for (const tick of ticksFrom(44, rep.endTick))
+    for (const tick of ticksFrom(44, coverageEnd(rep)))
       expect(LB2[tick]).toEqual(
         close(toward(LB2[tick - 1], { x: 5, y: 6.5 }, lbStep)),
       );
@@ -1073,7 +1085,9 @@ describe("underneath zones", () => {
     const { LB2 } = rep.tracks;
     expect({
       arrival: LB2.findIndex((spot) => spot.x === 5 && spot.y === 6.5),
-      outside: ticksFrom(15, rep.endTick).filter((tick) => !inHookR(LB2[tick])),
+      outside: ticksFrom(15, coverageEnd(rep)).filter(
+        (tick) => !inHookR(LB2[tick]),
+      ),
     }).toEqual({ arrival: 15, outside: [] });
   });
 });
@@ -1156,7 +1170,7 @@ describe("deep zones", () => {
   it("keeps carrying after the throw", () => {
     const { rep } = inCarried();
     expect(rep.ball?.throwTick).toBe(59);
-    for (const tick of ticksFrom(60, rep.endTick))
+    for (const tick of ticksFrom(60, coverageEnd(rep)))
       expect(rep.tracks.CB2[tick]).toEqual(close(trail(rep, tick)));
   });
   it("starts no carry after the throw", () => {
@@ -1173,10 +1187,10 @@ describe("deep zones", () => {
     );
     expect({
       carries: log.filter((event) => event.kind === "carry"),
-      end: rep.tracks.CB2[rep.endTick],
+      end: rep.tracks.CB2[coverageEnd(rep)],
     }).toEqual({
       carries: [],
-      end: close({ x: 10.5, y: 50 - rep.endTick * cbStep }),
+      end: close({ x: 10.5, y: 50 - coverageEnd(rep) * cbStep }),
     });
   });
   it("carries the deeper of two deep threats", () => {
@@ -1233,7 +1247,7 @@ describe("zone drops and the rub", () => {
     const step = 4.77 * 0.05;
     expect({
       first: rep.tracks.DL1[1],
-      end: rep.tracks.DL1[rep.endTick],
+      end: rep.tracks.DL1[coverageEnd(rep)],
       blocked: blocks(log).filter((block) => block.includes("DL1")),
     }).toEqual({
       first: close(toward({ x: -3.6, y: 1 }, { x: -5, y: 6.5 }, step)),
@@ -1670,39 +1684,471 @@ describe("rep fields", () => {
       thrownTo: "Z",
     });
   });
+});
+
+// Each tick's step of the ball carrier after the catch, as runs of
+// [heading, ticks]: upfield, or 45° inside or outside, at his step length.
+function carrierRuns(
+  rep: Rep,
+  inside: number,
+  step: number,
+): [string, number][] {
+  const runs: [string, number][] = [];
+  if (rep.carrier === null) return runs;
+  const track = rep.tracks[rep.carrier.letter];
+  for (const tick of ticksFrom(rep.carrier.fromTick + 1, rep.endTick)) {
+    const dx = track[tick].x - track[tick - 1].x;
+    const dy = track[tick].y - track[tick - 1].y;
+    const diagonal = step * Math.sqrt(0.5);
+    const label =
+      Math.abs(dx) < 1e-9 && Math.abs(dy - step) < 1e-9
+        ? "upfield"
+        : Math.abs(Math.abs(dx) - diagonal) < 1e-9 &&
+            Math.abs(dy - diagonal) < 1e-9
+          ? Math.sign(dx) === inside
+            ? "inside"
+            : "outside"
+          : `step ${dx}, ${dy}`;
+    const last = runs.at(-1);
+    if (last?.[0] === label) last[1]++;
+    else runs.push([label, 1]);
+  }
+  return runs;
+}
+const cuts = (log: LogEvent[]) =>
+  log.flatMap((event) =>
+    event.kind === "cut" ? [[event.tick, event.heading]] : [],
+  );
+// Where a pursuer meets a carrier who keeps his velocity, or the carrier's
+// spot when he never can.
+function meeting(carrier: Vec, velocity: Vec, from: Vec, step: number): Vec {
+  const w = { x: carrier.x - from.x, y: carrier.y - from.y };
+  const a = velocity.x ** 2 + velocity.y ** 2 - step ** 2;
+  const b = 2 * (w.x * velocity.x + w.y * velocity.y);
+  const c = w.x ** 2 + w.y ** 2;
+  const disc = b * b - 4 * a * c;
+  const times =
+    disc < 0
+      ? []
+      : [(-b - Math.sqrt(disc)) / (2 * a), (-b + Math.sqrt(disc)) / (2 * a)];
+  const time = Math.min(...times.filter((each) => each > 0));
+  return Number.isFinite(time)
+    ? { x: carrier.x + velocity.x * time, y: carrier.y + velocity.y * time }
+    : carrier;
+}
+// A pursuer's spot after one step at the intercept point, read from the
+// previous two snapshots of the carrier.
+function pursued(
+  rep: Rep,
+  letter: Letter,
+  id: DefenderId,
+  tick: number,
+  step: number,
+): Vec {
+  const now = rep.tracks[letter][tick - 1];
+  const before = rep.tracks[letter][tick - 2];
+  const from = rep.tracks[id][tick - 1];
+  return toward(
+    from,
+    meeting(now, { x: now.x - before.x, y: now.y - before.y }, from, step),
+    step,
+  );
+}
+const wrStep = 6.5 * 0.05;
+const teStep = 5.78 * 0.05;
+const sStep = 6.21 * 0.05;
+const dlStep = 4.77 * 0.05;
+// X's Hitch is caught at (-11.75, 1) on tick 22 with nobody near; the deep
+// fillers come up from 50 yd to tackle him.
+const openHitch = () =>
+  simulateWithLog(puzzle(lateSack), design(5, "man", { X: hitch }));
+// X's Slant is caught at tick 22, 5 yd short of the line to gain, with S1
+// dropping to curl-flat-L above him.
+const slantUnderCurl = () =>
+  simulateWithLog(
+    puzzle([...lateSack, ["S1", -14, 21, "zone curl-flat-L"]]),
+    design(5, "man", { X: { route: "Slant" } }),
+  );
+// LB3 mans X's Hitch from 8 yd off and is 3.6 yd away at the catch.
+const hitchUnderLb = (options: { spot?: number; distance?: number } = {}) =>
+  simulateWithLog(
+    puzzle([...lateSack, ["LB3", -12, 9, "man X"]], options),
+    design(5, "man", { X: hitch }),
+  );
+
+describe("the ball carrier", () => {
   it.each([
-    { yards: 17, verdict: "converted", routes: {} },
-    { yards: 1, verdict: "short", routes: { X: hitch } },
+    {
+      what: "X after an open Hitch",
+      run: openHitch,
+      inside: 1,
+      step: wrStep,
+      runs: [
+        ["upfield", 65],
+        ["outside", 6],
+        ["upfield", 7],
+      ],
+    },
+    {
+      what: "Y after a Drag across the middle",
+      run: () =>
+        simulateWithLog(
+          puzzle([...lateSack, ["DL3", 4, 21, "zone deep-middle"]]),
+          design(5, "man", { Y: { route: "Drag" } }, ["Y"]),
+        ),
+      inside: -1,
+      step: teStep,
+      runs: [
+        ["inside", 12],
+        ["outside", 6],
+        ["upfield", 16],
+      ],
+    },
   ])(
-    "calls a catch $verdict by where it is caught",
-    ({ yards, verdict, routes }) => {
-      const rep = engine.simulate(puzzle(lateSack), design(5, "man", routes));
+    "steps straight upfield or 45° inside or outside every tick: $what",
+    ({ run, inside, step, runs }) => {
+      expect(carrierRuns(run().rep, inside, step)).toEqual(runs);
+    },
+  );
+  it("runs at the line to gain until he crosses it", () => {
+    // Straight upfield reaches the line before S1 can cut him off; only past
+    // it does he turn 45° inside, toward the goal line.
+    const { rep, log } = slantUnderCurl();
+    const { X } = rep.tracks;
+    expect({
+      cuts: cuts(log),
+      crossed: [X[36].y < 10, X[37].y >= 10],
+    }).toEqual({ cuts: [[38, "inside"]], crossed: [true, true] });
+  });
+  it("runs on for the goal line once past the line to gain", () => {
+    const { rep } = openHitch();
+    const { X } = rep.tracks;
+    expect({
+      crossed: [X[49].y < 10, X[50].y >= 10],
+      upfield: ticksFrom(51, 87).every(
+        (tick) => X[tick].x === -11.75 && X[tick].y > X[tick - 1].y,
+      ),
+    }).toEqual({ crossed: [true, true], upfield: true });
+  });
+  it("runs at the goal line from the catch on a touchdown goal", () => {
+    // The goal line is 8 yd past the line of scrimmage.
+    const { rep } = simulateWithLog(
+      puzzle(lateSack, { spot: 92, distance: 8 }),
+      design(5, "man", { X: hitch }),
+    );
+    expect({
+      runs: carrierRuns(rep, 1, wrStep),
+      end: rep.tracks.X[rep.endTick],
+      code: rep.cause.code,
+    }).toEqual({
+      runs: [["upfield", 22]],
+      end: { x: -11.75, y: expect.closeTo(8.15, 9) },
+      code: "touchdown",
+    });
+  });
+  it("breaks a tie between the 45° headings toward the middle", () => {
+    // Y's Drag carries him past the middle at tick 30; both 45° headings
+    // reach the line to gain before DL3 and upfield doesn't, so he turns
+    // back toward the middle, now on his outside.
+    const { rep, log } = simulateWithLog(
+      puzzle([...lateSack, ["DL3", 4, 21, "zone deep-middle"]]),
+      design(5, "man", { Y: { route: "Drag" } }, ["Y"]),
+    );
+    expect({ x: rep.tracks.Y[30].x < 0, cuts: cuts(log) }).toEqual({
+      x: true,
+      cuts: [
+        [19, "inside"],
+        [31, "outside"],
+        [37, "upfield"],
+      ],
+    });
+  });
+  it("drops a heading whose next step would cross the boundary margin", () => {
+    // X runs 45° outside to the margin, then on upfield along it.
+    const { rep, log } = simulateWithLog(
+      puzzle([...lateSack, ["S1", 4, 19, "zone deep-third-L"]]),
+      design(5, "man", { X: { route: "Slant" } }),
+    );
+    const { X } = rep.tracks;
+    expect({
+      cuts: cuts(log),
+      edge: X[63].x - wrStep * Math.sqrt(0.5) < -14.75,
+      x: ticksFrom(64, rep.endTick).map((tick) => X[tick].x),
+    }).toEqual({
+      cuts: [
+        [38, "outside"],
+        [64, "upfield"],
+      ],
+      edge: true,
+      x: Array(rep.endTick - 63).fill(X[63].x),
+    });
+  });
+  it("keeps a new heading for the cut hold", () => {
+    // He cuts inside away from LB3 at tick 23 and would turn upfield at 28.
+    const { rep, log } = hitchUnderLb();
+    expect({
+      cuts: cuts(log),
+      runs: carrierRuns(rep, 1, wrStep),
+    }).toEqual({
+      cuts: [
+        [23, "inside"],
+        [29, "upfield"],
+      ],
+      runs: [
+        ["inside", 6],
+        ["upfield", 2],
+      ],
+    });
+  });
+  it("ends the cut hold early at the boundary margin", () => {
+    // Z cuts outside at tick 86 and reaches the margin before the hold ends.
+    const { rep, log } = simulateWithLog(
+      puzzle([...lateSack, ["DL3", 10, 3, "zone deep-third-R"]]),
+      design(5, "man", { Z: hitch }, ["Z"]),
+    );
+    const { Z } = rep.tracks;
+    expect({
+      cuts: cuts(log),
+      edge: Z[90].x + wrStep * Math.sqrt(0.5) > 14.75,
+    }).toEqual({
+      cuts: [
+        [23, "outside"],
+        [31, "upfield"],
+        [86, "outside"],
+        [91, "upfield"],
+      ],
+      edge: true,
+    });
+  });
+});
+
+describe("pursuit", () => {
+  it("ends every block at the catch", () => {
+    // DL2 is doubled and held until tick 100; from the catch he heads for
+    // the QB until he pursues.
+    const { rep } = openHitch();
+    const { DL2, QB } = rep.tracks;
+    expect({
+      held: DL2[21],
+      caught: DL2[22],
+      after: DL2[23],
+    }).toEqual({
+      held: DL2[20],
+      caught: DL2[21],
+      after: close(toward(DL2[22], QB[22], dlStep)),
+    });
+  });
+  it("aims at the intercept point from the carrier's velocity", () => {
+    // S1 pursues from tick 28 while X runs straight upfield.
+    const { rep } = slantUnderCurl();
+    expect(ticksFrom(28, 37).map((tick) => rep.tracks.S1[tick])).toEqual(
+      ticksFrom(28, 37).map((tick) =>
+        close(pursued(rep, "X", "S1", tick, sStep)),
+      ),
+    );
+  });
+  it("aims at the carrier's spot when he can't reach him", () => {
+    // DL2 is slower than X and behind him.
+    const { rep } = openHitch();
+    const { DL2, X } = rep.tracks;
+    expect(ticksFrom(28, 40).map((tick) => DL2[tick])).toEqual(
+      ticksFrom(28, 40).map((tick) =>
+        close(toward(DL2[tick - 1], X[tick - 1], dlStep)),
+      ),
+    );
+  });
+  it("pursues from the catch tick after breaking on the ball, otherwise after the reaction delay", () => {
+    // LB3 breaks on the throw to Y's Drag, caught at tick 18; the filler DL1
+    // keeps dropping to deep-middle until tick 24.
+    const { rep, log } = simulateWithLog(
+      puzzle([...lateSack, ["LB3", 2, 7, "man Y"]]),
+      design(5, "man", { Y: { route: "Drag" } }, ["Y"]),
+    );
+    const { DL1, LB3 } = rep.tracks;
+    const landmark = { x: 0, y: 15 };
+    expect({
+      broke: log.some(
+        (event) =>
+          event.kind === "defender-react" &&
+          event.reason === "throw" &&
+          event.defender === "LB3",
+      ),
+      catchTick: rep.carrier?.fromTick,
+      LB3: LB3[19],
+      DL1: ticksFrom(19, 24).map((tick) => DL1[tick]),
+    }).toEqual({
+      broke: true,
+      catchTick: 18,
+      LB3: close(pursued(rep, "Y", "LB3", 19, lbStep)),
+      DL1: [
+        ...ticksFrom(19, 23).map((tick) =>
+          close(toward(DL1[tick - 1], landmark, dlStep)),
+        ),
+        close(pursued(rep, "Y", "DL1", 24, dlStep)),
+      ],
+    });
+  });
+});
+
+describe("tackle and touchdown", () => {
+  it("ends the rep on the first tick a defender is within the tackle radius", () => {
+    const { rep } = hitchUnderLb();
+    const gap = (tick: number) =>
+      distance(rep.tracks.LB3[tick], rep.tracks.X[tick]);
+    expect({
+      endTick: rep.endTick,
+      before: gap(29) > 1,
+      at: gap(30) <= 1,
+      yards: rep.outcome.yards,
+      spot: rep.tracks.X[30],
+    }).toEqual({
+      endTick: 30,
+      before: true,
+      at: true,
+      yards: 3,
+      spot: { x: expect.closeTo(-10.371, 3), y: expect.closeTo(3.029, 3) },
+    });
+  });
+  it("scores a catch in the end zone on the catch tick", () => {
+    // Z's In 10 is caught 2 yd deep in the end zone.
+    const rep = engine.simulate(
+      puzzle(lateSack, { spot: 92, distance: 8 }),
+      design(5, "man", { Z: { route: "In", depth: 10 } }, ["Z"]),
+    );
+    expect({
+      catchY: rep.ball?.to.y,
+      endTick: rep.endTick,
+      code: rep.cause.code,
+    }).toEqual({
+      catchY: 10,
+      endTick: rep.ball?.arriveTick,
+      code: "touchdown",
+    });
+  });
+  it("scores on the tick the carrier reaches the goal line", () => {
+    // The goal line is 15 yd past the line of scrimmage.
+    const rep = engine.simulate(
+      puzzle(lateSack, { spot: 85 }),
+      design(5, "man", { X: hitch }),
+    );
+    const { X } = rep.tracks;
+    expect({
+      reached: [X[rep.endTick - 1].y < 15, X[rep.endTick].y >= 15],
+      code: rep.cause.code,
+    }).toEqual({ reached: [true, true], code: "touchdown" });
+  });
+  it("checks the touchdown before the tackle", () => {
+    // S1 is within the tackle radius on the tick Y reaches the goal line.
+    const rep = engine.simulate(
+      puzzle([...lateSack, ["S1", -12, 15, "zone hook-M"]], { spot: 85 }),
+      design(5, "man", { Y: hitch }, ["Y"]),
+    );
+    const { S1, Y } = rep.tracks;
+    expect({
+      tackleRange: distance(S1[rep.endTick], Y[rep.endTick]) <= 1,
+      goalLine: Y[rep.endTick].y >= 15,
+      code: rep.cause.code,
+    }).toEqual({ tackleRange: true, goalLine: true, code: "touchdown" });
+  });
+});
+
+describe("the completed rep", () => {
+  it.each([
+    { what: "an open Hitch", run: openHitch, letter: "X", fromTick: 22 },
+    { what: "a Slant", run: slantUnderCurl, letter: "X", fromTick: 22 },
+    {
+      what: "a Drag",
+      run: () =>
+        simulateWithLog(
+          puzzle([...lateSack, ["S1", 8, 3, "zone curl-flat-L"]]),
+          design(5, "man", { Y: { route: "Drag" } }, ["Y"]),
+        ),
+      letter: "Y",
+      fromTick: 28,
+    },
+  ])(
+    "names the receiver caught as the carrier from the catch tick: $what",
+    ({ run, letter, fromTick }) => {
+      const { rep } = run();
       expect({
-        yards: rep.outcome.yards,
+        carrier: rep.carrier,
+        arriveTick: rep.ball?.arriveTick,
+      }).toEqual({ carrier: { letter, fromTick }, arriveTick: fromTick });
+    },
+  );
+  it("tracks the carrier past the catch to the end of the rep", () => {
+    // X's Hitch sits at (-11.75, 1); he carries on to the tackle.
+    const { rep } = hitchUnderLb();
+    expect({
+      length: rep.tracks.X.length,
+      end: rep.tracks.X[rep.endTick],
+    }).toEqual({
+      length: 31,
+      end: { x: expect.closeTo(-10.371, 3), y: expect.closeTo(3.029, 3) },
+    });
+  });
+  it("truncates the yards gained toward zero", () => {
+    // S1 tackles Y 2.8 yd past the line of scrimmage.
+    const rep = engine.simulate(
+      puzzle([...lateSack, ["S1", 8, 3, "zone curl-flat-L"]]),
+      design(5, "man", { Y: { route: "Drag" } }, ["Y"]),
+    );
+    expect({
+      spot: rep.tracks.Y[rep.endTick].y,
+      yards: rep.outcome.yards,
+    }).toEqual({ spot: expect.closeTo(2.817, 3), yards: 2 });
+  });
+  it("converts a tackle at the line to gain, naming nobody", () => {
+    const { rep } = slantUnderCurl();
+    expect({
+      outcome: rep.outcome,
+      verdict: rep.verdict,
+      cause: rep.cause,
+    }).toEqual({
+      outcome: { kind: "completion", yards: 10 },
+      verdict: "converted",
+      cause: { code: "converted", decisive: null, thrownTo: "X" },
+    });
+  });
+  it.each([
+    { goal: "first-down", options: {} },
+    { goal: "touchdown", options: { spot: 92, distance: 8 } },
+  ])(
+    "calls a tackle short of the goal short, naming the tackler, on a $goal goal",
+    ({ options }) => {
+      const { rep } = hitchUnderLb(options);
+      expect({
+        outcome: rep.outcome,
         verdict: rep.verdict,
         cause: rep.cause,
       }).toEqual({
-        yards,
-        verdict,
-        cause: { code: verdict, decisive: null, thrownTo: "X" },
+        outcome: { kind: "completion", yards: 3 },
+        verdict: "short",
+        cause: { code: "short", decisive: "LB3", thrownTo: "X" },
       });
     },
   );
-});
-
-describe("a catch", () => {
-  it("ends the rep at the catch point on the arrival tick, yards truncated", () => {
-    const rep = engine.simulate(
-      puzzle(lateSack, { hash: "left" }),
-      design(5, "man"),
-    );
-    expect(rep.ball?.to).toEqual({ x: -11.75, y: expect.closeTo(16.725, 9) });
-    expect({ endTick: rep.endTick, outcome: rep.outcome }).toEqual({
-      endTick: rep.ball?.arriveTick,
-      outcome: { kind: "completion", yards: 16 },
-    });
-    expect(rep.endTick).toBe(53);
-  });
+  it.each([
+    { goal: "first-down", options: { spot: 85 }, yards: 15 },
+    { goal: "touchdown", options: { spot: 92, distance: 8 }, yards: 8 },
+  ])(
+    "converts a touchdown on a $goal goal, naming nobody",
+    ({ options, yards }) => {
+      const rep = engine.simulate(
+        puzzle(lateSack, options),
+        design(5, "man", { X: hitch }),
+      );
+      expect({
+        outcome: rep.outcome,
+        verdict: rep.verdict,
+        cause: rep.cause,
+      }).toEqual({
+        outcome: { kind: "completion", yards },
+        verdict: "converted",
+        cause: { code: "touchdown", decisive: null, thrownTo: "X" },
+      });
+    },
+  );
 });
 
 describe("throw beats the rush", () => {
@@ -1724,7 +2170,7 @@ describe("throw beats the rush", () => {
   });
   it("logs no sack or pressure once the ball is out", () => {
     const { rep, log } = race();
-    for (const tick of ticksFrom(34, rep.endTick))
+    for (const tick of ticksFrom(34, coverageEnd(rep)))
       expect(gap(rep, tick)).toBeLessThanOrEqual(1.5);
     expect(
       log.filter((event) => event.kind === "pressure" || event.kind === "sack"),
