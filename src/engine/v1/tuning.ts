@@ -98,3 +98,6 @@ export const RUB_TIME_SECONDS = 0.6;
 export const RUB_SPEED_FACTOR = 0.5;
 // Range: free; source: prototype.
 export const BALL_BREAK_RADIUS_YARDS = 6;
+// How far shallower than a deep defender a receiver in his zone may be and
+// still be carried; range: free; source: prototype.
+export const CARRY_DISTANCE_YARDS = 6;
