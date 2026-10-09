@@ -1,15 +1,17 @@
-import type {
-  Depth,
-  Letter,
-  Puzzle,
-  RouteCall,
-  RouteName,
-  RoutePath,
-  Vec,
+import {
+  TICK_SECONDS,
+  type Depth,
+  type Letter,
+  type Puzzle,
+  type RouteCall,
+  type RouteName,
+  type RoutePath,
+  type Vec,
 } from "../contract";
 import { EngineError } from "../error";
 import { ballX, receiverSpot, routeMenu } from "./formations";
 import * as t from "./tuning";
+import { distance, stepToward } from "./vec";
 
 export function availableDepths(
   puzzle: Puzzle,
@@ -139,4 +141,48 @@ export function routePath(
     }
   }
   return { points, breaks, throwIndex, end };
+}
+// A route runner's position on every tick up to the cap, from his alignment
+// along the path, and the tick he first reaches the throw point.
+export function routeTrack(
+  alignment: Vec,
+  path: RoutePath,
+  speedYardsPerSecond: number,
+  ticks: number,
+): { track: Vec[]; throwTick: number } {
+  const points = [alignment, ...path.points];
+  const breakTicks = {
+    hard: Math.round(t.HARD_BREAK_SECONDS / TICK_SECONDS),
+    soft: Math.round(t.SOFT_BREAK_SECONDS / TICK_SECONDS),
+  };
+  let pos = alignment;
+  let next = 1;
+  let slowTicks = 0;
+  let throwTick = Infinity;
+  const track = [pos];
+  for (let tick = 1; tick <= ticks; tick++) {
+    let budget =
+      speedYardsPerSecond *
+      TICK_SECONDS *
+      (slowTicks > 0 ? t.BREAK_SPEED_FACTOR : 1);
+    if (slowTicks > 0) slowTicks--;
+    while (budget > 0 && next < points.length) {
+      const gap = distance(pos, points[next]);
+      if (gap > budget) {
+        pos = stepToward(pos, points[next], budget);
+        break;
+      }
+      pos = points[next];
+      budget -= gap;
+      if (next === path.throwIndex + 1) throwTick = tick;
+      const brk = path.breaks.find((b) => b.index + 1 === next);
+      if (brk) {
+        slowTicks = breakTicks[brk.kind];
+        budget *= t.BREAK_SPEED_FACTOR;
+      }
+      next++;
+    }
+    track.push(pos);
+  }
+  return { track, throwTick };
 }
