@@ -61,3 +61,50 @@ describe("loadPuzzle", () => {
     });
   });
 });
+
+describe("routeMenu", () => {
+  it.each([
+    {
+      letters: ["X", "Z"] as const,
+      menu: [
+        "Hitch",
+        "Flat",
+        "Slant",
+        "Comeback",
+        "Hook",
+        "Out",
+        "In",
+        "Corner",
+        "Post",
+        "Go",
+        "Drag",
+      ],
+    },
+    {
+      letters: ["Y", "H"] as const,
+      menu: [
+        "Hitch",
+        "Flat",
+        "Slant",
+        "Comeback",
+        "Hook",
+        "Out",
+        "In",
+        "Corner",
+        "Post",
+        "Seam",
+        "Drag",
+        "Wheel",
+      ],
+    },
+    {
+      letters: ["RB"] as const,
+      menu: ["Flat", "Hook", "Out", "In", "Seam", "Wheel"],
+    },
+  ])("lists $letters routes in route-tree order", async ({ letters, menu }) => {
+    const { puzzle, engine } = await loadPuzzle(gunTrey);
+    for (const letter of letters) {
+      expect(engine.routeMenu(puzzle, letter)).toEqual(menu);
+    }
+  });
+});

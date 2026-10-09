@@ -28,24 +28,25 @@ export const defenderIds: readonly DefenderId[] = [
 ];
 
 export const letters: readonly Letter[] = ["X", "Y", "Z", "H", "RB"];
+// Route-tree order, so a route keeps its place and key in every menu.
 const wr: readonly RouteName[] = [
-  "In",
+  "Hitch",
+  "Flat",
   "Slant",
+  "Comeback",
   "Hook",
   "Out",
+  "In",
   "Corner",
   "Post",
-  "Drag",
   "Go",
-  "Comeback",
-  "Flat",
-  "Hitch",
+  "Drag",
 ];
 const inside: readonly RouteName[] = [
   ...wr.map((route) => (route === "Go" ? "Seam" : route)),
   "Wheel",
 ];
-const rb: readonly RouteName[] = ["Flat", "Hook", "Seam", "Wheel", "Out", "In"];
+const rb: readonly RouteName[] = ["Flat", "Hook", "Out", "In", "Seam", "Wheel"];
 
 export function routeMenu(_puzzle: Puzzle, letter: Letter): RouteName[] {
   return [

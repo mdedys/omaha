@@ -31,9 +31,11 @@ Every rule v1 runs, with the [Legibility prototype](https://github.com/mdedys/om
 
 | Menu | Routes |
 |---|---|
-| WR | In, Slant, Hook, Out, Corner, Post, Drag, Go, Comeback, Flat, Hitch |
+| WR | Hitch, Flat, Slant, Comeback, Hook, Out, In, Corner, Post, Go, Drag |
 | Inside | the WR routes plus Wheel, with Go named Seam |
-| RB | Flat, Hook, Seam, Wheel, Out, In |
+| RB | Flat, Hook, Out, In, Seam, Wheel |
+
+Each menu lists its routes in route-tree order, as `design/05-routes` › Route order sets out.
 
 - **Depth** from the line of scrimmage: In, Out, Hook take 5/10/15; Corner, Post, Comeback take 10/15; the rest take none. A depth whose break lands inside the end-line margin is unavailable.
 - **Inside** is toward the ball, **outside** toward the receiver's own sideline. A flip mirrors routes with the receivers.
