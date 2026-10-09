@@ -347,7 +347,7 @@ Madden zone colors, because players already know them:
 
 **Desktop (≥900px):** every screen has a desktop prototype.
 - 64px top bar (wordmark, situation, meta), then a two-column grid: field stage `minmax(0,1fr)` on #0C3322 with the field at `calc(100vh - 112px)` tall, and a 440px paper panel with 28px padding and a 1px Sand Border on its left. Landing widens the panel to 520px; Puzzles is a single centered column, max 760px.
-- Desktop control variants: primary button 58px tall with a 10px radius and 19px label; secondary square 58px, 10px radius, 2px border; outcome tile 52px with a 12px radius; step bars 4px with done bars at 45% opacity; route cards in a 3×3 grid with a 10px radius, 2px border and a filled Ink Green label band when selected; field pills 30px with 13px text; rep boxes 34px; result line 18px 600 Sage Muted.
+- Desktop control variants: primary button 58px tall with a 10px radius and 19px label; secondary square 58px, 10px radius, 2px border; outcome tile 52px with a 12px radius; step bars 4px with done bars at 45% opacity; route cards in a 4-column grid with a 10px radius, 2px border, a small key tag in the top-left corner and a filled Ink Green label band when selected; field pills 30px with 13px text; rep boxes 34px; result line 18px 600 Sage Muted.
 - Desktop result screens show the field without the shade and add a "Final · defense revealed" pill. Live play on desktop keeps the standard field framing (no camera pan) and swaps the panel from captions to the result at the reveal.
 - Keyboard hints (`kbd`) sit in the primary button and under it.
 - Below 900px the app uses the phone screen designs. (The desktop prototypes include a simplified stacked fallback; it is not the shipped layout.)
@@ -384,10 +384,10 @@ Soft rectangles, round players. Controls at 12px radius (9px for the inner segme
 Three equal steps (Protect, Routes, Read) with a 3px bar over a 12px uppercase label. Done and current bars are Ink Green; the current label is Ink Green, others Sage Muted.
 
 ### Segmented control
-White track, Sand Border, 3px padding; options 38–40px tall, 800 uppercase 14px. Selected = Ink Green fill with cream text (dark mode: cream fill, charcoal text). Used for blocker count, line call, route depth (5/10/15 yds) and playback speed.
+White track, Sand Border, 3px padding; options 38–40px tall, 800 uppercase 14px. Selected = Ink Green fill with cream text (dark mode: cream fill, charcoal text). Used for blocker count, line call, route depth (5/10/15 yds) and playback speed. An option that isn't available stays in place at 40% opacity and does nothing; when a route takes no depth, a dashed box of the same height with one quiet Sage Muted line ("No depth for the slant") stands in for the control.
 
 ### Route card carousel
-92×88 cards: a mini turf diagram of the route in the selected receiver's colors above an uppercase name. Selected card has a 2px Ink Green border. The carousel scrolls horizontally and bleeds off both edges.
+92×88 cards: a mini turf diagram of the route in the selected receiver's colors above an uppercase name. Selected card has a 2px Ink Green border. The carousel holds only the selected receiver's route menu (6 to 12 cards) in route-tree order, snaps to cards, centers the selected card, and bleeds off both edges.
 
 ### Read option
 52px white toggle with the receiver's ring swatch, name and route. In the read order it gets a 2px Ink Green border and a gold badge with its number, the same badge the field shows. Once three reads are set, the rest go quiet: transparent, Sage Muted text, swatch at 45%.

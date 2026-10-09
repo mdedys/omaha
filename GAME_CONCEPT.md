@@ -148,7 +148,7 @@ Free. No ads, no paid tier, no paywalled puzzles.
 - **Situation briefing** — down, distance, score, time, timeouts, field position, and a one-line real-world setup.
 - **Play designer**
   - The puzzle sets the formation; the player doesn't choose it.
-  - Assign each eligible receiver a route from the route tree (go, slant, out, curl, post, corner, flat, wheel, etc.).
+  - Assign each eligible receiver a route from its route menu (hitch, slant, hook, out, post, go, wheel, etc.). Each formation gives every receiver one of three menus: WR, Inside (TE or slot) or RB.
   - Set protection: a blocker count (5-man, 6-man, 7-man) and a line call (slide left, man, slide right).
     - 5-man: the line only; the RB and TE run routes.
     - 6-man: the RB always stays in as the 6th blocker.
@@ -173,7 +173,7 @@ Free. No ads, no paid tier, no paywalled puzzles.
 - **Input:** touch first; mouse on desktop uses the same interactions.
   - The design happens in three steps in a bottom bar: Protect, Routes, Read.
   - Protect: pick a blocker count and a line call from two rows of toggles.
-  - Routes: tap a receiver on the field, swipe a carousel of route cards, then pick a set depth (5, 10 or 15 yards) from a toggle row. Snapping to a route tree instead of freehand drawing keeps phones precise and keeps the simulation tractable. Freehand drawing could be a later expert mode.
+  - Routes: tap a receiver on the field, swipe a carousel of route cards, then pick a set depth (5, 10 or 15 yards) from a toggle row when the route takes one. Snapping to a route tree instead of freehand drawing keeps phones precise and keeps the simulation tractable. Freehand drawing could be a later expert mode.
   - Read: tap up to three receivers in the order the QB reads them.
   - A large "Snap" button.
 - **Watching:** replay controls (replay, slow-mo, scrub) after each rep, so the player can study why a play worked or failed.

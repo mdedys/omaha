@@ -37,7 +37,7 @@ The nearest competitor is Monday QB (monday-qb.com). It covers a whole drive and
 - **Daily ritual:** one shared puzzle per day, published at midnight US Eastern so every time zone gets it at the same moment.
 - **Season-bound:** puzzles track the current NFL week, Thursday night through Monday night, and the season ends at the Super Bowl.
 - **Sharing:** a spoiler-free emoji share card, one tile per rep showing its outcome (incomplete / short / converted), shared through the native share sheet on mobile.
-- **Phone-first touch input:** three steps in a bottom bar. Protect (blocker count and line call toggles), Routes (tap a receiver on the field, swipe a carousel of route cards, pick a 5/10/15-yard depth), Read (tap up to three receivers in the order the QB reads them), then a large Snap button. On desktop the mouse does the same things.
+- **Phone-first touch input:** three steps in a bottom bar. Protect (blocker count and line call toggles), Routes (tap a receiver on the field, swipe a carousel of that receiver's route cards, pick a 5/10/15-yard depth when the route takes one), Read (tap up to three receivers in the order the QB reads them), then a large Snap button. On desktop the mouse does the same things.
 - **Replays:** replay, slow-mo and scrub controls after each rep, so the player can study why a play worked or failed.
 
 ## Capabilities and Constraints
