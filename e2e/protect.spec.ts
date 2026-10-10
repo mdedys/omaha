@@ -97,19 +97,14 @@ for (const blockers of [5, 6, 7]) {
       await expect(next).toBeEnabled();
       await next.click();
       await expect(page.getByRole("heading", { name: "Routes" })).toBeVisible();
-      const storedCall =
-        call === "Man"
-          ? "man"
-          : call === "Slide left"
-            ? "slide-left"
-            : "slide-right";
       await expect(page.locator(".puzzle-field")).toHaveAttribute(
         "aria-label",
         new RegExp(`${blockers}-man protection`),
       );
       await page.getByRole("button", { name: "3 Read" }).click();
-      await expect(page.locator(".draft-summary")).toHaveText(
-        `Current draft: ${blockers}-man · ${storedCall}. No routes or reads set.`,
+      await expect(page.locator(".puzzle-field")).toHaveAttribute(
+        "aria-label",
+        new RegExp(`${blockers}-man protection`),
       );
       await page.getByRole("button", { name: "1 Protect" }).click();
       await expect(
@@ -260,7 +255,7 @@ test("focused step Enter takes precedence over Next shortcut", async ({
   await page.getByRole("button", { name: "3 Read" }).focus();
   await page.keyboard.press("Enter");
   await expect(
-    page.getByRole("heading", { name: "Read", exact: true }),
+    page.getByRole("heading", { name: "Who does the QB look to?" }),
   ).toBeVisible();
 });
 

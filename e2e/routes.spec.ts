@@ -84,7 +84,7 @@ test("field selection persists through Read", async ({ page }) => {
   );
   await page.getByRole("button", { name: "Next: read" }).click();
   await expect(
-    page.getByRole("heading", { name: "Read", exact: true }),
+    page.getByRole("heading", { name: "Who does the QB look to?" }),
   ).toBeVisible();
   await page.getByRole("button", { name: "2 Routes" }).click();
   await expect(slot).toHaveAttribute("aria-pressed", "true");

@@ -5,10 +5,16 @@ import type {
   Letter,
   PlayerId,
   Puzzle,
+  Rep,
   Vec,
 } from "./engine/contract";
 import { protectionCopy } from "./Protect";
-import { receiverColors, receiverLetters, routeRunners } from "./routes";
+import {
+  fieldOrder,
+  receiverColors,
+  receiverLetters,
+  routeRunners,
+} from "./routes";
 
 export function fieldPoint({ x, y }: Vec): Vec {
   return { x: 201.5 + (403 / 31.5) * x, y: 366 - 12.8 * y };
@@ -131,6 +137,9 @@ export const Field = memo(function Field({
   routes = {},
   selected,
   onSelect,
+  reads,
+  frame,
+  label,
 }: {
   puzzle: Puzzle;
   engine: Engine;
@@ -138,6 +147,9 @@ export const Field = memo(function Field({
   routes?: Design["routes"];
   selected?: Letter;
   onSelect?: (letter: Letter) => void;
+  reads?: readonly Letter[];
+  frame?: Rep;
+  label?: string;
 }) {
   const { spot, down, distance } = puzzle.situation;
   const goalY = fieldPoint({ x: 0, y: 100 - spot }).y;
@@ -151,17 +163,31 @@ export const Field = memo(function Field({
   const positions = engine.preSnap(puzzle);
   const copy = protection ? protectionCopy(protection) : null;
   const runners = protection ? routeRunners(protection) : [];
-  const ordered = [...runners].sort((a, b) => positions[a].x - positions[b].x);
+  const ordered = fieldOrder(positions, runners);
   const call = selected ? routes[selected] : undefined;
   const selectionCopy = selected
     ? ` Selected ${engine.displayName(puzzle, selected).name}, ${call ? `${call.route}${"depth" in call ? `, ${call.depth} yards` : ", no depth"}` : "no route"}.`
     : "";
+  const readCopy = reads
+    ? reads.length
+      ? ` Read order ${reads.map((letter) => engine.displayName(puzzle, letter).name).join(", then ")}.`
+      : " No reads picked."
+    : "";
+  const drawRoutes = selected !== undefined || reads !== undefined;
+  const players = frame
+    ? Object.entries(frame.tracks).map(
+        ([id, track]) => [id, track[frame.endTick]] as const,
+      )
+    : Object.entries(positions);
   return (
     <svg
       className="puzzle-field"
       viewBox="0 0 403 495"
       role={selected ? "group" : "img"}
-      aria-label={`Field: ${situation}. Pre-snap offense and defense; blue line of scrimmage, yellow line to gain.${protection && copy ? ` ${protection.blockers}-man protection. ${copy.blockersHelper}. ${copy.lineHelper}${copy.lineHelper.endsWith(".") ? "" : "."}` : ""}${selectionCopy}`}
+      aria-label={
+        label ??
+        `Field: ${situation}. Pre-snap offense and defense; blue line of scrimmage, yellow line to gain.${protection && copy ? ` ${protection.blockers}-man protection. ${copy.blockersHelper}. ${copy.lineHelper}${copy.lineHelper.endsWith(".") ? "" : "."}` : ""}${selectionCopy}${readCopy}`
+      }
       overflow="visible"
       onClick={
         onSelect
@@ -364,7 +390,7 @@ export const Field = memo(function Field({
         data-field-layer="line-to-gain"
         d={`M0 ${lineY}H403`}
         stroke="#E2C044"
-        strokeWidth="2"
+        strokeWidth={frame?.verdict === "converted" ? 3.5 : 2}
       />
       <path
         data-field-layer="scrimmage"
@@ -372,7 +398,7 @@ export const Field = memo(function Field({
         stroke="#3B8EEA"
         strokeWidth="2"
       />
-      {selected
+      {drawRoutes
         ? runners.map((letter) => {
             const route = routes[letter];
             if (!route) return null;
@@ -403,8 +429,12 @@ export const Field = memo(function Field({
                   .join("")}M${head(-0.7)}L${last.x} ${last.y}L${head(0.7)}`}
                 fill="none"
                 stroke={receiverColors[letter].route}
-                strokeWidth={letter === selected ? 2.4 : 2}
-                opacity={letter === selected ? 1 : 0.45}
+                strokeWidth={
+                  (reads ? reads.includes(letter) : letter === selected)
+                    ? 2.4
+                    : 2
+                }
+                opacity={reads || letter === selected ? 1 : 0.45}
                 strokeLinecap="round"
                 strokeLinejoin="round"
               />
@@ -415,7 +445,7 @@ export const Field = memo(function Field({
         <ProtectionArt
           positions={positions}
           protection={protection}
-          showSlide={!selected}
+          showSlide={!drawRoutes}
         />
       ) : null}
       {selected ? (
@@ -429,7 +459,19 @@ export const Field = memo(function Field({
           strokeWidth="1.6"
         />
       ) : null}
-      {Object.entries(positions).map(([id, at]) => {
+      {reads?.map((letter) => (
+        <circle
+          key={letter}
+          data-read-ring={letter}
+          cx={fieldPoint(positions[letter]).x}
+          cy={fieldPoint(positions[letter]).y}
+          r="14"
+          fill="none"
+          stroke="#F4B13E"
+          strokeWidth="1.6"
+        />
+      ))}
+      {players.map(([id, at]) => {
         const { x, y } = fieldPoint(at);
         const receiver = receivers[id];
         const letter = receiverLetters.find((letter) => letter === id);
@@ -474,6 +516,27 @@ export const Field = memo(function Field({
                     : receiver?.label}
               </text>
             ) : null}
+          </g>
+        );
+      })}
+      {reads?.map((letter, index) => {
+        const { x, y } = fieldPoint(positions[letter]);
+        return (
+          <g
+            key={letter}
+            data-read-badge={letter}
+            transform={`translate(${x + 19.5 > 402 ? x - 13 : x + 13} ${y - 13})`}
+          >
+            <circle r="6.5" fill="#F4B13E" />
+            <text
+              y="2.4"
+              textAnchor="middle"
+              fontSize="8"
+              fontWeight="700"
+              fill="#0A1410"
+            >
+              {index + 1}
+            </text>
           </g>
         );
       })}
