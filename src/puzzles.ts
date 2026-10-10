@@ -5,6 +5,11 @@ import { loadPuzzle } from "./engine";
 export type LandingPuzzle = Puzzle & { goalText: string };
 type IndexEntry = { number: number; date: string };
 
+export function downAndDistance({ down, distance, spot }: Puzzle["situation"]) {
+  const ordinal = ["", "1st", "2nd", "3rd", "4th"][down];
+  return `${ordinal} & ${distance >= 100 - spot ? "goal" : distance}`;
+}
+
 function parseIndex(json: unknown): IndexEntry[] {
   if (!Array.isArray(json)) throw new Error("Expected a puzzle index");
   return json.map((entry: unknown) => {

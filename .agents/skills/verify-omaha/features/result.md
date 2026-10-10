@@ -1,6 +1,6 @@
 # Result
 
-**Status:** Live for the sheet and Run it back (#64) and the play art (#65): the field shows every player at the final frame with the revealed defense play art, feedback badges, ball path and, on a converted rep or rep 4, the key pill. #71 builds the reveal by rep (the decisive-defender ring, partial art on rep 2 and the hidden-art field label). The replay square opens Replay (#67, replay.md). "See how the pros did" renders with `aria-disabled="true"` until the Pros reveal lands, so report `result-pros` as skipped. Result is shown on the play screen at `/puzzle/:n`.
+**Status:** Live for the sheet and Run it back (#64) and the play art (#65): the field shows every player at the final frame with the revealed defense play art, feedback badges, ball path and, on a converted rep or rep 4, the key pill. #71 builds the reveal by rep (the decisive-defender ring, partial art on rep 2 and the hidden-art field label). The replay square opens Replay (#67, replay.md). Until the Pros reveal lands (#72), the CTA on the ink-green and charcoal sheets reads "Share result" and opens Share (#68, share.md). Result is shown on the play screen at `/puzzle/:n`.
 
 Result shows how the rep ended. The field shows the defense's play art and receiver feedback badges, and a sheet holds the headline, outcome tile, stats, rep boxes and the next action. The sheet is cream when reps remain, ink green when converted, and charcoal when out of reps. Spec: `design/08-result/spec.md`, with the seven end states (incomplete, short, sack, interception, throwaway, converted, out of reps) in `design/08-result/states/`.
 
@@ -13,7 +13,7 @@ Result shows how the rep ended. The field shows the defense's play art and recei
 - `result-ball` means a thrown ball draws a dashed path from `ball.from` to `ball.to`; only an interception adds the football at `ball.to`; a throwaway's path ends past the sideline; a sack draws no ball.
 - `result-key-pill` means "Defense · {coverage}" shows only on a converted rep or rep 4: under the situation pills on phone, and 8 px under the desktop-only "Final · defense revealed" pill at the stage's top left on desktop.
 - `result-run-it-back` means "Run it back" opens Protect with the previous design kept.
-- `result-pros` means "See how the pros did" (on a converted or final rep) opens the Pros reveal.
+- `result-share` means "Share result" (on the ink-green converted sheet and the charcoal out-of-reps sheet) opens Share at `/puzzle/:n/share`; browser back returns to the same finished sheet (share.md).
 - `result-replay` means the replay square opens Replay, which returns here unchanged.
 
 ## How to get to it (user POV)
@@ -36,6 +36,7 @@ Preconditions:
 - **Key pill.** Converted (`Comeback` on X) shows "Defense · Cover 1 pressure" on phone and desktop. On desktop the "Final · defense revealed" pill sits at the stage's top left with the key pill 8 px below it.
 - **Run it back.** Run `click=button:"Run it back" expect-role=radiogroup:Blockers`. The previous protection is still selected.
 - **Replay.** Run `shot=result click=button:"Watch the replay again" expect-role=slider:"Replay position" shot=replay click=button:"Back to the result" shot=back`. The `result` and `back` screenshots match (replay.md).
+- **Share.** On the converted or out-of-reps sheet, `click=button:"Share result" expect-role=region:"Share card preview" shot=share` (share.md).
 - **Determinism.** Run the same design twice in separate drives. The `final` screenshots and `aria.yml` files must be identical.
 
 ## Gotchas

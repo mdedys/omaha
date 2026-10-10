@@ -1,0 +1,296 @@
+.share-screen {
+  --you-bg: var(--ink-green);
+  --you-label: var(--win-muted);
+  --you-value: var(--cream);
+  --stat-value: var(--read-gold);
+  display: flex;
+  flex-direction: column;
+  min-height: 100svh;
+  background: var(--page);
+  color: var(--ink);
+}
+.share-over {
+  --stat-value: var(--snap-orange);
+}
+.share-header {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--border);
+}
+.share-brand {
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+}
+.share-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+}
+.share-close svg {
+  width: 20px;
+  height: 20px;
+}
+.share-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 16px 22px;
+}
+.share-headline {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.share-headline h1 {
+  font-size: 50px;
+  font-weight: 900;
+  line-height: 0.9;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+}
+.share-headline p {
+  color: var(--muted);
+  font-size: 16px;
+  font-weight: 600;
+}
+.share-vs {
+  display: flex;
+  gap: 8px;
+}
+.share-vs > div {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px;
+  border-radius: 12px;
+}
+.share-vs span {
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.share-vs b {
+  font-size: 17px;
+  font-weight: 900;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+.share-pros {
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+.share-pros span {
+  color: var(--muted);
+}
+.share-you {
+  background: var(--you-bg);
+}
+.share-you span {
+  color: var(--you-label);
+}
+.share-you b {
+  color: var(--you-value);
+}
+.share-stats {
+  display: flex;
+  gap: 12px;
+  padding: 14px 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.share-stat {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 6px;
+  line-height: 1;
+  white-space: nowrap;
+}
+.share-stat b {
+  color: var(--stat-value);
+  font-size: 26px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.share-stat span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+.share-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.share-buttons {
+  display: flex;
+  gap: 8px;
+}
+.share-copy {
+  display: flex;
+  flex-shrink: 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  width: 56px;
+  height: 56px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface);
+  color: var(--ink);
+  font:
+    800 10px Figtree,
+    sans-serif;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.share-copy svg {
+  width: 20px;
+  height: 20px;
+}
+.share-cta {
+  display: flex;
+  flex-grow: 1;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  height: 56px;
+  border: 0;
+  border-radius: 16px;
+  background: var(--snap-orange);
+  color: var(--on-orange);
+  font:
+    900 19px Figtree,
+    sans-serif;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.share-cta:hover {
+  background: var(--snap-orange-deep);
+}
+.share-cta svg {
+  width: 20px;
+  height: 20px;
+}
+.share-screen button:focus-visible {
+  outline: 3px solid var(--accent-text);
+  outline-offset: 3px;
+}
+.share-countdown {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+a.share-countdown {
+  text-decoration: underline;
+}
+@media (prefers-color-scheme: dark) {
+  .share-screen {
+    --you-bg: var(--cream);
+    --you-label: var(--sage-muted);
+    --you-value: var(--charcoal);
+  }
+}
+@media (min-width: 900px) {
+  .share-header {
+    height: 64px;
+    padding: 0 28px;
+  }
+  .share-brand {
+    font-size: 24px;
+  }
+  .share-body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-content: center;
+    gap: 24px 48px;
+    width: 100%;
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 48px 32px;
+  }
+  .share-body > * {
+    grid-column: 2;
+  }
+  .share-body > .share-card {
+    grid-row: 1 / span 4;
+    grid-column: 1;
+    align-self: center;
+  }
+  .share-headline {
+    gap: 8px;
+  }
+  .share-headline h1 {
+    font-size: 72px;
+  }
+  .share-headline p {
+    font-size: 18px;
+  }
+  .share-vs {
+    gap: 10px;
+  }
+  .share-vs > div {
+    gap: 7px;
+    padding: 14px;
+  }
+  .share-vs span {
+    font-size: 12px;
+  }
+  .share-vs b {
+    font-size: 19px;
+  }
+  .share-stats {
+    padding: 16px 0;
+  }
+  .share-stat b {
+    font-size: 32px;
+    font-weight: 900;
+  }
+  .share-stat span {
+    font-size: 13px;
+  }
+  .share-actions {
+    gap: 24px;
+  }
+  .share-buttons {
+    gap: 10px;
+  }
+  .share-copy {
+    width: 58px;
+    height: 58px;
+    border-width: 2px;
+    border-radius: 10px;
+  }
+  .share-cta {
+    gap: 12px;
+    height: 58px;
+    border-radius: 10px;
+  }
+  .share-countdown {
+    font-size: 12px;
+    text-align: left;
+  }
+}

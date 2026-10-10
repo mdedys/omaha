@@ -150,7 +150,7 @@ function causeLine({ cause }: Rep): Line {
   }
 }
 
-function signed(yards: number) {
+export function signed(yards: number) {
   return yards > 0 ? `+${yards}` : yards < 0 ? `−${-yards}` : "0";
 }
 
