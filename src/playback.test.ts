@@ -100,6 +100,19 @@ describe("ball", () => {
     expect(playback(handRep(), tick(7.9)).ball).toBeNull();
   });
 
+  test("leaves the QB's hands only after the throw tick", () => {
+    expect(
+      [tick(8), tick(8.5)].map((time) => playback(handRep(), time).ball),
+    ).toEqual([
+      null,
+      {
+        from: { x: 0, y: -9 },
+        at: { x: expect.closeTo(2.5), y: expect.closeTo(-6.75) },
+        angle: expect.closeTo(-42.0013, 3),
+      },
+    ]);
+  });
+
   test("flies from the throw spot to the catch spot", () => {
     const ball = playback(handRep(), tick(9)).ball;
     expect(ball?.at.x).toBeCloseTo(5);
