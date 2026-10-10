@@ -65,6 +65,6 @@ test("renders flipped inside receiver at the engine location", async () => {
   const y = /data-player="Y" transform="translate\(([\d.]+) ([\d.]+)\)"/.exec(
     html,
   );
-  expect(Number(y?.[1])).toBeCloseTo(150.3254, 4);
-  expect(Number(y?.[2])).toBe(366);
+  expect(Number(y?.[1])).toBeCloseTo(143.9286, 4);
+  expect(Number(y?.[2])).toBe(372.4);
 });

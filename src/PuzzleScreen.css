@@ -81,6 +81,9 @@
 .play-panel {
   padding: 14px 16px 22px;
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 .play-steps {
   display: flex;
@@ -144,6 +147,115 @@
   margin-top: 22px;
   font-size: 14px;
 }
+.protect-heading {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.protect-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.protect-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.protect-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  font-size: 13px;
+  line-height: 1.2;
+}
+.protect-label > span {
+  flex-shrink: 0;
+  font-weight: 600;
+}
+.protect-label p {
+  color: var(--muted);
+  text-align: right;
+  text-wrap: pretty;
+}
+.protect-segment {
+  display: flex;
+  padding: 3px;
+  gap: 3px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+}
+.protect-segment button {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  min-width: 44px;
+  height: 40px;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--muted);
+  font:
+    800 14px Figtree,
+    sans-serif;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.protect-segment button::after {
+  content: "";
+  position: absolute;
+  inset: -2px 0;
+}
+.protect-segment button[aria-checked="true"] {
+  background: var(--ink);
+  color: var(--page);
+}
+.protect-segment button:hover {
+  box-shadow: inset 0 0 0 1px var(--ink);
+}
+.protect-segment button:focus-visible,
+.protect-next:focus-visible {
+  outline: 3px solid var(--accent-text);
+  outline-offset: 3px;
+}
+.protect-action {
+  margin-top: auto;
+  padding-top: 8px;
+}
+.protect-next {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 52px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--snap-orange);
+  color: var(--on-orange);
+  font:
+    900 19px Figtree,
+    sans-serif;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.protect-next:hover,
+.protect-next:active {
+  background: var(--snap-orange-deep);
+}
+.protect-next kbd,
+.protect-hint {
+  display: none;
+}
 @media (min-width: 900px) {
   .play-header {
     height: 64px;
@@ -191,6 +303,56 @@
   .play-panel {
     padding: 28px;
     border-left: 1px solid var(--border);
+    gap: 22px;
+  }
+  .protect-controls {
+    gap: 22px;
+  }
+  .protect-group {
+    gap: 10px;
+  }
+  .protect-label > span {
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .protect-label p {
+    font-weight: 700;
+  }
+  .protect-segment button {
+    height: 42px;
+  }
+  .protect-next {
+    height: 58px;
+    gap: 12px;
+    border-radius: 10px;
+  }
+  .protect-next kbd,
+  .protect-hint kbd {
+    display: inline;
+    padding: 3px 7px;
+    border-radius: 5px;
+    font:
+      700 11px Figtree,
+      sans-serif;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+  .protect-next kbd {
+    background: rgba(255, 255, 255, 0.22);
+  }
+  .protect-hint {
+    display: block;
+    margin-top: 10px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 600;
+    text-align: center;
+  }
+  .protect-hint kbd {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--ink);
   }
   .play-steps {
     gap: 10px;

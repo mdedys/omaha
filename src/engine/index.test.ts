@@ -60,6 +60,24 @@ describe("loadPuzzle", () => {
       verdict: expect.stringMatching(/^(converted|short|failed)$/),
     });
   });
+
+  it.each([
+    { id: "gun-trey", counts: [5, 6, 7] },
+    { id: "gun-doubles", counts: [5, 6, 7] },
+    { id: "gun-trips", counts: [5, 6] },
+    { id: "gun-spread", counts: [5, 6] },
+    { id: "gun-empty", counts: [5] },
+    { id: "gun-doubles-12", counts: [5, 6, 7] },
+    { id: "ace", counts: [5, 6, 7] },
+  ])("loads $id with its offered blocker counts", async ({ id, counts }) => {
+    for (const flip of [false, true]) {
+      const { puzzle, engine } = await loadPuzzle({
+        ...gunTrey,
+        formation: { id, flip },
+      });
+      expect(engine.protections(puzzle)).toEqual(counts);
+    }
+  });
 });
 
 describe("routeMenu", () => {

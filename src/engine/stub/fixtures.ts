@@ -8,9 +8,9 @@ import type {
   RouteCall,
   Vec,
 } from "../contract";
-import { preSnap } from "./catalog";
+import { preSnap } from "../v1/formations";
 import puzzleJson from "./gun-trey.json";
-import { parsePuzzle } from "./puzzle";
+import { parsePuzzle } from "../v1/puzzle";
 
 const puzzle = parsePuzzle(puzzleJson);
 const playArt: DefensePlayArt = {
