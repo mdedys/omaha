@@ -2,9 +2,11 @@ import type {
   Design,
   Engine,
   Letter,
+  PlayerId,
   Puzzle,
   RouteCall,
   RouteName,
+  Vec,
 } from "./engine/contract";
 
 export const receiverLetters: readonly Letter[] = ["X", "Y", "Z", "H", "RB"];
@@ -24,6 +26,23 @@ export function routeRunners(protection: Design["protection"]) {
   );
 }
 
+export function fieldOrder(
+  positions: Record<PlayerId, Vec>,
+  letters: readonly Letter[],
+) {
+  return [...letters].sort((a, b) => positions[a].x - positions[b].x);
+}
+
+export function toggleRead(
+  readOrder: readonly Letter[],
+  letter: Letter,
+): readonly Letter[] {
+  if (readOrder.includes(letter)) {
+    return readOrder.filter((read) => read !== letter);
+  }
+  return readOrder.length < 3 ? [...readOrder, letter] : readOrder;
+}
+
 export function changeProtection(
   draft: Design,
   protection: Design["protection"],
@@ -37,7 +56,7 @@ export function changeProtection(
   return {
     protection,
     routes,
-    readOrder: draft.readOrder.filter((letter) => runners.includes(letter)),
+    readOrder: draft.readOrder.filter((letter) => routes[letter]),
   };
 }
 

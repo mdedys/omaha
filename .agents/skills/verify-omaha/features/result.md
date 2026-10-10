@@ -1,6 +1,6 @@
 # Result
 
-**Status:** Not built. #64 builds the sheet and Run it back, #65 the play art, and #71 the reveal by rep. Result is shown on the play screen at `/puzzle/:n`. Report this feature as skipped until the screen exists.
+**Status:** Live for the sheet and Run it back (#64): the field shows every player at the final frame, with no play art, badges, ball path or key pill yet (#65), and #71 builds the reveal by rep. The replay square and "See how the pros did" render with `aria-disabled="true"` until Replay (#67) and the Pros reveal land, so report `result-pros` and `result-replay` as skipped. Result is shown on the play screen at `/puzzle/:n`.
 
 Result shows how the rep ended. The field shows the defense's play art and receiver feedback badges, and a sheet holds the headline, outcome tile, stats, rep boxes and the next action. The sheet is cream when reps remain, ink green when converted, and charcoal when out of reps. Spec: `design/08-result/spec.md`, with the seven end states (incomplete, short, sack, interception, throwaway, converted, out of reps) in `design/08-result/states/`.
 
@@ -27,7 +27,7 @@ Preconditions:
 
 - **Reach it.** Design a play, then `click=button:Snap expect-role=region:"Rep result" shot=result`. Once #66 lands, add `click=button:Skip` after Snap. Use `complementary` on desktop. Focus is on the sheet heading.
 - **Rep boxes.** `aria.yml` has a group named like `Reps: rep 1 no gain, rep 2 next, rep 3 unused, rep 4 unused`.
-- **Coverage hidden.** On rep 1 of a failed design, grep `aria.yml` and the transcript for the puzzle's `coverageName` (`Cover 1 pressure` in the Gun Trey stub fixture). It must be absent, and the field label reads `Rep 1 final frame with the defense revealed: …`.
+- **Coverage hidden.** On rep 1 of a failed design, grep `aria.yml` and the transcript for the puzzle's `coverageName` (`Cover 1 pressure` in the Gun Trey stub fixture). It must be absent. Until #65 the field label reads `Rep 1 final frame: …`; with the play art it becomes `Rep 1 final frame with the defense revealed: …`.
 - **Run it back.** Run `click=button:"Run it back" expect-role=radiogroup:Blockers`. The previous protection is still selected.
 - **Replay.** Run `click=button:"Watch the replay again" shot=replay`, then return and `shot=back`. The two result screenshots match.
 - **Determinism.** Run the same design twice in separate drives. The `final` screenshots and `aria.yml` files must be identical.

@@ -153,7 +153,10 @@ for (const activation of ["click", "Enter", "Space"]) {
       }
       await expect(button).toHaveAttribute("aria-current", "step");
       await expect(
-        page.getByRole("heading", { name: step.slice(2), exact: true }),
+        page.getByRole("heading", {
+          name: step === "3 Read" ? "Who does the QB look to?" : step.slice(2),
+          exact: true,
+        }),
       ).toBeVisible();
       if (step === "1 Protect") {
         await expect(page.getByRole("radio", { name: "5-man" })).toBeChecked();
@@ -168,9 +171,7 @@ for (const activation of ["click", "Enter", "Space"]) {
           page.getByText("Choose a route to set its depth."),
         ).toBeVisible();
       } else {
-        await expect(
-          page.getByText("Current draft: 5-man · man. No routes or reads set."),
-        ).toBeVisible();
+        await expect(page.getByText("Set every route first")).toBeVisible();
       }
     }
   });
@@ -203,7 +204,7 @@ test("reload restarts the in-memory session", async ({ page }) => {
   await openPuzzle(page);
   await page.getByRole("button", { name: "3 Read" }).click();
   await expect(
-    page.getByRole("heading", { name: "Read", exact: true }),
+    page.getByRole("heading", { name: "Who does the QB look to?" }),
   ).toBeVisible();
   await page.reload();
   await expect(page.getByRole("button", { name: "1 Protect" })).toHaveAttribute(
