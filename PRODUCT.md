@@ -51,6 +51,7 @@ The nearest competitor is Monday QB (monday-qb.com). It covers a whole drive and
 - A result screen with the real-call reveal and the share card.
 - The "% beat the pros" stat.
 - Local streaks.
+- A Puzzles list of the current season's puzzles, so earlier ones can be played.
 
 **Rules:**
 
@@ -77,7 +78,7 @@ The nearest competitor is Monday QB (monday-qb.com). It covers a whole drive and
 
 - The Omaha audible: the defense shifts its pre-snap look, and the player gets one audible per puzzle.
 - Run plays.
-- Archive, practice mode and hard mode.
+- Practice mode and hard mode.
 - Leaderboards, which require accounts.
 - Native apps.
 

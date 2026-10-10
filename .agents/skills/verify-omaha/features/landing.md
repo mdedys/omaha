@@ -1,6 +1,6 @@
 # Landing
 
-Landing is live at `/` and unknown paths. It shows the newest published Eastern-date puzzle, a fixed hero field and the wordmark, with navigation to three labelled route placeholders. Spec: `design/01-landing/spec.md`.
+Landing is live at `/` and unknown paths. It shows the newest published Eastern-date puzzle, a fixed hero field and the wordmark, with navigation to the Puzzles list and How to play. Spec: `design/01-landing/spec.md`.
 
 ## Sub-features
 
@@ -15,7 +15,7 @@ Landing is live at `/` and unknown paths. It shows the newest published Eastern-
 ## How to get to it (user POV)
 
 - Open the site root or an unknown URL.
-- Use browser Back or the placeholder's "Back to Landing" link.
+- Use browser Back, or the Back button on Puzzles.
 
 ## Driving it with drive.mjs
 

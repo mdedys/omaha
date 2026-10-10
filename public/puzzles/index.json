@@ -1,4 +1,18 @@
 [
-  { "number": 1, "date": "2026-10-08" },
-  { "number": 2, "date": "2026-10-09" }
+  {
+    "number": 1,
+    "date": "2026-10-08",
+    "down": 3,
+    "distance": 10,
+    "spot": 45,
+    "label": "Field goal won't cut it."
+  },
+  {
+    "number": 2,
+    "date": "2026-10-09",
+    "down": 2,
+    "distance": 6,
+    "spot": 94,
+    "label": "Six yards. Don't choke."
+  }
 ]

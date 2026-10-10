@@ -53,7 +53,7 @@ Phone baseline 390×844. Background `cream`, text `ink-green`. Column layout.
        - **Open** ("N reps left"): transparent, 1.5px `snap-orange-text` border, `snap-orange-text` text. (The prototype border is still `snap-orange`; DESIGN.md names `snap-orange-text` for this chip.)
        - **Converted** ("✓ Rep N"): `ink-green` fill, `cream` text, 12×12 check icon (stroke `cream`, 1.8) before the text.
        - **Missed**: transparent, 1.5px `sand-strong` border, `sage-muted` text.
-   - **Thumbnail** (56×56 SVG): `turf` background; line of scrimmage at y 44 (`scrimmage-line`, 1.6px); first-down line (`first-down-line`, 1.6px) above it at a distance that grows with yards to go; five linemen r 2.6 (`lineman`) at x 18, 23, 28, 33, 38, y 44; QB r 2.8 (`quarterback`) at 28,51. When the goal line falls inside the frame, draw it at the top as a 3px `cream` line at 50% opacity (the "2nd & 4 · opp 22" row shows it at y 8). The first-down offsets in the prototype are 10 (2 yds), 10 (4 yds), 17 (7 yds), 24 (10 yds) and 33 (14 yds) units; see Open questions for the scale.
+   - **Thumbnail** (56×56 SVG): `turf` background; line of scrimmage at y 44 (`scrimmage-line`, 1.6px); first-down line (`first-down-line`, 1.6px) above it at a distance that grows with yards to go; five linemen r 2.6 (`lineman`) at x 18, 23, 28, 33, 38, y 44; QB r 2.8 (`quarterback`) at 28,51. When the goal line falls inside the frame, draw it at the top as a 3px `cream` line at 50% opacity (the "2nd & 4 · opp 22" row shows it at y 8). The first-down offsets in the prototype are 10 (2 yds), 10 (4 yds), 17 (7 yds), 24 (10 yds) and 33 (14 yds) units; the built scale is in Decisions.
 
 ### Desktop (`prototype-desktop.html`, ≥900px)
 
@@ -129,10 +129,10 @@ Labels truncate with an ellipsis; they never wrap. No label may name a real team
 3. **Filter Converted (not prototyped).** Earlier list shows only converted puzzles.
    - Missed puzzles match neither Open nor Converted, so they appear only under All.
 4. **Filter with no matches (not prototyped).** For example Converted with no conversions. Copy and layout are open questions.
-5. **No earlier puzzles (not prototyped).** First day of the season, or the season's puzzle list has only today. The Earlier section has nothing to show; treatment is an open question.
+5. **No earlier puzzles (not prototyped).** First day of the season, or the season's puzzle list has only today. The Earlier label stays and the list shows `No earlier puzzles yet. Come back tomorrow.` (Decisions 5).
 6. **Today in progress or finished (not prototyped).** The today card in the prototype has no status. How it shows reps used, a conversion or a miss, and where it links, is an open question (it should agree with Landing's states).
 7. **Puzzle never played (not prototyped).** A past puzzle with no local record. Whether its chip reads "4 reps left" (and so counts as Open) or something else is an open question.
-8. **Loading / error (not prototyped).** The puzzle index fails or is pending. No design; open question.
+8. **Loading / error (not prototyped).** The puzzle index fails or is pending. The screen shows Landing's loading and error states in place of the today card and list (Decisions 5).
 
 ## Interactions
 
@@ -164,25 +164,38 @@ None.
 
 | Field | Source |
 |---|---|
-| List of published puzzles this season: ID/number, date, down, distance, spot, short label | static host. PRODUCT.md ships one JSON file per daily puzzle; listing them needs an index of some kind (form not specified, see Open questions) |
+| List of published puzzles this season: ID/number, date, down, distance, spot, short label | static host: `public/puzzles/index.json`, one entry per puzzle (Decisions 7) |
 | Goal-line distance for the thumbnail | derived from spot (yard line + side) |
 | Today's puzzle ID | date in US Eastern time |
 | Per puzzle: reps used, converted flag and rep number | local storage, keyed by puzzle |
 
+## Decisions
+
+Settled with Mike before building:
+
+1. **Filter:** the Open/Converted filter is hidden until stored progress (#57) gives it something to filter.
+2. **Sort order and dates:** newest first, identified by puzzle number (`#N`), with no dates.
+3. **List length:** the whole season in one scroll, with no paging.
+4. **Thumbnail scale:** one scale for every row, 2.4 units per yard, with at least 10 units between the line of scrimmage and the line to gain so short-yardage rows stay readable. The goal line is drawn at the same scale when it falls inside the frame.
+5. **No earlier puzzles:** the list shows `No earlier puzzles yet. Come back tomorrow.` Loading and error use Landing's states.
+6. **Archive scope:** the puzzle list is in the MVP. PRODUCT.md's MVP list has `A Puzzles list of the current season's puzzles, so earlier ones can be played.`, and its post-MVP line reads `Practice mode and hard mode.`
+
+Resolved in the build (not separately reviewed):
+
+7. **Puzzle index:** `public/puzzles/index.json` lists every puzzle with its number, date (US Eastern), down, distance, spot (0–100 from the offense's own goal line) and short label. Entries dated after today are not shown; today's puzzle is the newest entry dated on or before today.
+8. **Puzzle number:** each Earlier row shows `#N` at its right edge, where the status chip goes once stored progress lands. The today card has no number.
+9. **Goal to go:** the thumbnail draws the line to gain on the goal line, and the 10-unit minimum applies to the goal line too.
+10. **Row accessible name:** `Puzzle N: ` + down and distance (spoken form) + `, ` + spot + `. ` + short label without its final period.
+
 ## Open questions
 
-- **Archive conflict:** PRODUCT.md lists "Archive" as post-MVP, and this screen lets players open and play earlier puzzles, which is effectively an archive. Is this screen in the MVP, and if so does PRODUCT.md change? Not resolved here.
 - **Finished-puzzle destination:** the prototype links converted and missed rows to Result. Which result (the final rep?), or Pros reveal, or Share? Should agree with Landing's finished state.
 - **Playing earlier puzzles:** do results on past puzzles count toward score, streak or the "% beat the pros" stat? Are they submitted to the results API?
 - **Never-played chip:** "4 reps left", or a different chip?
 - **Today card states** for in progress and finished, and whether the filter applies to it.
-- **Sort order and dates:** the prototype shows no dates. Newest first? Show dates or puzzle numbers?
-- **List length:** whole season in one scroll, or paged? Season-bound per PRODUCT.md.
-- **Puzzle index:** how the client learns which past puzzles exist (an index JSON, a build-time manifest, or an API call).
-- **Empty states** (no matches, no earlier puzzles), loading and error.
+- **Filter with no matches:** copy and layout, once the filter shows.
 - **Filter persistence** across visits.
 - **Missed puzzles** have no filter of their own; intended?
-- **Thumbnail scale:** the 7, 10 and 14-yard rows use about 2.4 units per yard, but the 2-yard row uses 10 units (5 per yard) and the 4-yard row also 10 units. Define the scale, and the rule for drawing the goal line.
 
 ## Acceptance criteria
 
