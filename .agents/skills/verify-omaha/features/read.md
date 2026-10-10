@@ -1,6 +1,6 @@
 # Read and snap
 
-**Status:** Live (#64). Read is step 3 of the play screen at `/puzzle/:n`. Until Live play lands (#66), Snap opens Result directly.
+**Status:** Live (#64). Read is step 3 of the play screen at `/puzzle/:n`. Snap opens Live play (live-play.md), which ends on Result.
 
 Read is step 3. The player sets a read order: the receivers the QB looks to, first to third, up to three reads. Each read gets a gold ring and a gold numbered badge (1, 2, 3) on the field, and the same number on its option in the panel. Snap unlocks once every route runner has a route and the order holds at least one read. Spec: `design/06-read/spec.md`.
 
@@ -10,7 +10,7 @@ Read is step 3. The player sets a read order: the receivers the QB looks to, fir
 - `read-drop` means tapping an option in the order drops it, and the reads after it move up and renumber at once, in the panel and on the field.
 - `read-full` means that with three reads, the options outside the order go quiet (`aria-disabled="true"`) and tapping them changes nothing. Dropping a read makes them normal again.
 - `read-snap-locked` means that with any runner unassigned or an empty read order, Snap shows `aria-disabled="true"` and does nothing.
-- `read-snap` means that once the unlock rule is met, Snap locks the design for the rep. Until Live play lands (#66), Snap opens Result directly; after it, Snap starts the live play.
+- `read-snap` means that once the unlock rule is met, Snap locks the design for the rep and starts the live play.
 - `read-carry-over` means rep 2 and later keep the previous order. A read whose receiver is now kept in to block leaves the order, the reads after it move up, and Snap disables if the order empties.
 
 ## How to get to it (user POV)
@@ -28,7 +28,7 @@ Preconditions:
 - **Locked Snap.** Arrive with the order empty. `aria.yml` shows the Snap button with `aria-disabled="true"` and the live text `No reads picked`; the order hint reads `Set every route first` while any route runner has no route, otherwise `Pick a read first`. Run `click=button:Snap shot=still-read`: the screen does not change.
 - **Add.** Run `click=button:"TE, Corner" click=button:"Right WR, Go" click=button:"Left WR, In" shot=three-reads`. Use the receiver and route names the screen shows. Only route runners with a route get an option, left to right by field position (a routed RB sits by its x); five options use a three-column phone grid. `aria.yml` shows the group `Read order` with those three buttons pressed and named `…, read 1`, `…, read 2`, `…, read 3`, the remaining option disabled, and the live text `Read order: TE, Right WR, Left WR`. The field `img` label names all three reads in order.
 - **Drop.** Run `click=button:"TE, Corner, read 1" shot=dropped`. Right WR becomes read 1, Left WR read 2, and the quiet option is normal again.
-- **Snap.** With every route assigned and a read picked, run `click=button:Snap` and `expect=` the result headline (see result.md).
+- **Snap.** With every route assigned and a read picked, run `click=button:Snap expect-role=complementary:"Live play"`, then `click=button:"Skip to result"` and `expect=` the result headline (see result.md).
 - **Desktop keys.** Run with `--viewport desktop`: digits `1`–`N` toggle the option at that place in the list, and `press=Enter` snaps only when unlocked. The hint line reads `1–N add or drop a read`, where N is the number of route runners.
 
 ## Gotchas

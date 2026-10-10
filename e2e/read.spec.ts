@@ -285,5 +285,9 @@ test("desktop digits toggle reads and Enter snaps when unlocked", async ({
     page.getByRole("button", { name: "Left WR, Out, read 1" }),
   ).toBeVisible();
   await page.keyboard.press("Enter");
+  await expect(
+    page.getByRole("complementary", { name: "Live play" }),
+  ).toBeVisible();
+  await page.keyboard.press("Escape");
   await expect(page.getByRole("heading", { name: "INCOMPLETE" })).toBeVisible();
 });

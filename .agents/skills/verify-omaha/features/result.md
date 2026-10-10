@@ -18,9 +18,9 @@ Result shows how the rep ended. The field shows the defense's play art and recei
 
 ## How to get to it (user POV)
 
-- Tap Snap on Read. Until Live play lands (#66), Snap opens Result directly.
-- Let the live play finish after Snap, once #66 lands.
-- Press Skip during the live play, once #66 lands.
+- Tap Snap on Read, then let the live play finish (live-play.md).
+- Tap Snap on Read, then press Skip during the live play (or `Esc` on desktop).
+- With reduced motion, Snap shows Result straight away.
 - Go "back to Result" from Replay.
 
 ## Driving it with drive.mjs
@@ -29,7 +29,7 @@ Preconditions:
 
 - `doctor.sh` exits `0`, and the play loop works from Landing through Snap.
 
-- **Reach it.** Design a play, then `click=button:Snap expect-role=region:"Rep result" shot=result`. Once #66 lands, add `click=button:Skip` after Snap. Use `complementary` on desktop. Focus is on the sheet heading.
+- **Reach it.** Design a play, then `click=button:Snap click=button:"Skip to result" expect-role=region:"Rep result" shot=result`. Use `complementary` on desktop. Focus is on the sheet heading.
 - **Rep boxes.** `aria.yml` has a group named like `Reps: rep 1 no gain, rep 2 next, rep 3 unused, rep 4 unused`.
 - **Coverage hidden.** On rep 1 of a failed design, grep `aria.yml` and the transcript for the puzzle's `coverageName` (`Cover 1 pressure` in the Gun Trey stub fixture). It must be absent. The field label reads `Rep N final frame with the defense revealed: <outcome>. <cause>` before the puzzle ends, and `Rep N final frame against Cover 1 pressure: <outcome>. <cause>` on a converted rep or rep 4.
 - **Play art.** The stub reveals nothing on rep 1, DL and LB only on rep 2, and everything from rep 3 or once the puzzle ends. To see full art for a cause, play Out, then Out, then X's route for that cause on rep 3, and `shot=` it. Under the stub only the decisive defender moves, so only its line and start dot show; zones show for every revealed zone defender. Elements carry `data-zone`, `data-defense-path` (with `data-path-kind` drop, man, rush or blitz), `data-start-dot`, `data-feedback-badge`, `data-ball-path` and `data-football`.

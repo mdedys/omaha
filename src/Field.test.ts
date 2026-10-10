@@ -10,6 +10,7 @@ import type {
 } from "./engine/contract";
 import { loadPuzzle } from "./engine";
 import { Field, fieldPoint } from "./Field";
+import { playback } from "./playback";
 import { createPuzzleSession } from "./PuzzleScreen";
 import fixture from "../public/puzzles/2.json";
 import gunTrey from "./engine/stub/gun-trey.json";
@@ -463,4 +464,105 @@ test.each([
     'data-field-layer="line-to-gain"',
   );
   expect(attr(line, "stroke-width")).toBe(width);
+});
+
+async function field(props: Partial<Parameters<typeof Field>[0]>) {
+  const { puzzle, engine } = await loadPuzzle(gunTrey);
+  return renderToStaticMarkup(
+    createElement(Field, { puzzle, engine, ...props }),
+  );
+}
+
+describe("live play field", () => {
+  test.each([
+    "data-zone",
+    "data-defense-path",
+    "data-start-dot",
+    "data-feedback-badge",
+    "data-ball-path",
+  ])("draws %s only once the reveal starts", async (attribute) => {
+    const rep = causeRep("breakup-closed");
+    const playing = await field({ live: playback(rep, 4.3) });
+    const revealing = await field({
+      frame: { rep, playArt: rep.playArt },
+      reveal: 0,
+    });
+    expect([
+      playing.includes(attribute),
+      revealing.includes(attribute),
+    ]).toEqual([false, true]);
+  });
+
+  test("draws the players where the clock has them", async () => {
+    const html = await field({
+      live: playback(causeRep("breakup-closed"), 0.8 + 30 * 0.05),
+    });
+    expect(attr(tag(html, 'data-player="QB"'), "transform")).toBe(
+      "translate(201.5 442.8)",
+    );
+  });
+
+  test("draws the football in flight", async () => {
+    const football = tag(
+      await field({ live: playback(causeRep("breakup-closed"), 3.3) }),
+      'data-football="in-flight"',
+    );
+    expect(Number(attr(football, "cx"))).toBeCloseTo(150.3254, 3);
+    expect(Number(attr(football, "cy"))).toBeCloseTo(342.5333, 3);
+  });
+
+  test("draws the vision cone on the current read", async () => {
+    const html = await field({
+      live: playback(causeRep("breakup-closed"), 1.5),
+    });
+    expect(attr(tag(html, "data-vision-cone"), "data-vision-cone")).toBe("X");
+  });
+
+  test.each([
+    [0, "0 -180 403 872"],
+    [0.5, "0 -90 403 872"],
+    [1, "0 0 403 872"],
+  ])("pans the phone camera at %f to %s", async (pan, viewBox) => {
+    expect(
+      attr(tag(await field({ pan }), 'class="puzzle-field"'), "viewBox"),
+    ).toBe(viewBox);
+  });
+
+  test.each(["M0 -18H403", "M0 814H403"])(
+    "continues the yard lines over the phone's extra range with %s",
+    async (line) => {
+      expect([
+        (await field({ pan: 0 })).includes(`d="${line}"`),
+        (await field({})).includes(`d="${line}"`),
+      ]).toEqual([true, false]);
+    },
+  );
+
+  test("fades a converted line in with the play art", async () => {
+    const rep = causeRep("converted");
+    const html = await field({
+      frame: { rep, playArt: rep.playArt },
+      reveal: 0.4,
+    });
+    expect({
+      line: attr(tag(html, 'data-field-layer="line-to-gain"'), "stroke-width"),
+      converted: [
+        attr(tag(html, 'data-field-layer="converted-line"'), "stroke-width"),
+        attr(tag(html, 'data-field-layer="converted-line"'), "opacity"),
+      ],
+      zone: attr(tag(html, "data-zone"), "opacity"),
+    }).toEqual({ line: "2", converted: ["3.5", "0.4"], zone: "0.4" });
+  });
+
+  test("keeps an interception's football solid while the art fades", async () => {
+    const rep = causeRep("interception-closed");
+    const html = await field({
+      frame: { rep, playArt: rep.playArt },
+      reveal: 0.3,
+    });
+    expect([
+      attr(tag(html, "data-ball-path"), "opacity"),
+      attr(tag(html, "data-football"), "opacity"),
+    ]).toEqual(["0.3", undefined]);
+  });
 });

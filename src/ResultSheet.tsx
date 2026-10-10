@@ -1,14 +1,7 @@
-import { useEffect, useRef, useSyncExternalStore } from "react";
-import { useDesktopKeys } from "./desktopKeys";
+import { useEffect, useRef } from "react";
+import { useDesktop, useDesktopKeys } from "./desktopKeys";
 import { Swatch } from "./ReadPanel";
 import type { RepBox, Sheet } from "./result";
-
-const desktopQuery = "(min-width: 900px)";
-function subscribe(onChange: () => void) {
-  const media = window.matchMedia(desktopQuery);
-  media.addEventListener("change", onChange);
-  return () => media.removeEventListener("change", onChange);
-}
 
 function Box({ box, number }: { box: RepBox; number: number }) {
   switch (box.state) {
@@ -63,16 +56,16 @@ function Box({ box, number }: { box: RepBox; number: number }) {
 export function ResultSheet({
   sheet,
   onRunItBack,
+  bottom,
 }: {
   sheet: Sheet;
   onRunItBack: () => void;
+  bottom?: number;
 }) {
-  const desktop = useSyncExternalStore(
-    subscribe,
-    () => window.matchMedia(desktopQuery).matches,
-  );
+  const desktop = useDesktop();
   const heading = useRef<HTMLHeadingElement>(null);
-  useEffect(() => heading.current?.focus(), []);
+  // The phone sheet can mount below the screen and slide up into place.
+  useEffect(() => heading.current?.focus({ preventScroll: true }), []);
   useDesktopKeys((key) => {
     if (key !== "Enter" || sheet.ended) return false;
     onRunItBack();
@@ -83,6 +76,7 @@ export function ResultSheet({
     <Panel
       className={`result-sheet result-${sheet.variant}`}
       aria-label="Rep result"
+      style={bottom === undefined ? undefined : { bottom }}
     >
       <div className="result-header">
         <div className="result-headline">

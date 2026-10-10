@@ -116,13 +116,13 @@ Sheet and result-panel copy: see 08-result.
 | Sack (not prototyped) | — | Set → Snap → outcome. No throw, so there is no Throw phase and no ball. The cone stays on the read the QB is on until the sack, then fades out within 0.3 s. The outcome phase starts at the sack time from the simulation. |
 | Throwaway (not prototyped) | — | Every read was covered when the order ran out. Throw phase as usual, with no receiver: the cone fades, and the ball flies to its landing spot just past the nearest sideline, level with the QB. Outcome word `Thrown away`. The final frame matches the 08-result throwaway state. |
 | Forced throw (not prototyped) | — | Same sequence as a throw. The Throw caption line says the throw is forced ("Nothing clean. He forces it to the tight end."). |
-| Converted or final rep (not prototyped here) | — | The last frame must match the Result screen. On a converted rep that means a 3.5 px first-down line. On a converted rep or the final rep it also means the coverage key pill. How they appear during the reveal is an open question. |
+| Converted or final rep (not prototyped here) | — | The last frame must match the Result screen. On a converted rep that means a 3.5 px first-down line. On a converted rep or the final rep it also means the coverage key pill. Both fade in with the play art over the same 0.5 s reveal, with no separate beat after it (Resolved question 3). |
 | Sheet or panel variant | — | Cream, ink green or charcoal by outcome and reps left, per 08-result. |
 
 ## Interactions
 
-- **Skip:** tap, click, or Enter/Space while focused → the Result screen at once (state Skipped). It is available from entry until the reveal starts. On phone the sheet then covers it; on desktop the panel swaps away from it.
-- **Desktop `Esc`:** same as Skip, until the reveal starts.
+- **Skip:** tap, click, or Enter/Space while focused → the Result screen at once (state Skipped). It is available from entry until the reveal ends. On phone the rising sheet covers it; on desktop the panel swaps away from it at the reveal, so `Esc` is the way to skip the rest of the desktop reveal.
+- **Desktop `Esc`:** same as Skip, until the reveal ends.
 - The field is not interactive.
 - **Focus:** on entry, focus moves to Skip, the only focusable element. When the Result screen takes over, focus follows the 08-result rule (the result heading).
 
@@ -221,17 +221,19 @@ Other inputs:
 | Situation strings, puzzle number, line of scrimmage y, first-down line y, yard numbers | Puzzle data |
 | Pre-snap positions | Puzzle data (formation and defensive alignment). They equal each track's first waypoint. |
 | Protection summary, read order, routes and depths | The player's design (design state store) |
-| Caption words and lines | Generated per rep from the design and `RepPlayback` (owner open) |
+| Caption words and lines | Generated per rep by the front end's copy deck from the design and the `Rep` (Resolved question 2) |
 | Rep number, reps left (for the sheet, panel and pips) | Design state store |
 
-## Open questions
+## Resolved questions
 
-1. **Play length.** Is the play always 3.4 s with the throw at 2.3 s, or does each simulation set its own timing?
-2. **Captions.** Does the engine or the front end write the caption lines and the result line? What is the set of outcome words? They are play-by-play by design ("Broken up"), separate from the sheet verdict ("INCOMPLETE").
-3. **Converted and final-rep reveal.** How do the 3.5 px first-down line and the coverage key pill arrive in the reveal (fade with the play art, or appear at the end)?
-4. **Desktop "Final · defense revealed" pill.** The desktop Result screen shows it; `prototype-desktop.html` never does, even after the swap. When does it appear?
-5. **Touchdown** (README). A rep that scores needs its own outcome caption and result treatment.
-6. **Back navigation.** What do the browser and OS back actions do during live play?
+Settled with Mike for the Live play build; the answers below replace the open questions.
+
+1. **Play length.** Each simulation sets its own timing. The playback clock comes from the engine's `Rep`: one tick per `TICK_SECONDS`, motion ends at `endTick`, the throw and catch are `ball.throwTick` and `ball.arriveTick`, a sack happens at `timeInPocketTicks`, and the cone follows the `reads` spans. Set (0.8 s), the 0.6 s pause, the 0.5 s reveal, the 0.15 s cone turn and the 0.3 s cone fade stay fixed design values. The 3.4 s play with the throw at 2.3 s is the prototype fixture only.
+2. **Captions.** The front end's copy deck writes the caption lines, as it writes the result line. The engine supplies the `Rep` and the cause. Outcome words: `Sacked`, `Thrown away`, `Broken up`, `Picked off`, `Stopped short`, `First down` and `Touchdown`. They stay play-by-play, separate from the sheet verdict.
+3. **Converted and final-rep reveal.** The 3.5 px first-down line and the coverage key pill fade in with the play art, in the same 0.5 s reveal. There is no separate beat at the end, and the last frame matches Result exactly.
+4. **Desktop "Final · defense revealed" pill.** It fades in with the play art when the panel swaps to the result. On a converted rep or rep 4, the key pill fades in 8 px below it at the same time.
+5. **Touchdown.** The caption's outcome word is `Touchdown`, with its own copy-deck line. The Result sheet keeps the `CONVERTED` headline; the touchdown headline and bonus display stay an open Result (08-result) question.
+6. **Back navigation.** The rep counts at Snap. Live play adds no history entry, so browser and OS back act as on any step of the play screen and leave the puzzle. Back can't undo or replay a rep.
 
 ## Acceptance criteria
 
