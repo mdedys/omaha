@@ -1,12 +1,16 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { Design, Engine, Letter, Puzzle } from "./engine/contract";
 import { EngineError } from "./engine/error";
 import { loadNumberedPuzzle } from "./puzzles";
+import { useDesktop, useDesktopKeys } from "./desktopKeys";
 import { Field } from "./Field";
+import { LivePanel } from "./LivePlay";
+import { cubicBezier, motionEase, playback, timeline } from "./playback";
+import { usePlaybackSeconds } from "./playbackSeconds";
 import { Protect } from "./Protect";
 import { ReadPanel } from "./ReadPanel";
 import { ResultSheet } from "./ResultSheet";
-import { resultSheet } from "./result";
+import { liveCaption, liveLabel, resultSheet } from "./result";
 import type { Played } from "./result";
 import { RoutesPanel } from "./RoutesPanel";
 import {
@@ -21,7 +25,7 @@ type Step = "Protect" | "Routes" | "Read";
 export function createPuzzleSession(): {
   played: readonly Played[];
   draft: Design;
-  step: Step | "Result";
+  step: Step | "Live" | "Result";
   selected: Letter | null;
 } {
   return {
@@ -36,6 +40,8 @@ export function createPuzzleSession(): {
   };
 }
 
+const shadeEase = cubicBezier(0.25, 0.1, 0.25, 1);
+
 type LoadState =
   | { kind: "loading" }
   | { kind: "error" }
@@ -49,8 +55,31 @@ function PlayScreen({ puzzle, engine }: { puzzle: Puzzle; engine: Engine }) {
     session.selected && runners.includes(session.selected)
       ? session.selected
       : fieldOrder(engine.preSnap(puzzle), runners)[0];
-  const result = session.step === "Result";
-  const rep = session.played.length + (result ? 0 : 1);
+  const desktop = useDesktop();
+  const designing = session.step !== "Live" && session.step !== "Result";
+  const last = designing ? null : session.played[session.played.length - 1];
+  const showResult = useCallback(
+    () => setSession((current) => ({ ...current, step: "Result" })),
+    [],
+  );
+  const seconds = usePlaybackSeconds(
+    session.step === "Live" ? session.played.length : null,
+    last ? timeline(last.rep).end : 0,
+    showResult,
+  );
+  const live =
+    last && session.step === "Live" ? playback(last.rep, seconds) : null;
+  const reveal =
+    live && (live.phase === "reveal" || live.phase === "done")
+      ? live.reveal
+      : undefined;
+  const result = session.step === "Result" || reveal !== undefined;
+  const rep = session.played.length + (designing ? 1 : 0);
+  useDesktopKeys((key) => {
+    if (key !== "Escape" || session.step !== "Live") return false;
+    showResult();
+    return true;
+  });
   function goTo(step: Step) {
     setSnapFailed(false);
     setSession((current) => ({ ...current, step, selected }));
@@ -64,7 +93,9 @@ function PlayScreen({ puzzle, engine }: { puzzle: Puzzle; engine: Engine }) {
       setSnapFailed(false);
       setSession((current) => ({
         ...current,
-        step: "Result",
+        step: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+          ? "Result"
+          : "Live",
         played: [...current.played, entry],
       }));
     } catch (error) {
@@ -84,8 +115,19 @@ function PlayScreen({ puzzle, engine }: { puzzle: Puzzle; engine: Engine }) {
   const steps: readonly Step[] = ["Protect", "Routes", "Read"];
   const sheet = result ? resultSheet(puzzle, engine, session.played) : null;
   const currentIndex = steps.findIndex((step) => step === session.step);
+  const pills = (
+    <div className="result-pills">
+      <span>
+        {ordinal} &amp; {distance >= 100 - spot ? "goal" : distance} ·{" "}
+        {location}
+      </span>
+      <span>
+        {score} · {clock}
+      </span>
+    </div>
+  );
   return (
-    <main className={result ? "play-screen result-screen" : "play-screen"}>
+    <main className={designing ? "play-screen" : "play-screen result-screen"}>
       <header className="play-header">
         <span className="play-brand">OMAHA</span>
         <div className="play-situation">
@@ -120,28 +162,33 @@ function PlayScreen({ puzzle, engine }: { puzzle: Puzzle; engine: Engine }) {
       </header>
       <div className="play-body">
         <div className="play-stage">
-          {sheet ? (
+          {last && sheet ? (
             <>
               <Field
                 puzzle={puzzle}
                 engine={engine}
-                frame={{
-                  rep: session.played[session.played.length - 1].rep,
-                  playArt: sheet.playArt,
-                }}
+                frame={{ rep: last.rep, playArt: sheet.playArt }}
+                reveal={reveal}
+                pan={
+                  reveal === undefined || desktop
+                    ? undefined
+                    : motionEase(reveal)
+                }
                 label={sheet.fieldLabel}
               />
-              <div className="result-shade" />
-              <div className="result-pills">
-                <span>
-                  {ordinal} &amp; {distance >= 100 - spot ? "goal" : distance} ·{" "}
-                  {location}
-                </span>
-                <span>
-                  {score} · {clock}
-                </span>
-              </div>
-              <div className="result-keys">
+              <div
+                className="result-shade"
+                style={
+                  reveal === undefined
+                    ? undefined
+                    : { opacity: shadeEase(reveal) }
+                }
+              />
+              {pills}
+              <div
+                className="result-keys"
+                style={reveal === undefined ? undefined : { opacity: reveal }}
+              >
                 <span className="result-final">Final · defense revealed</span>
                 {sheet.ended ? (
                   <span className="result-key">
@@ -149,6 +196,17 @@ function PlayScreen({ puzzle, engine }: { puzzle: Puzzle; engine: Engine }) {
                   </span>
                 ) : null}
               </div>
+            </>
+          ) : live ? (
+            <>
+              <Field
+                puzzle={puzzle}
+                engine={engine}
+                live={live}
+                pan={desktop ? undefined : 0}
+                label={liveLabel(puzzle, engine, session.played)}
+              />
+              {pills}
             </>
           ) : (
             <Field
@@ -172,9 +230,24 @@ function PlayScreen({ puzzle, engine }: { puzzle: Puzzle; engine: Engine }) {
             />
           )}
         </div>
+        {last && live && !(desktop && reveal !== undefined) ? (
+          <LivePanel
+            caption={liveCaption(puzzle, engine, last, live)}
+            onSkip={showResult}
+          />
+        ) : null}
         {sheet ? (
-          <ResultSheet sheet={sheet} onRunItBack={() => goTo("Protect")} />
-        ) : (
+          <ResultSheet
+            sheet={sheet}
+            onRunItBack={() => goTo("Protect")}
+            bottom={
+              reveal === undefined || desktop
+                ? undefined
+                : -420 * (1 - motionEase(reveal))
+            }
+          />
+        ) : null}
+        {designing ? (
           <aside className="play-panel" aria-label="Design the play">
             <nav className="play-steps" aria-label="Play steps">
               {steps.map((step, index) => (
@@ -241,7 +314,7 @@ function PlayScreen({ puzzle, engine }: { puzzle: Puzzle; engine: Engine }) {
               />
             )}
           </aside>
-        )}
+        ) : null}
       </div>
     </main>
   );

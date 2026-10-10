@@ -29,6 +29,7 @@ async function snapFirstRep(
     await page.getByRole("button", { name: read, exact: true }).click();
   }
   await page.getByRole("button", { name: "Snap" }).click();
+  await page.getByRole("button", { name: "Skip to result" }).click();
 }
 
 async function runItBack(page: Page, slotRoute: string) {
@@ -38,6 +39,7 @@ async function runItBack(page: Page, slotRoute: string) {
   await page.getByRole("option", { name: slotRoute, exact: true }).click();
   await page.getByRole("button", { name: "Next: read" }).click();
   await page.getByRole("button", { name: "Snap" }).click();
+  await page.getByRole("button", { name: "Skip to result" }).click();
 }
 
 function labels(locator: Locator) {
@@ -137,6 +139,7 @@ test("Run it back opens Protect with the previous design", async ({ page }) => {
   await page.getByRole("button", { name: "TE, Hitch", exact: true }).click();
   await page.getByRole("button", { name: "Right WR, Go", exact: true }).click();
   await page.getByRole("button", { name: "Snap" }).click();
+  await page.getByRole("button", { name: "Skip to result" }).click();
   await page.getByRole("button", { name: "Run it back" }).click();
   await expect(page.getByRole("button", { name: "1 Protect" })).toHaveAttribute(
     "aria-current",

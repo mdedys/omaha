@@ -12,6 +12,7 @@ import type {
   Vec,
   ZoneId,
 } from "./engine/contract";
+import type { Playback } from "./playback";
 import { protectionCopy } from "./Protect";
 import {
   fieldOrder,
@@ -233,14 +234,18 @@ function pathStyle(
 
 const layers: readonly PathStyle["kind"][] = ["drop", "man", "rush", "blitz"];
 
+// An interception's football stays at full opacity while the rest fades in,
+// because the live play leaves it on the field.
 function PlayArt({
   puzzle,
   rep,
   playArt,
+  fade,
 }: {
   puzzle: Puzzle;
   rep: Rep;
   playArt: DefensePlayArt;
+  fade?: number;
 }) {
   const paths = puzzle.defense
     .flatMap(({ id }) => {
@@ -260,6 +265,7 @@ function PlayArt({
       {ball ? (
         <path
           data-ball-path=""
+          opacity={fade}
           d={`M${ball.from.x} ${ball.from.y}L${ball.to.x} ${ball.to.y}`}
           stroke="#F2F5F3"
           strokeOpacity=".7"
@@ -287,6 +293,7 @@ function PlayArt({
           <ellipse
             key={defenderId}
             data-zone={zone}
+            opacity={fade}
             cx={x}
             cy={y}
             rx={radii.x * unitsPerYardX}
@@ -303,6 +310,7 @@ function PlayArt({
         <circle
           key={id}
           data-start-dot={id}
+          opacity={fade}
           cx={start.x}
           cy={start.y}
           r="3"
@@ -320,6 +328,7 @@ function PlayArt({
           <path
             key={id}
             data-defense-path={id}
+            opacity={fade}
             data-path-kind={style.kind}
             d={`M${points.map((point) => `${point.x} ${point.y}`).join("L")}${style.kind === "drop" ? "" : `M${arm(-arrowArm)}L${end.x} ${end.y}L${arm(arrowArm)}`}`}
             stroke={style.color}
@@ -379,7 +388,7 @@ function BadgeGlyph({ badge }: { badge: Badge }) {
 
 // Each badge sits up-right of its receiver and flips up-left when that spot
 // would leave the field or cover a player, the football or an earlier badge.
-function FeedbackBadges({ rep }: { rep: Rep }) {
+function FeedbackBadges({ rep, fade }: { rep: Rep; fade?: number }) {
   const players = Object.entries(rep.tracks).map(
     ([id, track]) => [id, fieldPoint(track[rep.endTick])] as const,
   );
@@ -389,7 +398,7 @@ function FeedbackBadges({ rep }: { rep: Rep }) {
       : null;
   const placed: Vec[] = [];
   return (
-    <g data-field-layer="feedback">
+    <g data-field-layer="feedback" opacity={fade}>
       {rep.feedback.map(({ letter, badge }) => {
         const at = fieldPoint(rep.tracks[letter][rep.endTick]);
         const y = Math.min(Math.max(at.y - 11, 7), 488);
@@ -421,100 +430,33 @@ function FeedbackBadges({ rep }: { rep: Rep }) {
   );
 }
 
-export const Field = memo(function Field({
+// Turf, markings, end zones and stands between field y `top` and `bottom`.
+const Turf = memo(function Turf({
   puzzle,
-  engine,
-  protection,
-  routes = {},
-  selected,
-  onSelect,
-  reads,
-  frame,
-  label,
+  top,
+  bottom,
 }: {
   puzzle: Puzzle;
-  engine: Engine;
-  protection?: Design["protection"];
-  routes?: Design["routes"];
-  selected?: Letter;
-  onSelect?: (letter: Letter) => void;
-  reads?: readonly Letter[];
-  frame?: { rep: Rep; playArt: DefensePlayArt };
-  label?: string;
+  top: number;
+  bottom: number;
 }) {
-  const { spot, down, distance } = puzzle.situation;
+  const { spot } = puzzle.situation;
   const goalY = fieldPoint({ x: 0, y: 100 - spot }).y;
   const ownGoalY = fieldPoint({ x: 0, y: -spot }).y;
   const endY = goalY - 128;
-  const targetYards = puzzle.goal === "touchdown" ? 100 - spot : distance;
-  const lineY = fieldPoint({ x: 0, y: targetYards }).y;
-  const ordinal = ["", "1st", "2nd", "3rd", "4th"][down];
-  const location = spot <= 50 ? `own ${spot}` : `opponent ${100 - spot}`;
-  const situation = `${ordinal} and ${distance >= 100 - spot ? "goal" : distance}, ${location}`;
-  const positions = engine.preSnap(puzzle);
-  const copy = protection ? protectionCopy(protection) : null;
-  const runners = protection ? routeRunners(protection) : [];
-  const ordered = fieldOrder(positions, runners);
-  const call = selected ? routes[selected] : undefined;
-  const selectionCopy = selected
-    ? ` Selected ${engine.displayName(puzzle, selected).name}, ${call ? `${call.route}${"depth" in call ? `, ${call.depth} yards` : ", no depth"}` : "no route"}.`
-    : "";
-  const readCopy = reads
-    ? reads.length
-      ? ` Read order ${reads.map((letter) => engine.displayName(puzzle, letter).name).join(", then ")}.`
-      : " No reads picked."
-    : "";
-  const drawRoutes = selected !== undefined || reads !== undefined;
-  const players = frame
-    ? Object.entries(frame.rep.tracks).map(
-        ([id, track]) => [id, track[frame.rep.endTick]] as const,
-      )
-    : Object.entries(positions);
   return (
-    <svg
-      className="puzzle-field"
-      viewBox="0 0 403 495"
-      role={selected ? "group" : "img"}
-      aria-label={
-        label ??
-        `Field: ${situation}. Pre-snap offense and defense; blue line of scrimmage, yellow line to gain.${protection && copy ? ` ${protection.blockers}-man protection. ${copy.blockersHelper}. ${copy.lineHelper}${copy.lineHelper.endsWith(".") ? "" : "."}` : ""}${selectionCopy}${readCopy}`
-      }
-      overflow="visible"
-      onClick={
-        onSelect
-          ? (event) => {
-              const matrix = event.currentTarget.getScreenCTM();
-              if (!matrix) return;
-              const point = new DOMPoint(
-                event.clientX,
-                event.clientY,
-              ).matrixTransform(matrix.inverse());
-              let nearest: Letter | undefined;
-              let distance = 23;
-              for (const letter of ordered) {
-                const at = fieldPoint(positions[letter]);
-                const candidate = Math.hypot(point.x - at.x, point.y - at.y);
-                if (candidate <= distance) {
-                  nearest = letter;
-                  distance = candidate;
-                }
-              }
-              if (nearest) onSelect(nearest);
-            }
-          : undefined
-      }
-    >
-      <rect width="403" height="495" fill="#0F3A27" />
+    <>
+      <rect y={top} width="403" height={bottom - top} fill="#0F3A27" />
       {Array.from({ length: 20 }, (_, band) => {
         const y = fieldPoint({ x: 0, y: (band + 1) * 5 - spot }).y;
         const stripe = Math.min(band, 19 - band) % 2 === 1;
-        return y < 495 && y + 64 > 0 ? (
+        return y < bottom && y + 64 > top ? (
           <rect
             key={band}
             x="0"
-            y={Math.max(0, y)}
+            y={Math.max(top, y)}
             width="403"
-            height={Math.min(495, y + 64) - Math.max(0, y)}
+            height={Math.min(bottom, y + 64) - Math.max(top, y)}
             fill={stripe ? "#113F2A" : "#0F3A27"}
           />
         ) : null;
@@ -522,7 +464,7 @@ export const Field = memo(function Field({
       {Array.from({ length: 99 }, (_, index) => {
         const yard = index + 1;
         const y = fieldPoint({ x: 0, y: yard - spot }).y;
-        if (y < 0 || y > 495) return null;
+        if (y < top || y > bottom) return null;
         return (
           <g key={yard} stroke="#D5E0D9" strokeOpacity=".45">
             {yard % 5 === 0 ? <path d={`M0 ${y}H403`} /> : null}
@@ -547,13 +489,13 @@ export const Field = memo(function Field({
           </g>
         );
       })}
-      {goalY > 0 ? (
+      {goalY > top ? (
         <g data-field-layer="end-zone">
           <rect
             x="0"
-            y={Math.max(0, endY)}
+            y={Math.max(top, endY)}
             width="403"
-            height={Math.min(495, goalY) - Math.max(0, endY)}
+            height={Math.min(bottom, goalY) - Math.max(top, endY)}
             fill="#6E2F16"
           />
           <text
@@ -578,13 +520,13 @@ export const Field = memo(function Field({
           ) : null}
         </g>
       ) : null}
-      {ownGoalY < 495 ? (
+      {ownGoalY < bottom ? (
         <g data-field-layer="own-end-zone">
           <rect
             x="0"
             y={ownGoalY}
             width="403"
-            height={495 - ownGoalY}
+            height={bottom - ownGoalY}
             fill="#6E2F16"
           />
           <text
@@ -608,8 +550,12 @@ export const Field = memo(function Field({
           />
         </g>
       ) : null}
-      <path d="M0 0V495M403 0V495" stroke="#D5E0D9" strokeOpacity=".45" />
-      {endY > 0 ? (
+      <path
+        d={`M0 ${top}V${bottom}M403 ${top}V${bottom}`}
+        stroke="#D5E0D9"
+        strokeOpacity=".45"
+      />
+      {endY > top ? (
         <g data-field-layer="stadium">
           <rect
             x="-10000"
@@ -677,12 +623,124 @@ export const Field = memo(function Field({
           />
         </g>
       ) : null}
+    </>
+  );
+});
+
+export const Field = memo(function Field({
+  puzzle,
+  engine,
+  protection,
+  routes = {},
+  selected,
+  onSelect,
+  reads,
+  frame,
+  reveal,
+  live,
+  pan,
+  label,
+}: {
+  puzzle: Puzzle;
+  engine: Engine;
+  protection?: Design["protection"];
+  routes?: Design["routes"];
+  selected?: Letter;
+  onSelect?: (letter: Letter) => void;
+  reads?: readonly Letter[];
+  frame?: { rep: Rep; playArt: DefensePlayArt };
+  // Opacity of the frame's play art, badges and converted line while they
+  // fade in.
+  reveal?: number;
+  live?: Playback;
+  // Phone camera from the live framing (0) to the result framing (1).
+  pan?: number;
+  label?: string;
+}) {
+  const { spot, down, distance } = puzzle.situation;
+  const targetYards = puzzle.goal === "touchdown" ? 100 - spot : distance;
+  const lineY = fieldPoint({ x: 0, y: targetYards }).y;
+  const ordinal = ["", "1st", "2nd", "3rd", "4th"][down];
+  const location = spot <= 50 ? `own ${spot}` : `opponent ${100 - spot}`;
+  const situation = `${ordinal} and ${distance >= 100 - spot ? "goal" : distance}, ${location}`;
+  const positions = engine.preSnap(puzzle);
+  const copy = protection ? protectionCopy(protection) : null;
+  const runners = protection ? routeRunners(protection) : [];
+  const ordered = fieldOrder(positions, runners);
+  const call = selected ? routes[selected] : undefined;
+  const selectionCopy = selected
+    ? ` Selected ${engine.displayName(puzzle, selected).name}, ${call ? `${call.route}${"depth" in call ? `, ${call.depth} yards` : ", no depth"}` : "no route"}.`
+    : "";
+  const readCopy = reads
+    ? reads.length
+      ? ` Read order ${reads.map((letter) => engine.displayName(puzzle, letter).name).join(", then ")}.`
+      : " No reads picked."
+    : "";
+  const drawRoutes = selected !== undefined || reads !== undefined;
+  const players = frame
+    ? Object.entries(frame.rep.tracks).map(
+        ([id, track]) => [id, track[frame.rep.endTick]] as const,
+      )
+    : live
+      ? live.players
+      : Object.entries(positions);
+  const qb = live?.players.find(([id]) => id === "QB")?.[1];
+  const converted = frame?.rep.verdict === "converted";
+  const extent =
+    pan === undefined ? { top: 0, bottom: 495 } : { top: -180, bottom: 872 };
+  return (
+    <svg
+      className="puzzle-field"
+      viewBox={
+        pan === undefined ? "0 0 403 495" : `0 ${-180 * (1 - pan)} 403 872`
+      }
+      style={pan === undefined ? undefined : { aspectRatio: "403 / 872" }}
+      role={selected ? "group" : "img"}
+      aria-label={
+        label ??
+        `Field: ${situation}. Pre-snap offense and defense; blue line of scrimmage, yellow line to gain.${protection && copy ? ` ${protection.blockers}-man protection. ${copy.blockersHelper}. ${copy.lineHelper}${copy.lineHelper.endsWith(".") ? "" : "."}` : ""}${selectionCopy}${readCopy}`
+      }
+      overflow="visible"
+      onClick={
+        onSelect
+          ? (event) => {
+              const matrix = event.currentTarget.getScreenCTM();
+              if (!matrix) return;
+              const point = new DOMPoint(
+                event.clientX,
+                event.clientY,
+              ).matrixTransform(matrix.inverse());
+              let nearest: Letter | undefined;
+              let distance = 23;
+              for (const letter of ordered) {
+                const at = fieldPoint(positions[letter]);
+                const candidate = Math.hypot(point.x - at.x, point.y - at.y);
+                if (candidate <= distance) {
+                  nearest = letter;
+                  distance = candidate;
+                }
+              }
+              if (nearest) onSelect(nearest);
+            }
+          : undefined
+      }
+    >
+      <Turf puzzle={puzzle} top={extent.top} bottom={extent.bottom} />
       <path
         data-field-layer="line-to-gain"
         d={`M0 ${lineY}H403`}
         stroke="#E2C044"
-        strokeWidth={frame?.rep.verdict === "converted" ? 3.5 : 2}
+        strokeWidth={converted && reveal === undefined ? 3.5 : 2}
       />
+      {converted && reveal !== undefined ? (
+        <path
+          data-field-layer="converted-line"
+          d={`M0 ${lineY}H403`}
+          stroke="#E2C044"
+          strokeWidth="3.5"
+          opacity={reveal}
+        />
+      ) : null}
       <path
         data-field-layer="scrimmage"
         d="M0 366H403"
@@ -763,7 +821,25 @@ export const Field = memo(function Field({
         />
       ))}
       {frame ? (
-        <PlayArt puzzle={puzzle} rep={frame.rep} playArt={frame.playArt} />
+        <PlayArt
+          puzzle={puzzle}
+          rep={frame.rep}
+          playArt={frame.playArt}
+          fade={reveal}
+        />
+      ) : null}
+      {live?.cone && qb ? (
+        <g
+          data-vision-cone={live.read}
+          transform={`translate(${fieldPoint(qb).x} ${fieldPoint(qb).y}) rotate(${live.cone.angle})`}
+          opacity={live.cone.opacity}
+        >
+          <linearGradient id="vision-cone">
+            <stop offset="0" stopColor="#F4B13E" stopOpacity=".7" />
+            <stop offset="1" stopColor="#F4B13E" stopOpacity="0" />
+          </linearGradient>
+          <path d="M0 0L176 -41L176 41Z" fill="url(#vision-cone)" />
+        </g>
       ) : null}
       {players.map(([id, at]) => {
         const { x, y } = fieldPoint(at);
@@ -813,7 +889,20 @@ export const Field = memo(function Field({
           </g>
         );
       })}
-      {frame ? <FeedbackBadges rep={frame.rep} /> : null}
+      {live?.ball ? (
+        <ellipse
+          data-football="in-flight"
+          cx={fieldPoint(live.ball.at).x}
+          cy={fieldPoint(live.ball.at).y}
+          rx="4.2"
+          ry="2.7"
+          transform={`rotate(${live.ball.angle} ${fieldPoint(live.ball.at).x} ${fieldPoint(live.ball.at).y})`}
+          fill="#8B5A2B"
+          stroke="#F2F5F3"
+          strokeWidth="0.8"
+        />
+      ) : null}
+      {frame ? <FeedbackBadges rep={frame.rep} fade={reveal} /> : null}
       {reads?.map((letter, index) => {
         const { x, y } = fieldPoint(positions[letter]);
         return (

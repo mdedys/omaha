@@ -1,4 +1,18 @@
-import { useEffect } from "react";
+import { useEffect, useSyncExternalStore } from "react";
+
+const desktopQuery = "(min-width: 900px)";
+function subscribe(onChange: () => void) {
+  const media = window.matchMedia(desktopQuery);
+  media.addEventListener("change", onChange);
+  return () => media.removeEventListener("change", onChange);
+}
+
+export function useDesktop() {
+  return useSyncExternalStore(
+    subscribe,
+    () => window.matchMedia(desktopQuery).matches,
+  );
+}
 
 // Handles a key at ≥900px unless a focused control owns it; `handle` returns
 // whether it used the key.
@@ -6,7 +20,7 @@ export function useDesktopKeys(handle: (key: string) => boolean) {
   useEffect(() => {
     function shortcut(event: KeyboardEvent) {
       if (
-        !window.matchMedia("(min-width: 900px)").matches ||
+        !window.matchMedia(desktopQuery).matches ||
         event.defaultPrevented ||
         event.altKey ||
         event.ctrlKey ||
