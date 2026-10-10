@@ -198,4 +198,98 @@ describe("result sheet", () => {
       label: "best rep",
     });
   });
+
+  it.each([
+    [["Out"], []],
+    [
+      ["Out", "Go"],
+      ["DL1", "DL2", "DL3", "DL4", "LB1", "LB2", "LB3"],
+    ],
+    [
+      ["Out", "Go", "In"],
+      [
+        "DL1",
+        "DL2",
+        "DL3",
+        "DL4",
+        "LB1",
+        "LB2",
+        "LB3",
+        "CB1",
+        "CB2",
+        "NB",
+        "S1",
+      ],
+    ],
+    [
+      ["Comeback"],
+      [
+        "DL1",
+        "DL2",
+        "DL3",
+        "DL4",
+        "LB1",
+        "LB2",
+        "LB3",
+        "CB1",
+        "CB2",
+        "NB",
+        "S1",
+      ],
+    ],
+  ] as const)(
+    "reveals the play art for the failed reps so far after %j",
+    async (reps, revealed) => {
+      const { puzzle, engine, played } = await play(...reps);
+      expect(
+        Object.keys(resultSheet(puzzle, engine, played).playArt.assignments),
+      ).toEqual(revealed);
+    },
+  );
+
+  it.each([
+    [
+      ["Out"],
+      "Rep 1 final frame with the defense revealed: incomplete. The corner closed on the Left WR and swatted it.",
+    ],
+    [
+      ["In"],
+      "Rep 1 final frame with the defense revealed: sacked. Nobody blocked the nickel.",
+    ],
+    [
+      ["Post"],
+      "Rep 1 final frame with the defense revealed: picked off. The safety jumped the throw to the Left WR.",
+    ],
+    [
+      ["Go"],
+      "Rep 1 final frame with the defense revealed: short. The corner stopped the Left WR 3 yards short.",
+    ],
+  ] as const)(
+    "labels the field with the outcome after %j",
+    async (reps, label) => {
+      const { puzzle, engine, played } = await play(...reps);
+      expect(resultSheet(puzzle, engine, played).fieldLabel).toBe(label);
+    },
+  );
+
+  it.each([
+    [
+      ["Out", "Go", "In"],
+      "Rep 3 final frame with the defense revealed: sacked. Nobody blocked the nickel.",
+    ],
+    [
+      ["Out", "Comeback"],
+      "Rep 2 final frame against Cover 1 pressure: converted. The Left WR picked up 13 yards.",
+    ],
+    [
+      ["Out", "Go", "In", "Post"],
+      "Rep 4 final frame against Cover 1 pressure: picked off. The safety jumped the throw to the Left WR.",
+    ],
+  ] as const)(
+    "names the coverage in the field label only once the puzzle ends, after %j",
+    async (reps, label) => {
+      const { puzzle, engine, played } = await play(...reps);
+      expect(resultSheet(puzzle, engine, played).fieldLabel).toBe(label);
+    },
+  );
 });

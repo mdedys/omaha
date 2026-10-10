@@ -67,7 +67,9 @@ test("Snap shows the rep's result sheet", async ({ page }) => {
     result.getByRole("button", { name: "Run it back" }),
   ).toBeVisible();
   await expect(
-    page.getByRole("img", { name: /^Rep 1 final frame:/ }),
+    page.getByRole("img", {
+      name: "Rep 1 final frame with the defense revealed: incomplete. The corner closed on the Left WR and swatted it.",
+    }),
   ).toBeVisible();
 });
 
@@ -237,4 +239,105 @@ test("desktop Enter runs it back", async ({ page }) => {
     "aria-current",
     "step",
   );
+});
+
+test("a thrown ball draws a dashed path from the throw to the catch", async ({
+  page,
+}) => {
+  await snapFirstRep(page, "Out");
+  const path = page.locator("[data-ball-path]");
+  await expect(path).toHaveAttribute(
+    "d",
+    /^M201\.5 447\.06\d*L99\.150\d* 238$/,
+  );
+  await expect(path).toHaveAttribute("stroke-dasharray", "2 5");
+});
+
+for (const [leftRoute, footballs] of [
+  ["Post", 1],
+  ["Out", 0],
+] as const) {
+  test(`Left WR ${leftRoute} draws ${footballs} football`, async ({ page }) => {
+    await snapFirstRep(page, leftRoute);
+    await expect(page.locator("[data-football]")).toHaveCount(footballs);
+  });
+}
+
+test("an interception draws the football where the ball ends", async ({
+  page,
+}) => {
+  await snapFirstRep(page, "Post");
+  const football = page.locator("[data-football]");
+  await expect(football).toHaveAttribute("cx", /^99\.150\d*$/);
+  await expect(football).toHaveAttribute("cy", "238");
+});
+
+test("a throwaway's ball path ends past the left sideline", async ({
+  page,
+}) => {
+  await snapFirstRep(page, "Hook");
+  await expect(page.locator("[data-ball-path]")).toHaveAttribute(
+    "d",
+    /L-3\.198\d* 455\.6$/,
+  );
+});
+
+for (const [leftRoute, paths] of [
+  ["In", 0],
+  ["Out", 1],
+] as const) {
+  test(`Left WR ${leftRoute} draws ${paths} ball path`, async ({ page }) => {
+    await snapFirstRep(page, leftRoute);
+    await expect(page.locator("[data-ball-path]")).toHaveCount(paths);
+  });
+}
+
+test("a converted rep shows the coverage key pill", async ({ page }) => {
+  await snapFirstRep(page, "Comeback");
+  await expect(page.getByText("Defense · Cover 1 pressure")).toBeVisible();
+});
+
+test("the coverage key pill waits for the fourth rep", async ({ page }) => {
+  await snapFirstRep(page, "Out");
+  await runItBack(page, "Go");
+  await runItBack(page, "In");
+  await expect(sheet(page)).toContainText("1 rep left");
+  await expect(page.getByText("Defense · Cover 1 pressure")).toHaveCount(0);
+  await runItBack(page, "Post");
+  await expect(page.getByText("Defense · Cover 1 pressure")).toBeVisible();
+});
+
+test("the Final pill shows on desktop only", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await snapFirstRep(page, "Out");
+  const final = page.getByText("Final · defense revealed");
+  await expect(final).toBeHidden();
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await expect(final).toBeVisible();
+});
+
+test("desktop stacks the coverage key under the Final pill", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await snapFirstRep(page, "Comeback");
+  const stage = await page.locator(".play-stage").boundingBox();
+  const final = page.getByText("Final · defense revealed");
+  const key = page.getByText("Defense · Cover 1 pressure");
+  await expect(final).toHaveCSS("font-size", "13px");
+  await expect(key).toHaveCSS("font-weight", "700");
+  const finalBox = await final.boundingBox();
+  const keyBox = await key.boundingBox();
+  expect({
+    final: [
+      (finalBox?.x ?? 0) - (stage?.x ?? 0),
+      (finalBox?.y ?? 0) - (stage?.y ?? 0),
+      finalBox?.height,
+    ],
+    key: [
+      (keyBox?.x ?? 0) - (stage?.x ?? 0),
+      (keyBox?.y ?? 0) - (stage?.y ?? 0),
+      keyBox?.height,
+    ],
+  }).toEqual({ final: [36, 36, 30], key: [36, 74, 30] });
 });
