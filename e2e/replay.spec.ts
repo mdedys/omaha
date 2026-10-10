@@ -465,6 +465,7 @@ test("a sack never shows the ball", async ({ page }) => {
 test("at 0.0s every player is on his pre-snap spot", async ({ page }) => {
   await page.clock.install({ time: 0 });
   await page.goto("/puzzle/1");
+  await expect(page.locator("[data-player]")).toHaveCount(22);
   const preSnap = await transforms(page);
   await page.clock.pauseAt(64_000);
   await playRep(page, "Out");
