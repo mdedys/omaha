@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import type { ComponentProps, MouseEvent } from "react";
 import { Hero } from "./Hero";
-import { loadTodaysPuzzle } from "./puzzles";
+import { Link } from "./Link";
+import { downAndDistance, loadTodaysPuzzle } from "./puzzles";
 import type { LandingPuzzle } from "./puzzles";
 import { PuzzleScreen } from "./PuzzleScreen";
 import "./App.css";
@@ -11,43 +11,6 @@ type LandingState =
   | { kind: "ready"; puzzle: LandingPuzzle }
   | { kind: "error" }
   | { kind: "empty" };
-
-function navigate(path: string) {
-  window.history.pushState(null, "", path);
-  window.dispatchEvent(new PopStateEvent("popstate"));
-}
-
-function Link({ href, children, ...props }: ComponentProps<"a">) {
-  function click(event: MouseEvent<HTMLAnchorElement>) {
-    if (
-      event.button !== 0 ||
-      event.metaKey ||
-      event.ctrlKey ||
-      event.shiftKey ||
-      event.altKey ||
-      !href
-    ) {
-      return;
-    }
-    event.preventDefault();
-    navigate(href);
-  }
-  return (
-    <a
-      {...props}
-      href={href}
-      onClick={click}
-      onKeyDown={(event) => {
-        if (event.key === " ") {
-          event.preventDefault();
-          if (!event.repeat) event.currentTarget.click();
-        }
-      }}
-    >
-      {children}
-    </a>
-  );
-}
 
 function Icon({ name }: { name: "play" | "grid" | "help" | "target" }) {
   return (
@@ -104,10 +67,8 @@ function SecondaryNavigation() {
 }
 
 function PuzzleInfo({ puzzle }: { puzzle: LandingPuzzle }) {
-  const { down, distance, spot } = puzzle.situation;
-  const ordinal = ["", "1st", "2nd", "3rd", "4th"][down];
+  const { spot } = puzzle.situation;
   const location = spot <= 50 ? `own ${spot}` : `opp ${100 - spot}`;
-  const distanceLabel = distance >= 100 - spot ? "goal" : distance;
   return (
     <div className="puzzle-info">
       <div className="puzzle-header">
@@ -116,9 +77,7 @@ function PuzzleInfo({ puzzle }: { puzzle: LandingPuzzle }) {
       </div>
       <div className="situation">
         <div className="situation-heading">
-          <h2>
-            {ordinal} &amp; {distanceLabel}
-          </h2>
+          <h2>{downAndDistance(puzzle.situation)}</h2>
           <span className="spot">{location}</span>
         </div>
         <p className="briefing">{puzzle.briefing}</p>
@@ -224,10 +183,14 @@ function App() {
     window.addEventListener("popstate", update);
     return () => window.removeEventListener("popstate", update);
   }, []);
-  const puzzleRoute = /^\/puzzle\/(\d+)$/.exec(path);
+  const puzzleRoute = /^\/puzzle\/(\d+)(\/share)?$/.exec(path);
   if (puzzleRoute) {
     return (
-      <PuzzleScreen key={puzzleRoute[1]} number={Number(puzzleRoute[1])} />
+      <PuzzleScreen
+        key={puzzleRoute[1]}
+        number={Number(puzzleRoute[1])}
+        sharing={puzzleRoute[2] !== undefined}
+      />
     );
   }
   const title =

@@ -1,38 +1,6 @@
 import { expect, test } from "@playwright/test";
 import type { Locator, Page } from "@playwright/test";
-
-const routes = [
-  ["TE", "Hitch"],
-  ["Slot WR", "Out"],
-  ["Right WR", "Go"],
-  ["RB", "Flat"],
-];
-
-async function snapFirstRep(page: Page, leftRoute: string) {
-  await page.goto("/puzzle/1");
-  await page.getByRole("button", { name: "Next: routes" }).click();
-  await page.getByRole("option", { name: leftRoute, exact: true }).click();
-  for (const [receiver, route] of routes) {
-    await page
-      .getByRole("button", { name: `${receiver}, no route`, exact: true })
-      .click();
-    await page.getByRole("option", { name: route, exact: true }).click();
-  }
-  await page.getByRole("button", { name: "Next: read" }).click();
-  await page.getByRole("button", { name: "TE, Hitch", exact: true }).click();
-  await page.getByRole("button", { name: "Snap" }).click();
-  await page.getByRole("button", { name: "Skip to result" }).click();
-}
-
-async function runItBack(page: Page, leftRoute: string) {
-  await page.getByRole("button", { name: "Run it back" }).click();
-  await page.getByRole("button", { name: "Next: routes" }).click();
-  await page.getByRole("button", { name: /^Left WR,/ }).click();
-  await page.getByRole("option", { name: leftRoute, exact: true }).click();
-  await page.getByRole("button", { name: "Next: read" }).click();
-  await page.getByRole("button", { name: "Snap" }).click();
-  await page.getByRole("button", { name: "Skip to result" }).click();
-}
+import { routes, runItBack, snapFirstRep } from "./page";
 
 function labels(locator: Locator) {
   return locator.evaluateAll((elements) =>
@@ -192,9 +160,7 @@ test("plays to a converted finish", async ({ page }) => {
   await expect(result.getByRole("button", { name: "Run it back" })).toHaveCount(
     0,
   );
-  await expect(
-    result.getByRole("button", { name: "See how the pros did" }),
-  ).toHaveAttribute("aria-disabled", "true");
+  await expect(result.locator(".result-cta")).toHaveText("Share result");
 });
 
 test("plays to an out-of-reps finish", async ({ page }) => {
@@ -226,9 +192,7 @@ test("plays to an out-of-reps finish", async ({ page }) => {
   await expect(result.getByRole("button", { name: "Run it back" })).toHaveCount(
     0,
   );
-  await expect(
-    result.getByRole("button", { name: "See how the pros did" }),
-  ).toBeVisible();
+  await expect(result.locator(".result-cta")).toHaveText("Share result");
 });
 
 test("desktop Enter runs it back", async ({ page }) => {
