@@ -1,6 +1,6 @@
-import { useEffect } from "react";
 import type { KeyboardEvent, ReactNode } from "react";
 import type { Blockers, Design, LineCall } from "./engine/contract";
+import { useDesktopKeys } from "./desktopKeys";
 
 export function protectionCopy({ blockers, lineCall }: Design["protection"]) {
   const blockersHelper =
@@ -114,57 +114,31 @@ export function Protect({
   onNext: () => void;
 }) {
   const { blockersHelper, lineHelper } = protectionCopy(protection);
-  useEffect(() => {
-    function shortcut(event: globalThis.KeyboardEvent) {
-      if (
-        !window.matchMedia("(min-width: 900px)").matches ||
-        event.defaultPrevented ||
-        event.altKey ||
-        event.ctrlKey ||
-        event.metaKey
-      ) {
-        return;
-      }
-      const target = event.target;
-      if (target instanceof HTMLElement) {
-        if (
-          target.isContentEditable ||
-          target.closest("input, textarea, select")
-        ) {
-          return;
-        }
-        if (event.key.startsWith("Arrow") && target.closest('[role="radio"]')) {
-          return;
-        }
-        if (event.key === "Enter" && target.closest("button, a")) return;
-      }
-      const blockers = offered.find((count) => String(count) === event.key);
-      if (blockers !== undefined) {
-        event.preventDefault();
-        onChange({ ...protection, blockers });
-      } else if (
-        event.key === "ArrowLeft" ||
-        event.key === "ArrowRight" ||
-        event.key.toLowerCase() === "m"
-      ) {
-        event.preventDefault();
-        onChange({
-          ...protection,
-          lineCall:
-            event.key === "ArrowLeft"
-              ? "slide-left"
-              : event.key === "ArrowRight"
-                ? "slide-right"
-                : "man",
-        });
-      } else if (event.key === "Enter") {
-        event.preventDefault();
-        onNext();
-      }
+  useDesktopKeys((key) => {
+    const blockers = offered.find((count) => String(count) === key);
+    if (blockers !== undefined) {
+      onChange({ ...protection, blockers });
+    } else if (
+      key === "ArrowLeft" ||
+      key === "ArrowRight" ||
+      key.toLowerCase() === "m"
+    ) {
+      onChange({
+        ...protection,
+        lineCall:
+          key === "ArrowLeft"
+            ? "slide-left"
+            : key === "ArrowRight"
+              ? "slide-right"
+              : "man",
+      });
+    } else if (key === "Enter") {
+      onNext();
+    } else {
+      return false;
     }
-    window.addEventListener("keydown", shortcut);
-    return () => window.removeEventListener("keydown", shortcut);
-  }, [offered, protection, onChange, onNext]);
+    return true;
+  });
   return (
     <>
       <h2 className="protect-heading">Protect</h2>

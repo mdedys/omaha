@@ -3,7 +3,12 @@ import type { Blockers, Design, Letter, RouteCall } from "./engine/contract";
 import { loadPuzzle } from "./engine";
 import { engine as v1 } from "./engine/v1";
 import gunTrey from "./engine/stub/gun-trey.json";
-import { changeProtection, chooseRoute, routeRunners } from "./routes";
+import {
+  changeProtection,
+  chooseRoute,
+  routeRunners,
+  toggleRead,
+} from "./routes";
 
 const names: {
   letter: Letter;
@@ -129,4 +134,31 @@ it("protection removes assignments without resurrecting them", () => {
     routes: { X: { route: "Out", depth: 10 } },
     readOrder: ["X"],
   });
+});
+
+it.each([
+  { order: [], letter: "Y", expected: ["Y"] },
+  { order: ["Y", "Z"], letter: "X", expected: ["Y", "Z", "X"] },
+  { order: ["Y", "Z", "X"], letter: "Y", expected: ["Z", "X"] },
+  { order: ["Y", "Z", "X"], letter: "H", expected: ["Y", "Z", "X"] },
+] satisfies { order: Letter[]; letter: Letter; expected: Letter[] }[])(
+  "toggling $letter in $order gives $expected",
+  ({ order, letter, expected }) => {
+    expect(toggleRead(order, letter)).toEqual(expected);
+  },
+);
+
+it("keeping a read's receiver in moves the later reads up", () => {
+  const draft: Design = {
+    protection: { blockers: 5, lineCall: "man" },
+    routes: {
+      X: { route: "Out", depth: 10 },
+      Y: { route: "Seam" },
+      RB: { route: "Flat" },
+    },
+    readOrder: ["Y", "RB", "X"],
+  };
+  expect(
+    changeProtection(draft, { blockers: 6, lineCall: "man" }).readOrder,
+  ).toEqual(["Y", "X"]);
 });
