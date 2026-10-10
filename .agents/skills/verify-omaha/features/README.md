@@ -33,7 +33,7 @@ Each feature file starts with an H1 and one paragraph on what the player sees. I
 | --------------------------- | ------------------------ | ----------------------------------------- |
 | [App shell](./app-shell.md) | Live                     | #60                                       |
 | [Landing](./landing.md)     | Live (not-started state) | #60; stored progress remains #57          |
-| [Protect](./protect.md)     | Not built                | #61 (play screen), #62 (controls)         |
+| [Protect](./protect.md)     | Live                     | #61 (play screen), #62 (controls)         |
 | [Routes](./routes.md)       | Not built                | #63                                       |
 | [Read and snap](./read.md)  | Not built                | #64                                       |
 | [Result](./result.md)       | Not built                | #64 (sheet), #65 (play art), #71 (reveal) |

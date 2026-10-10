@@ -6,7 +6,7 @@ The name comes from Peyton Manning's audible call at the line.
 
 ## Status
 
-Pre-MVP. The visual design lives in [design/](design/README.md). The app shell, Landing and numbered puzzle play-screen frame are implemented in React and SVG, with system light/dark themes and a static daily puzzle source. Protect, Routes and Read currently have placeholder panels; their controls and play art are not built. The Puzzles list and How to play routes remain labelled placeholders. Version 1 of the engine (pre-snap catalogs, validation, design helpers, the simulation, scoring and disclosure tiers) runs behind the engine contract. Work is tracked in [GitHub issues](https://github.com/mdedys/omaha/issues).
+Pre-MVP. The visual design lives in [design/](design/README.md). The app shell, Landing and numbered puzzle play-screen frame are implemented in React and SVG, with system light/dark themes and a static daily puzzle source. Protect has engine-backed blocker/line-call controls and pre-snap protection art; Routes and Read retain placeholder panels. The Puzzles list and How to play routes remain labelled placeholders. Version 1 of the engine (pre-snap catalogs, validation, design helpers, the simulation, scoring and disclosure tiers) runs behind the engine contract. Work is tracked in [GitHub issues](https://github.com/mdedys/omaha/issues).
 
 ## Getting started
 
@@ -44,7 +44,7 @@ Playwright runs both 390×844 and 1280×800 projects in the pull-request `checks
 
 The shared `Field` uses `engine.preSnap(puzzle)` in engine yards, projected by `fieldPoint`: center `(201.5, 366)`, downfield y decreasing by 12.8 units per yard, and 31.5 yards across the 403-unit width. The fixed viewBox is `0 0 403 495`. Turf stripes, numbers and hashes follow absolute field position; the yellow line marks the first-down target or replaces the goal line for a touchdown target. A visible end line adds the path, wall and a deterministic seat-hashed crowd, extended across the desktop stage. Field colors never change with theme.
 
-Each numbered puzzle owns an in-memory session: rep 1, 5-man/man protection, no routes, empty read order, Protect selected. The ungated step buttons switch placeholder panels without replacing the draft. Reloading or opening a different puzzle creates a fresh session; no progress is persisted. The phone step bar sits inside the panel below the field, with the spot retained below 900px. Desktop uses a 64px header and 440px named design aside. Header exits, protection controls and protection art belong to #62.
+Each numbered puzzle owns an in-memory session: rep 1, 5-man/man protection, no routes, empty read order, Protect selected. Protect offers exactly the engine's blocker counts at equal widths, updates the shared draft and field immediately, and advances to Routes without gating. The ungated step buttons retain the draft; Routes and Read remain placeholder panels. Reloading or opening a different puzzle creates a fresh session; no progress is persisted. The phone step bar sits inside the panel below the field, with the spot retained below 900px. Desktop uses a 64px header and 440px named design aside. Exit uses browser Back.
 
 Unit coverage exercises projection, actual pre-snap player mapping and fresh session isolation; browser coverage exercises numbered loading/errors, goal decorations, steps, history, reload, responsive geometry, accessibility and theme invariance. The `checks` CI job runs both suites.
 
