@@ -1,5 +1,8 @@
 import { memo } from "react";
 import type {
+  Badge,
+  DefenderId,
+  DefensePlayArt,
   Design,
   Engine,
   Letter,
@@ -7,6 +10,7 @@ import type {
   Puzzle,
   Rep,
   Vec,
+  ZoneId,
 } from "./engine/contract";
 import { protectionCopy } from "./Protect";
 import {
@@ -16,8 +20,11 @@ import {
   routeRunners,
 } from "./routes";
 
+const unitsPerYardX = 403 / 31.5;
+const unitsPerYardY = 12.8;
+
 export function fieldPoint({ x, y }: Vec): Vec {
-  return { x: 201.5 + (403 / 31.5) * x, y: 366 - 12.8 * y };
+  return { x: 201.5 + unitsPerYardX * x, y: 366 - unitsPerYardY * y };
 }
 
 const receivers: Record<string, { color: string; label: string }> = {
@@ -130,6 +137,290 @@ function ProtectionArt({
   );
 }
 
+const linemen: readonly string[] = ["LT", "LG", "C", "RG", "RT"];
+
+function playerRadius(id: string) {
+  return receivers[id] || id === "QB" ? 8.5 : linemen.includes(id) ? 8 : 7.5;
+}
+
+const zoneDeep = "#3D7BFF";
+const zoneFlat = "#7FD8FF";
+const zoneHook = "#FFD84A";
+const zoneCurlFlat = "#B57CFF";
+const zoneColors: Record<ZoneId, string> = {
+  "deep-half-L": zoneDeep,
+  "deep-half-R": zoneDeep,
+  "deep-third-L": zoneDeep,
+  "deep-third-M": zoneDeep,
+  "deep-third-R": zoneDeep,
+  "deep-quarter-1": zoneDeep,
+  "deep-quarter-2": zoneDeep,
+  "deep-quarter-3": zoneDeep,
+  "deep-quarter-4": zoneDeep,
+  "deep-middle": zoneDeep,
+  "hook-L": zoneHook,
+  "hook-M": zoneHook,
+  "hook-R": zoneHook,
+  "curl-flat-L": zoneCurlFlat,
+  "curl-flat-R": zoneCurlFlat,
+  "flat-L": zoneFlat,
+  "flat-R": zoneFlat,
+};
+const defensePath = "#C4CFC8";
+const startDot = "#7E8B85";
+const arrowArm = (38 * Math.PI) / 180;
+
+// Shortens a polyline by `by` units measured back from its end, so a path
+// stops outside the defender's disc. Null when nothing would be left.
+function trimEnd(points: readonly Vec[], by: number): Vec[] | null {
+  const kept = points.filter(
+    (point, index) =>
+      index === 0 ||
+      point.x !== points[index - 1].x ||
+      point.y !== points[index - 1].y,
+  );
+  let left = by;
+  while (kept.length > 1) {
+    const end = kept[kept.length - 1];
+    const before = kept[kept.length - 2];
+    const length = Math.hypot(end.x - before.x, end.y - before.y);
+    if (length > left) {
+      kept[kept.length - 1] = {
+        x: end.x + ((before.x - end.x) * left) / length,
+        y: end.y + ((before.y - end.y) * left) / length,
+      };
+      return kept;
+    }
+    left -= length;
+    kept.pop();
+  }
+  return null;
+}
+
+type PathStyle = {
+  kind: "drop" | "man" | "rush" | "blitz";
+  color: string;
+  width: number;
+};
+
+// Interior linemen engaged at the line get no path: a lineman's rush is drawn
+// only when he is the sacker.
+function pathStyle(
+  id: DefenderId,
+  rep: Rep,
+  playArt: DefensePlayArt,
+): PathStyle | null {
+  switch (playArt.assignments[id]) {
+    case "zone": {
+      const zone = playArt.zones.find((entry) => entry.defenderId === id);
+      return zone
+        ? { kind: "drop", color: zoneColors[zone.zone], width: 1.8 }
+        : null;
+    }
+    case "man":
+      return { kind: "man", color: defensePath, width: 1.8 };
+    case "rush":
+      if (!id.startsWith("DL")) {
+        return { kind: "blitz", color: "#E05A2B", width: 2.4 };
+      }
+      return rep.outcome.kind === "sack" && rep.cause.decisive === id
+        ? { kind: "rush", color: defensePath, width: 1.8 }
+        : null;
+    case undefined:
+      return null;
+  }
+}
+
+const layers: readonly PathStyle["kind"][] = ["drop", "man", "rush", "blitz"];
+
+function PlayArt({
+  puzzle,
+  rep,
+  playArt,
+}: {
+  puzzle: Puzzle;
+  rep: Rep;
+  playArt: DefensePlayArt;
+}) {
+  const paths = puzzle.defense
+    .flatMap(({ id }) => {
+      const style = pathStyle(id, rep, playArt);
+      const track = rep.tracks[id].slice(0, rep.endTick + 1).map(fieldPoint);
+      const points = style ? trimEnd(track, 10.5) : null;
+      return style && points ? [{ id, style, start: track[0], points }] : [];
+    })
+    .sort(
+      (a, b) => layers.indexOf(a.style.kind) - layers.indexOf(b.style.kind),
+    );
+  const ball = rep.ball
+    ? { from: fieldPoint(rep.ball.from), to: fieldPoint(rep.ball.to) }
+    : null;
+  return (
+    <g data-field-layer="play-art" fill="none">
+      {ball ? (
+        <path
+          data-ball-path=""
+          d={`M${ball.from.x} ${ball.from.y}L${ball.to.x} ${ball.to.y}`}
+          stroke="#F2F5F3"
+          strokeOpacity=".7"
+          strokeWidth="1.8"
+          strokeDasharray="2 5"
+          strokeLinecap="round"
+        />
+      ) : null}
+      {ball && rep.outcome.kind === "interception" ? (
+        <ellipse
+          data-football=""
+          cx={ball.to.x}
+          cy={ball.to.y}
+          rx="4.2"
+          ry="2.7"
+          transform={`rotate(${(Math.atan2(ball.to.y - ball.from.y, ball.to.x - ball.from.x) * 180) / Math.PI} ${ball.to.x} ${ball.to.y})`}
+          fill="#8B5A2B"
+          stroke="#F2F5F3"
+          strokeWidth="0.8"
+        />
+      ) : null}
+      {playArt.zones.map(({ defenderId, zone, center, radii }) => {
+        const { x, y } = fieldPoint(center);
+        return (
+          <ellipse
+            key={defenderId}
+            data-zone={zone}
+            cx={x}
+            cy={y}
+            rx={radii.x * unitsPerYardX}
+            ry={radii.y * unitsPerYardY}
+            fill={zoneColors[zone]}
+            fillOpacity=".3"
+            stroke={zoneColors[zone]}
+            strokeOpacity=".85"
+            strokeWidth="1.4"
+          />
+        );
+      })}
+      {paths.map(({ id, start }) => (
+        <circle
+          key={id}
+          data-start-dot={id}
+          cx={start.x}
+          cy={start.y}
+          r="3"
+          stroke={startDot}
+          strokeWidth="1.2"
+        />
+      ))}
+      {paths.map(({ id, style, points }) => {
+        const end = points[points.length - 1];
+        const before = points[points.length - 2];
+        const angle = Math.atan2(end.y - before.y, end.x - before.x);
+        const arm = (offset: number) =>
+          `${end.x - 5 * Math.cos(angle + offset)} ${end.y - 5 * Math.sin(angle + offset)}`;
+        return (
+          <path
+            key={id}
+            data-defense-path={id}
+            data-path-kind={style.kind}
+            d={`M${points.map((point) => `${point.x} ${point.y}`).join("L")}${style.kind === "drop" ? "" : `M${arm(-arrowArm)}L${end.x} ${end.y}L${arm(arrowArm)}`}`}
+            stroke={style.color}
+            strokeWidth={style.width}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        );
+      })}
+    </g>
+  );
+}
+
+function BadgeGlyph({ badge }: { badge: Badge }) {
+  switch (badge) {
+    case "open":
+      return (
+        <>
+          <circle r="7" fill="#F2F5F3" />
+          <path
+            d="M-3.2 0.2L-1 2.5L3.3 -2.3"
+            fill="none"
+            stroke="#0A1410"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </>
+      );
+    case "contested":
+      return (
+        <>
+          <circle r="7" fill="#0A1410" stroke="#F2F5F3" strokeWidth="1.5" />
+          <path
+            d="M-3.6 0.6Q-1.8 -2.2 0 0.4T3.6 0"
+            fill="none"
+            stroke="#F2F5F3"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+          />
+        </>
+      );
+    case "covered":
+      return (
+        <>
+          <circle r="7" fill="#0A1410" stroke={startDot} strokeWidth="1.5" />
+          <path
+            d="M-2.6 -2.6L2.6 2.6M2.6 -2.6L-2.6 2.6"
+            stroke="#F2F5F3"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+          />
+        </>
+      );
+  }
+}
+
+// Each badge sits up-right of its receiver and flips up-left when that spot
+// would leave the field or cover a player, the football or an earlier badge.
+function FeedbackBadges({ rep }: { rep: Rep }) {
+  const players = Object.entries(rep.tracks).map(
+    ([id, track]) => [id, fieldPoint(track[rep.endTick])] as const,
+  );
+  const football =
+    rep.ball && rep.outcome.kind === "interception"
+      ? fieldPoint(rep.ball.to)
+      : null;
+  const placed: Vec[] = [];
+  return (
+    <g data-field-layer="feedback">
+      {rep.feedback.map(({ letter, badge }) => {
+        const at = fieldPoint(rep.tracks[letter][rep.endTick]);
+        const y = Math.min(Math.max(at.y - 11, 7), 488);
+        const clear = (x: number) =>
+          x + 7 <= 403 &&
+          players.every(
+            ([id, player]) =>
+              Math.hypot(player.x - x, player.y - y) >= 7 + playerRadius(id),
+          ) &&
+          placed.every((badge) => Math.hypot(badge.x - x, badge.y - y) >= 14) &&
+          (!football || Math.hypot(football.x - x, football.y - y) >= 11.2);
+        const x = Math.min(
+          Math.max(clear(at.x + 11) ? at.x + 11 : at.x - 11, 7),
+          396,
+        );
+        placed.push({ x, y });
+        return (
+          <g
+            key={letter}
+            data-feedback-badge={letter}
+            data-badge={badge}
+            transform={`translate(${x} ${y})`}
+          >
+            <BadgeGlyph badge={badge} />
+          </g>
+        );
+      })}
+    </g>
+  );
+}
+
 export const Field = memo(function Field({
   puzzle,
   engine,
@@ -148,7 +439,7 @@ export const Field = memo(function Field({
   selected?: Letter;
   onSelect?: (letter: Letter) => void;
   reads?: readonly Letter[];
-  frame?: Rep;
+  frame?: { rep: Rep; playArt: DefensePlayArt };
   label?: string;
 }) {
   const { spot, down, distance } = puzzle.situation;
@@ -175,8 +466,8 @@ export const Field = memo(function Field({
     : "";
   const drawRoutes = selected !== undefined || reads !== undefined;
   const players = frame
-    ? Object.entries(frame.tracks).map(
-        ([id, track]) => [id, track[frame.endTick]] as const,
+    ? Object.entries(frame.rep.tracks).map(
+        ([id, track]) => [id, track[frame.rep.endTick]] as const,
       )
     : Object.entries(positions);
   return (
@@ -390,7 +681,7 @@ export const Field = memo(function Field({
         data-field-layer="line-to-gain"
         d={`M0 ${lineY}H403`}
         stroke="#E2C044"
-        strokeWidth={frame?.verdict === "converted" ? 3.5 : 2}
+        strokeWidth={frame?.rep.verdict === "converted" ? 3.5 : 2}
       />
       <path
         data-field-layer="scrimmage"
@@ -471,16 +762,19 @@ export const Field = memo(function Field({
           strokeWidth="1.6"
         />
       ))}
+      {frame ? (
+        <PlayArt puzzle={puzzle} rep={frame.rep} playArt={frame.playArt} />
+      ) : null}
       {players.map(([id, at]) => {
         const { x, y } = fieldPoint(at);
         const receiver = receivers[id];
         const letter = receiverLetters.find((letter) => letter === id);
-        const lineman = ["LT", "LG", "C", "RG", "RT"].includes(id);
+        const lineman = linemen.includes(id);
         const qb = id === "QB";
         return (
           <g key={id} data-player={id} transform={`translate(${x} ${y})`}>
             <circle
-              r={receiver || qb ? 8.5 : lineman ? 8 : 7.5}
+              r={playerRadius(id)}
               fill={
                 receiver
                   ? "#0E2219"
@@ -519,6 +813,7 @@ export const Field = memo(function Field({
           </g>
         );
       })}
+      {frame ? <FeedbackBadges rep={frame.rep} /> : null}
       {reads?.map((letter, index) => {
         const { x, y } = fieldPoint(positions[letter]);
         return (

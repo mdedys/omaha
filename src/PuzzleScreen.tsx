@@ -125,8 +125,11 @@ function PlayScreen({ puzzle, engine }: { puzzle: Puzzle; engine: Engine }) {
               <Field
                 puzzle={puzzle}
                 engine={engine}
-                frame={session.played[session.played.length - 1].rep}
-                label={`Rep ${rep} final frame: ${sheet.line}`}
+                frame={{
+                  rep: session.played[session.played.length - 1].rep,
+                  playArt: sheet.playArt,
+                }}
+                label={sheet.fieldLabel}
               />
               <div className="result-shade" />
               <div className="result-pills">
@@ -137,6 +140,14 @@ function PlayScreen({ puzzle, engine }: { puzzle: Puzzle; engine: Engine }) {
                 <span>
                   {score} · {clock}
                 </span>
+              </div>
+              <div className="result-keys">
+                <span className="result-final">Final · defense revealed</span>
+                {sheet.ended ? (
+                  <span className="result-key">
+                    Defense · {puzzle.coverageName}
+                  </span>
+                ) : null}
               </div>
             </>
           ) : (

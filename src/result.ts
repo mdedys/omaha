@@ -2,6 +2,7 @@ import { TICK_SECONDS } from "./engine/contract";
 import type {
   CauseCode,
   DefenderId,
+  DefensePlayArt,
   Design,
   Engine,
   ForcedBy,
@@ -166,6 +167,8 @@ export type Sheet = {
   stats: Stat[];
   boxes: RepBox[];
   status: string;
+  fieldLabel: string;
+  playArt: DefensePlayArt;
 };
 
 export function resultSheet(
@@ -233,9 +236,11 @@ export function resultSheet(
     return { state: index === count ? "next" : "unused" };
   });
   const left = 4 - count;
+  const ended = variant !== "cream";
+  const failed = reps.filter((entry) => entry.verdict !== "converted").length;
   return {
     variant,
-    ended: variant !== "cream",
+    ended,
     headline: variant === "over" ? "OUT OF REPS" : headlines[rep.cause.code],
     tile:
       variant === "win"
@@ -257,5 +262,7 @@ export function resultSheet(
           : left === 1
             ? "1 rep left"
             : `${left} reps left`,
+    fieldLabel: `Rep ${count} final frame ${ended ? `against ${puzzle.coverageName}` : "with the defense revealed"}: ${headlines[rep.cause.code].toLowerCase()}. ${cause}`,
+    playArt: engine.revealedPlayArt(rep.playArt, failed, ended),
   };
 }
