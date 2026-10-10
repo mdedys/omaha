@@ -160,6 +160,13 @@ for (const activation of ["click", "Enter", "Space"]) {
         await expect(
           page.getByRole("radio", { name: "Man", exact: true }),
         ).toBeChecked();
+      } else if (step === "2 Routes") {
+        await expect(
+          page.getByRole("listbox", { name: "Routes for Left WR" }),
+        ).toBeVisible();
+        await expect(
+          page.getByText("Choose a route to set its depth."),
+        ).toBeVisible();
       } else {
         await expect(
           page.getByText("Current draft: 5-man · man. No routes or reads set."),
@@ -215,7 +222,7 @@ test("field stays identical through themes and viewport changes", async ({
 }) => {
   await page.emulateMedia({ colorScheme: "light" });
   await openPuzzle(page);
-  const field = page.getByRole("img", { name: /^Field:/ });
+  const field = page.locator(".puzzle-field");
   const markup = await field.innerHTML();
   await page.emulateMedia({ colorScheme: "dark" });
   expect(await field.innerHTML()).toBe(markup);
@@ -224,6 +231,13 @@ test("field stays identical through themes and viewport changes", async ({
   await page.setViewportSize({ width: 1280, height: 800 });
   expect(await field.innerHTML()).toBe(markup);
   await page.getByRole("button", { name: "2 Routes" }).click();
+  await expect(field).toHaveAttribute("role", "group");
+  await expect(page.locator('[data-selection="X"]')).toHaveAttribute(
+    "stroke",
+    "#F4B13E",
+  );
+  await page.getByRole("button", { name: "1 Protect" }).click();
+  await expect(field).toHaveAttribute("role", "img");
   expect(await field.innerHTML()).toBe(markup);
   await page.reload();
   await expect(page.getByRole("heading", { name: "Protect" })).toBeVisible();

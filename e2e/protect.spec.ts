@@ -103,8 +103,9 @@ for (const blockers of [5, 6, 7]) {
           : call === "Slide left"
             ? "slide-left"
             : "slide-right";
-      await expect(page.locator(".draft-summary")).toHaveText(
-        `Current draft: ${blockers}-man · ${storedCall}. No routes or reads set.`,
+      await expect(page.locator(".puzzle-field")).toHaveAttribute(
+        "aria-label",
+        new RegExp(`${blockers}-man protection`),
       );
       await page.getByRole("button", { name: "3 Read" }).click();
       await expect(page.locator(".draft-summary")).toHaveText(
@@ -289,8 +290,9 @@ test("Landing enters usable Protect controls", async ({ page }) => {
     page.getByText("Line + RB stay in", { exact: true }),
   ).toBeVisible();
   await page.getByRole("button", { name: "Next: routes" }).click();
-  await expect(page.locator(".draft-summary")).toHaveText(
-    "Current draft: 6-man · man. No routes or reads set.",
+  await expect(page.locator(".puzzle-field")).toHaveAttribute(
+    "aria-label",
+    /6-man protection/,
   );
 });
 
@@ -460,8 +462,8 @@ for (const formation of formations) {
     await expect(next).toBeEnabled();
     await next.click();
     await expect(page.getByRole("heading", { name: "Routes" })).toBeVisible();
-    await expect(page.locator(".draft-summary")).toHaveText(
-      "Current draft: 5-man · man. No routes or reads set.",
-    );
+    await expect(
+      page.getByRole("listbox", { name: "Routes for Left WR" }),
+    ).toBeVisible();
   });
 }

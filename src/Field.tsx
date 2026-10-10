@@ -1,6 +1,14 @@
 import { memo } from "react";
-import type { Design, Engine, PlayerId, Puzzle, Vec } from "./engine/contract";
+import type {
+  Design,
+  Engine,
+  Letter,
+  PlayerId,
+  Puzzle,
+  Vec,
+} from "./engine/contract";
 import { protectionCopy } from "./Protect";
+import { receiverColors, receiverLetters, routeRunners } from "./routes";
 
 export function fieldPoint({ x, y }: Vec): Vec {
   return { x: 201.5 + (403 / 31.5) * x, y: 366 - 12.8 * y };
@@ -37,9 +45,11 @@ const crowd = Array.from({ length: 18 }, (_, row) =>
 function ProtectionArt({
   positions,
   protection,
+  showSlide = true,
 }: {
   positions: Record<PlayerId, Vec>;
   protection: Design["protection"];
+  showSlide?: boolean;
 }) {
   const line = ["LT", "LG", "C", "RG", "RT"] as const;
   const points = line.map((id) => fieldPoint(positions[id]));
@@ -60,7 +70,7 @@ function ProtectionArt({
       strokeLinecap="round"
       strokeLinejoin="round"
     >
-      {slides ? (
+      {slides && showSlide ? (
         <path
           data-protection="slide"
           d={`M${direction === -1 ? right : left} ${y}H${end}M${end - direction * 6} ${y - 6}L${end} ${y}L${end - direction * 6} ${y + 6}`}
@@ -118,10 +128,16 @@ export const Field = memo(function Field({
   puzzle,
   engine,
   protection,
+  routes = {},
+  selected,
+  onSelect,
 }: {
   puzzle: Puzzle;
   engine: Engine;
   protection?: Design["protection"];
+  routes?: Design["routes"];
+  selected?: Letter;
+  onSelect?: (letter: Letter) => void;
 }) {
   const { spot, down, distance } = puzzle.situation;
   const goalY = fieldPoint({ x: 0, y: 100 - spot }).y;
@@ -134,13 +150,42 @@ export const Field = memo(function Field({
   const situation = `${ordinal} and ${distance >= 100 - spot ? "goal" : distance}, ${location}`;
   const positions = engine.preSnap(puzzle);
   const copy = protection ? protectionCopy(protection) : null;
+  const runners = protection ? routeRunners(protection) : [];
+  const ordered = [...runners].sort((a, b) => positions[a].x - positions[b].x);
+  const call = selected ? routes[selected] : undefined;
+  const selectionCopy = selected
+    ? ` Selected ${engine.displayName(puzzle, selected).name}, ${call ? `${call.route}${"depth" in call ? `, ${call.depth} yards` : ", no depth"}` : "no route"}.`
+    : "";
   return (
     <svg
       className="puzzle-field"
       viewBox="0 0 403 495"
-      role="img"
-      aria-label={`Field: ${situation}. Pre-snap offense and defense; blue line of scrimmage, yellow line to gain.${protection && copy ? ` ${protection.blockers}-man protection. ${copy.blockersHelper}. ${copy.lineHelper}${copy.lineHelper.endsWith(".") ? "" : "."}` : ""}`}
+      role={selected ? "group" : "img"}
+      aria-label={`Field: ${situation}. Pre-snap offense and defense; blue line of scrimmage, yellow line to gain.${protection && copy ? ` ${protection.blockers}-man protection. ${copy.blockersHelper}. ${copy.lineHelper}${copy.lineHelper.endsWith(".") ? "" : "."}` : ""}${selectionCopy}`}
       overflow="visible"
+      onClick={
+        onSelect
+          ? (event) => {
+              const matrix = event.currentTarget.getScreenCTM();
+              if (!matrix) return;
+              const point = new DOMPoint(
+                event.clientX,
+                event.clientY,
+              ).matrixTransform(matrix.inverse());
+              let nearest: Letter | undefined;
+              let distance = 23;
+              for (const letter of ordered) {
+                const at = fieldPoint(positions[letter]);
+                const candidate = Math.hypot(point.x - at.x, point.y - at.y);
+                if (candidate <= distance) {
+                  nearest = letter;
+                  distance = candidate;
+                }
+              }
+              if (nearest) onSelect(nearest);
+            }
+          : undefined
+      }
     >
       <rect width="403" height="495" fill="#0F3A27" />
       {Array.from({ length: 20 }, (_, band) => {
@@ -327,12 +372,67 @@ export const Field = memo(function Field({
         stroke="#3B8EEA"
         strokeWidth="2"
       />
+      {selected
+        ? runners.map((letter) => {
+            const route = routes[letter];
+            if (!route) return null;
+            const points = engine
+              .routePath(puzzle, letter, route)
+              .points.map(fieldPoint);
+            if (letter === "RB") points.unshift(fieldPoint(positions.RB));
+            const start = points[0];
+            const next = points[1];
+            const firstLength = Math.hypot(next.x - start.x, next.y - start.y);
+            const trim = Math.min(10, firstLength);
+            const trimmed = {
+              x: start.x + ((next.x - start.x) * trim) / firstLength,
+              y: start.y + ((next.y - start.y) * trim) / firstLength,
+            };
+            const last = points[points.length - 1];
+            const before = points[points.length - 2];
+            const angle = Math.atan2(last.y - before.y, last.x - before.x);
+            const head = (offset: number) =>
+              `${last.x - 9 * Math.cos(angle + offset)} ${last.y - 9 * Math.sin(angle + offset)}`;
+            return (
+              <path
+                key={letter}
+                data-route={letter}
+                d={`M${trimmed.x} ${trimmed.y}${points
+                  .slice(1)
+                  .map((point) => `L${point.x} ${point.y}`)
+                  .join("")}M${head(-0.7)}L${last.x} ${last.y}L${head(0.7)}`}
+                fill="none"
+                stroke={receiverColors[letter].route}
+                strokeWidth={letter === selected ? 2.4 : 2}
+                opacity={letter === selected ? 1 : 0.45}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            );
+          })
+        : null}
       {protection ? (
-        <ProtectionArt positions={positions} protection={protection} />
+        <ProtectionArt
+          positions={positions}
+          protection={protection}
+          showSlide={!selected}
+        />
+      ) : null}
+      {selected ? (
+        <circle
+          data-selection={selected}
+          cx={fieldPoint(positions[selected]).x}
+          cy={fieldPoint(positions[selected]).y}
+          r="14"
+          fill="none"
+          stroke="#F4B13E"
+          strokeWidth="1.6"
+        />
       ) : null}
       {Object.entries(positions).map(([id, at]) => {
         const { x, y } = fieldPoint(at);
         const receiver = receivers[id];
+        const letter = receiverLetters.find((letter) => letter === id);
         const lineman = ["LT", "LG", "C", "RG", "RT"].includes(id);
         const qb = id === "QB";
         return (
@@ -367,12 +467,42 @@ export const Field = memo(function Field({
                 fontWeight="700"
                 fill={qb ? "#0A1410" : "#FFFFFF"}
               >
-                {qb ? "QB" : receiver?.label}
+                {qb
+                  ? "QB"
+                  : letter
+                    ? engine.displayName(puzzle, letter).short
+                    : receiver?.label}
               </text>
             ) : null}
           </g>
         );
       })}
+      {onSelect
+        ? ordered.map((letter) => {
+            const at = fieldPoint(positions[letter]);
+            const route = routes[letter];
+            return (
+              <circle
+                key={letter}
+                data-receiver-hit={letter}
+                cx={at.x}
+                cy={at.y}
+                r="23"
+                fill="transparent"
+                role="button"
+                tabIndex={0}
+                aria-pressed={selected === letter}
+                aria-label={`${engine.displayName(puzzle, letter).name}, ${route ? `${route.route}${"depth" in route ? `, ${route.depth} yards` : ""}` : "no route"}`}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    onSelect(letter);
+                  }
+                }}
+              />
+            );
+          })
+        : null}
     </svg>
   );
 });

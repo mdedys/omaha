@@ -1,8 +1,8 @@
 # Routes
 
-**Status:** Not built (#63). Routes is a step of the play screen at `/puzzle/:n`, which shows a placeholder panel for it until #63 lands. Report this feature as skipped until the screen exists.
+**Status:** Live (#63). Read controls remain outside this feature.
 
-Routes is step 2. The player taps a route-running receiver on the field, which moves a gold ring to it. They then pick a card from that receiver's route menu (WR 11 cards, Inside 12, RB 6, all in route-tree order) and, for routes that take one, a depth of 5, 10 or 15 yards. Phone shows the menu as a carousel; desktop shows a 4-column grid with key tags. The selected route draws bold and the others fade. Spec: `design/05-routes/spec.md`.
+Routes is step 2. Tap an eligible field receiver, pick a card from its ordered WR/Inside/RB menu, then pick an available depth. Phone has a carousel and gold selection ring only; desktop has a name row and four-column grid without shortcut tags/hints. Selected routes are bold; other assigned routes fade. Spec: `design/05-routes/spec.md`.
 
 ## Sub-features
 
@@ -23,13 +23,14 @@ Preconditions:
 
 - `doctor.sh` exits `0`, and Routes is reachable from Protect.
 
-- **Select receiver.** Tap a receiver on the field by its accessible name, for example `click=button:"Slot WR"`, then `expect-role=listbox:"Routes for the slot receiver" shot=selected`. The ring moves to that receiver.
+- **Select receiver.** `click=button:"Slot WR, no route" expect-role=listbox:"Routes for Slot WR" shot=selected`. The gold ring moves. On first entry the leftmost eligible receiver is selected, including flip.
 - **Assign and depth.** Run `click=option:Out expect-role=radiogroup:"Out route depth" click=radio:"10 yds" shot=out-10`. `aria.yml` shows the option selected, the radio checked, and the receiver's button named like `Slot WR, Out, 10 yards`.
 - **Dimmed depth.** Run `click=option:Corner`. In `aria.yml`, the `5 yds` radio carries `aria-disabled`.
 - **No depth.** Run `click=option:Slant expect="No depth for the slant"`. No depth radiogroup is present.
 - **Kept-in.** Set 6-man on Protect earlier in the same drive. The RB is not selectable here and keeps its block line. Switching to a protection that keeps a receiver in removes that receiver's route.
-- **Next.** Run `click=button:"Next: read" expect-role=group:"Read order"`. This passes even with runners unassigned.
-- **Desktop keys.** Run with `--viewport desktop`. Keys are route-tree keys (`0`–`9`, `D`, `W`), not grid positions, and a key outside the menu does nothing: `press=5` picks Out. `press=ArrowRight` changes the depth, skipping unavailable ones, and `press=Enter` opens Read. The hint line reads `0–9 D W pick a route · ← → depth`.
+- **Next.** `click=button:"Next: read" expect-role=heading:Read`. The Read placeholder is the current destination, even with unassigned Routes.
+- **Baseline accessibility.** Focus a field receiver and activate with Enter/Space; route listbox arrows/Home/End select locally; depth arrows skip disabled choices. No global shortcuts, tags or hints.
+- **Preservation.** Assign a route, open Read, return using `click=button:"2 Routes"`; the same receiver/card/depth remain selected. Retap does not deselect; assigning a route does not advance.
 
 ## Gotchas
 
@@ -37,5 +38,5 @@ Preconditions:
 - Assert the menu order against the spec's route-tree table, not against whatever `routeMenu` returns, so a wrong engine order shows up as a failure.
 - Routes are drawn from design state, not prototype paths. The break sits at y = 366 − depth × 12.8, so a 10-yard break is at field y=238. Judge it in the screenshot against the yard lines, not against the prototype.
 - The carousel holds only the selected receiver's menu and scrolls horizontally on phone. Cards past the fold need the carousel scrolled or the option clicked by name (Playwright scrolls it into view).
-- The slide arrow is not drawn on this screen, but the zigzag and RB block line are.
-- The initial selection, empty states, clearing a route and the keyboard are open questions in the spec that #63 settles. Recheck the recipe against the spec once it lands.
+- Neither slide arrow nor protection zigzag is drawn on Routes. Approved Man T marks and kept-in blocking artwork remain.
+- Unassigned receiver depth area says `Choose a route to set its depth.` No routes are auto-assigned or clearable. Complete valid runner assignments pass the stub's simulation design check when supplied a valid read order; Read editing is not built here.
