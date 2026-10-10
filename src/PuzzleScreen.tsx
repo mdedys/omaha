@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import type { Design, Engine, Letter, Puzzle } from "./engine/contract";
 import { EngineError } from "./engine/error";
-import { loadNumberedPuzzle } from "./puzzles";
+import { navigate, redirect } from "./navigate";
+import { downAndDistance, loadNumberedPuzzle } from "./puzzles";
 import { useDesktop, useDesktopKeys } from "./desktopKeys";
 import { Field } from "./Field";
 import { LivePanel } from "./LivePlay";
@@ -14,6 +15,8 @@ import { ResultSheet } from "./ResultSheet";
 import { liveCaption, liveLabel, resultSheet } from "./result";
 import type { Played } from "./result";
 import { RoutesPanel } from "./RoutesPanel";
+import { ShareScreen } from "./ShareScreen";
+import { shareResult } from "./share";
 import {
   changeProtection,
   fieldOrder,
@@ -48,7 +51,17 @@ type LoadState =
   | { kind: "error" }
   | { kind: "ready"; puzzle: Puzzle; engine: Engine };
 
-function PlayScreen({ puzzle, engine }: { puzzle: Puzzle; engine: Engine }) {
+function PlayScreen({
+  puzzle,
+  engine,
+  path,
+  sharing,
+}: {
+  puzzle: Puzzle;
+  engine: Engine;
+  path: string;
+  sharing: boolean;
+}) {
   const [session, setSession] = useState(createPuzzleSession);
   const [snapFailed, setSnapFailed] = useState(false);
   const runners = routeRunners(session.draft.protection);
@@ -85,6 +98,14 @@ function PlayScreen({ puzzle, engine }: { puzzle: Puzzle; engine: Engine }) {
     showResult();
     return true;
   });
+  const shareable =
+    sharing &&
+    session.played.length > 0 &&
+    resultSheet(puzzle, engine, session.played).ended;
+  // Nothing stores a finished result, so Share without one is the puzzle.
+  useEffect(() => {
+    if (sharing && !shareable) redirect(path);
+  }, [sharing, shareable, path]);
   function goTo(step: Step) {
     setSnapFailed(false);
     setSession((current) => ({ ...current, step, selected }));
@@ -108,8 +129,8 @@ function PlayScreen({ puzzle, engine }: { puzzle: Puzzle; engine: Engine }) {
       setSnapFailed(true);
     }
   }
-  const { down, distance, spot, scoreDiff, clock } = puzzle.situation;
-  const ordinal = ["", "1st", "2nd", "3rd", "4th"][down];
+  const { spot, scoreDiff, clock } = puzzle.situation;
+  const situation = downAndDistance(puzzle.situation);
   const location = spot <= 50 ? `own ${spot}` : `opp ${100 - spot}`;
   const score =
     scoreDiff < 0
@@ -123,8 +144,7 @@ function PlayScreen({ puzzle, engine }: { puzzle: Puzzle; engine: Engine }) {
   const pills = (
     <div className="result-pills">
       <span>
-        {ordinal} &amp; {distance >= 100 - spot ? "goal" : distance} ·{" "}
-        {location}
+        {situation} · {location}
       </span>
       <span>
         {score} · {clock}
@@ -135,9 +155,7 @@ function PlayScreen({ puzzle, engine }: { puzzle: Puzzle; engine: Engine }) {
     <header className="play-header">
       <span className="play-brand">OMAHA</span>
       <div className="play-situation">
-        <h1>
-          {ordinal} &amp; {distance >= 100 - spot ? "goal" : distance}
-        </h1>
+        <h1>{situation}</h1>
         <span>{location}</span>
       </div>
       <div className="play-meta">
@@ -165,6 +183,17 @@ function PlayScreen({ puzzle, engine }: { puzzle: Puzzle; engine: Engine }) {
       </div>
     </header>
   );
+  if (shareable) {
+    return (
+      <ShareScreen
+        share={shareResult(
+          puzzle,
+          engine,
+          session.played.map((entry) => entry.rep),
+        )}
+      />
+    );
+  }
   if (last && session.step === "Replay") {
     return (
       <main className="play-screen">
@@ -265,6 +294,7 @@ function PlayScreen({ puzzle, engine }: { puzzle: Puzzle; engine: Engine }) {
             onReplay={() =>
               setSession((current) => ({ ...current, step: "Replay" }))
             }
+            onShare={() => navigate(`${path}/share`)}
             bottom={
               reveal === undefined || desktop
                 ? undefined
@@ -345,7 +375,13 @@ function PlayScreen({ puzzle, engine }: { puzzle: Puzzle; engine: Engine }) {
   );
 }
 
-export function PuzzleScreen({ number }: { number: number }) {
+export function PuzzleScreen({
+  number,
+  sharing,
+}: {
+  number: number;
+  sharing: boolean;
+}) {
   const [state, setState] = useState<LoadState>({ kind: "loading" });
   useEffect(() => {
     const controller = new AbortController();
@@ -361,7 +397,14 @@ export function PuzzleScreen({ number }: { number: number }) {
     return () => controller.abort();
   }, [number]);
   if (state.kind === "ready") {
-    return <PlayScreen puzzle={state.puzzle} engine={state.engine} />;
+    return (
+      <PlayScreen
+        puzzle={state.puzzle}
+        engine={state.engine}
+        path={`/puzzle/${number}`}
+        sharing={sharing}
+      />
+    );
   }
   return (
     <main className="route-placeholder">

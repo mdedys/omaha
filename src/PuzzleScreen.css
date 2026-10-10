@@ -917,11 +917,8 @@
   text-transform: uppercase;
   cursor: pointer;
 }
-.result-cta:not([aria-disabled="true"]):hover {
+.result-cta:hover {
   background: var(--snap-orange-deep);
-}
-.result-cta[aria-disabled="true"] {
-  cursor: default;
 }
 .result-cta kbd {
   display: none;

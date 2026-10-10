@@ -20,13 +20,14 @@ All numbers in the prototypes are placeholders: puzzle #148, 77 pts, 4-day strea
 
 **Entry**
 - "Share result" on Pros reveal (`10-pros-reveal`). Pros reveal is reached after the final rep or a converted rep.
+- Until Pros reveal exists, "Share result" on Result's ink-green and charcoal sheets opens Share directly (Decisions 2).
 - Possibly from Landing's finished state or a finished row on Puzzles (open questions in those specs).
 
 **Exit**
-- Close (header ✕) → destination not specified (open question).
+- Close (header ✕) → Landing (`/`) (Decisions 4).
 - Copy → stays on the screen; text copied to the clipboard.
 - Share result → native share sheet; the screen stays underneath.
-- System/browser back → not specified (open question).
+- System/browser back → the finished Result sheet, unchanged (Decisions 4).
 
 ## Layout
 
@@ -47,7 +48,7 @@ Background `cream`, text `ink-green`. Column; no page scroll at 844px.
         - Tile 64×64, 12px radius.
           - Failed (incomplete, sack, interception): `snap-orange` fill, white ✕ icon 24px (stroke 2.8).
           - Converted: `converted-green` fill, check icon 26px, stroke `on-tile` 2.8.
-          - Short: `read-gold` fill. Not prototyped on this screen; tile content is an open question.
+          - Short: `read-gold` fill with the rep's signed yards ("+7") inside in `on-tile`, as on Result (Decisions 7).
           - Not needed: transparent, 2px dashed `share-card-rule` border.
         - Label: 11px, 800, 0.04em, uppercase, line-height 1.15, centered. Line 1 "Rep N"; line 2 the rep's short result. `cream` for played reps, `win-muted` for reps not needed (the prototypes still show #7F978B).
       - Footer row: space-between, centered, 12px top padding, 1px `share-card-rule` top border.
@@ -84,7 +85,7 @@ Same layout. Differences:
   - Buttons: 10px gap, Copy 58×58, Share 58px tall, both 10px radius, Share label 19px with 12px icon gap.
   - Countdown: left-aligned, 12px 600 `sage-muted`, tabular numerals.
 - No keyboard hints (`kbd`) are shown on this screen.
-- **Below 900px**: one column, 24px gap, padding 20px 16px, top bar padding 0 16px. The card comes first, then the headline column. This order differs from the phone prototype (headline first); see Open questions.
+- **Below 900px**: one column, 24px gap, padding 20px 16px, top bar padding 0 16px. The prototype puts the card first; the app uses the phone layout below 900px, headline first (Decisions 9).
 
 ### Link-preview image (`share-card.html`, 1200×630)
 
@@ -106,7 +107,7 @@ A static image, rendered on a server or at build time, never by the client at sh
 |---|---|---|
 | Header wordmark | `OMAHA` | static |
 | Close label | `Close` (aria-label) | static |
-| Headline | `CONVERTED` | **[result]**; other outcomes are open questions |
+| Headline | `CONVERTED`, or `OUT OF REPS` | **[result]** (Decisions 3) |
 | Result line | `3rd & 10 · in 2 reps · +12 yards` | down & distance **[puzzle]**; reps and yards **[result]** |
 | Card title | `OMAHA #148` → `OMAHA #[N]` | **[puzzle]** number |
 | Card situation | `3RD & 10` | **[puzzle]** |
@@ -127,11 +128,11 @@ A static image, rendered on a server or at build time, never by the client at sh
 | OG button | `Play today's puzzle` | static |
 | OG domain | `[your-domain]` | placeholder; real domain not chosen |
 
-Tile second-line labels seen in prototypes: `Inc` (incomplete), `+12` (yards on the converting rep), `—` (not needed). Labels for sack, interception and short reps are open questions.
+Tile second-line labels seen in prototypes: `Inc` (incomplete), `+12` (yards on the converting rep), `—` (not needed). The built labels are in Decisions 7.
 
-### Pasted share text (proposal)
+### Pasted share text
 
-**This format is a proposal, not a settled decision.** It is what Copy writes to the clipboard and what Share passes to the share sheet. It is spoiler-free: no defense, coverage, routes or the pros' call.
+Settled in Decisions 1. It is what Copy writes to the clipboard and what Share passes to the share sheet. It is spoiler-free: no defense, coverage, routes or the pros' call.
 
 Template:
 
@@ -139,12 +140,11 @@ Template:
 Omaha #[N] · [down & distance]
 [one emoji per rep played, in order]
 [result] · [score] pts
-[link]
 ```
 
 - Emoji per rep: 🟥 incomplete, sack or interception; 🟨 short; 🟩 converted. Reps not needed are omitted.
-- `[result]`: `Converted in [reps]` when converted, followed by ` · Beat the pros` when earned. The out-of-reps wording is an open question.
-- `[link]`: the URL of the shared page. Placeholder until the domain and link format are decided.
+- `[result]`: `Converted in [reps]` when converted, followed by ` · Beat the pros` when earned. Out of reps reads `Out of reps · 0 pts`.
+- No link line until the domain and link format are decided.
 
 Example (prototype result):
 
@@ -152,7 +152,6 @@ Example (prototype result):
 Omaha #148 · 3rd & 10
 🟥🟩
 Converted in 2 · Beat the pros · 77 pts
-[link]
 ```
 
 PRODUCT.md notes the pasted emoji text has no shapes, so the result line beside it carries the meaning for colorblind readers.
@@ -161,29 +160,29 @@ PRODUCT.md notes the pasted emoji text has no shapes, so the result line beside 
 
 - **Share card** (`share-card`), with the in-app tile size of 64px (84px desktop, 92px OG). Tiles follow DESIGN.md Share card colors; Converted Green appears only here.
 - **Outcome tile** colors and icons, at share-card size.
-- **Primary button**: Share result, 19px `button` type. Desktop matches DESIGN.md's desktop variant (58px, 10px radius). Phone is 56px with a 10px radius instead of `cta-result`'s 16px.
-- **Secondary square** (`button-secondary-square`): Copy, with a 2px border and 10px radius instead of 1px / 16px.
-- **Stat triplet**: values 28px (32px desktop) in Snap Orange; DESIGN.md's `stat` is 26px (32px desktop).
+- **Primary button**: Share result, 19px `button` type. Desktop matches DESIGN.md's desktop variant (58px, 10px radius). Phone is 56px with `cta-result`'s 16px radius (Decisions 9; the prototype shows 10px).
+- **Secondary square** (`button-secondary-square`): Copy, 1px border and 16px radius on phone, 2px and 10px on desktop (Decisions 9; the phone prototype shows 2px / 10px).
+- **Stat triplet**: values at DESIGN.md's `stat`, 26px (32px desktop), gold on a converted result and Snap Orange out of reps (Decisions 9; the prototype shows 28px orange).
 - **Pros vs you boxes**: same component as on Pros reveal (`.vs`), not named in DESIGN.md.
-- **Display** type for the headline at 52px (72px desktop) instead of 50px.
+- **Display** type for the headline at 50px (72px desktop) (Decisions 9; the phone prototype shows 52px).
 
 ## States
 
 1. **Converted, beat the pros (prototyped).** As described. Tiles: failed reps orange, the converting rep green, later reps dashed. Chip shown.
 2. **Converted, did not beat the pros (not prototyped).** Same layout. Whether the chip is hidden or replaced is an open question. Comparison boxes show both outcomes.
-3. **Out of reps (not prototyped).** Four played tiles (orange or gold), no dashed tiles, no converted tile. Under PRODUCT.md's definition ("solving in a way that beats the real result"), the chip does not apply. Headline, result line, "You" box value and score display (0 per PRODUCT.md scoring) are open questions. The Result screen uses "OUT OF REPS" for this outcome.
-4. **Converted with a touchdown (not prototyped).** README lists the touchdown result as open. Headline and "You" box wording ("1st down" today) depend on the puzzle's goal and are open.
-5. **Copied (not prototyped).** After Copy, the player needs confirmation. Visual treatment is an open question; it must also be announced to screen readers.
-6. **Share unavailable (not prototyped).** Browsers without the Web Share API (most desktop browsers). What Share does there is an open question.
+3. **Out of reps (not prototyped).** Four played tiles (orange or gold), no dashed tiles, no converted tile. Under PRODUCT.md's definition ("solving in a way that beats the real result"), the chip does not apply. Settled in Decisions 3.
+4. **Converted with a touchdown (not prototyped).** README lists the touchdown result as open. For now it shows the same headline, chip, "You" box and tile as a converted result (Decisions 3); how a touchdown should display stays open.
+5. **Copied (not prototyped).** After Copy, the player needs confirmation. Settled in Decisions 5.
+6. **Share unavailable (not prototyped).** Browsers without the Web Share API (most desktop browsers). Share copies the text, as Copy does (Decisions 5).
 7. **Share sheet dismissed.** No change to the screen.
-8. **Stats unavailable (not prototyped).** The results API fails or is slow: "% beat the pros" has no value. Treatment open. Streak and score are local and always available.
-9. **Countdown reaches zero (not prototyped).** What the line shows, and whether it links to the new puzzle, is open.
+8. **Stats unavailable (not prototyped).** The results API fails or is slow: "% beat the pros" has no value. It shows `—` (Decisions 10). Streak and score are local and always available.
+9. **Countdown reaches zero (not prototyped).** The line reads `New puzzle is out` and links to Landing (Decisions 6).
 10. **Off-season (not prototyped).** After the last puzzle of the season there is no next puzzle; countdown behavior is open.
 11. **Revisited later (not prototyped).** If Share is reopened from Landing or Puzzles, the content is the stored result; the countdown is always to the next puzzle from now. For an earlier puzzle opened from Puzzles, whether the countdown shows is open.
 
 ## Interactions
 
-- Tap Close → open question.
+- Tap Close → Landing (`/`).
 - Tap Copy → writes the pasted share text to the clipboard; shows the Copied state.
 - Tap Share result → on devices with the Web Share API, opens the native share sheet with the pasted share text (and link). Without it, see state 6.
 - The share card preview, comparison and stats are not interactive.
@@ -229,23 +228,38 @@ None. The countdown text changes every second; that is not an animation.
 | Link URL, domain | not decided |
 | OG image inputs | puzzle number, situation, result, tiles, chip, score — see Open questions on how they reach the renderer |
 
+## Decisions
+
+Settled with Mike before building:
+
+1. **Pasted text:** the template under Pasted share text. Reps not needed are omitted, with no ⬜ padding. 🟥 for a failed rep (incomplete, sack, interception, throwaway), 🟨 short, 🟩 converted. Down and distance are included. Out of reps reads `Out of reps · 0 pts`. No link line until the domain and link format are decided.
+2. **CTA until Pros reveal exists:** Result's ink-green and charcoal sheets read `Share result` and open Share. Pros reveal changes it back to "See how the pros did".
+3. **Variants:** out of reps shows the headline `OUT OF REPS`, the chip `Didn't beat the pros`, the "You" box `No first down` and `0 pts`. A touchdown shows the same as converted; the touchdown display stays open.
+4. **Close** goes to Landing (`/`). Opening Share adds a history entry (`/puzzle/N/share`), so browser and OS back return to the finished Result.
+5. **Without the Web Share API,** Share copies the text, as Copy does. After either, the pressed button shows a check and `Copied` for 2s, and a polite live region announces "Copied to clipboard".
+6. **Countdown at zero:** the line becomes `New puzzle is out`, linking to Landing. Off-season and earlier puzzles opened from Puzzles wait until there is data for them.
+7. **Tile labels:** `Incomplete` (incomplete or throwaway), `Sacked`, `Picked`, `Short` and `Converted` (converted or touchdown), and `—` for reps not needed. The short tile shows the rep's signed yards ("+7"), as on Result.
+8. **Pros-vs-you boxes** stay on Share for now. Pros reveal decides whether they stay.
+9. **DESIGN.md wins on visual values.** Converted stats are gold, not orange; out-of-reps stats stay orange. On phone the headline is `display` (50px), Share is 56px with a 16px radius, Copy is 56×56 with a 1px border and 16px radius, and stats are 26px. Desktop uses DESIGN.md's desktop variants: 58px buttons with a 10px radius, Copy with a 2px border, and 32px stats. Below 900px the phone layout applies, headline before the card.
+10. **Unavailable stats** ("% beat the pros", streak) show `—`, as the day streak does on Result.
+
+Settled while building:
+
+- **Beat the pros** means converting, per PRODUCT.md ("Puzzles only feature plays the real offense failed to convert"), so the chip reads `Beat the pros` on every conversion.
+- **Out-of-reps result line:** `3rd & 10 · 4 reps · no first down`. The `Didn't beat the pros` chip uses `win-muted` for its border and text, so gold stays for a win.
+- **Share without a finished result:** nothing stores results yet, so opening `/puzzle/N/share` without a finished puzzle in the current session opens the puzzle instead.
+- **Tile spacing:** each tile column is as wide as the tile plus its gap or its longest label, so four `Incomplete` labels never touch. On the link-preview card the labels are 14px with 12px between tiles, so the panel fits the 1200×630 frame.
+- **Link-preview domain** is left off until a domain is chosen.
+
 ## Open questions
 
-- **Redundant comparison:** the pros-vs-you boxes now also appear on Pros reveal, the screen just before. Keep them here, or drop them?
-- **Pasted text format:** the proposal above needs sign-off. Sub-questions: pad unused reps with ⬜ (fixed width of four) or omit them; use 🟧 to match the orange tile instead of 🟥; include down & distance; out-of-reps wording.
+- **Converted, did not beat the pros** (state 2): whether the chip is hidden or replaced. Under PRODUCT.md every conversion beats the pros, so this can't happen yet.
+- **Touchdown display:** headline and "You" box wording for a touchdown.
 - **OG image: per result or generic?** The prototype image contains one player's result (tiles, score, chip). That requires the link to encode the result and a server (e.g. the Cloudflare Worker) to render the image per link. A build-rendered image can only be per puzzle or generic. Which?
 - **Link format and domain:** `[your-domain]` and `[link]` are placeholders.
 - **OG button copy** "Play today's puzzle" is wrong when a preview is seen on a later day.
-- **Close destination** and system back behavior.
-- **Out-of-reps, not-beat-the-pros and touchdown** variants: headline, chip, "You" box text, score display.
-- **Short tile** on the share card: what is inside the gold tile (yards like the result screen's "+7", or an icon)? Second-line labels for sack, interception and short.
-- **Copied feedback** visual, and Share behavior without the Web Share API.
 - **Streak definition:** consecutive days played or consecutive days converted? Does an earlier puzzle played from Puzzles count?
-- **Stats unavailable** treatment.
-- **Countdown at zero** and off-season.
-- **Desktop collapsed order:** below 900px the desktop prototype puts the card above the headline; the phone prototype puts the headline first. Which order applies at narrow widths?
-- **Orange stat values:** DESIGN.md's One Action Rule reserves orange for one button, outcome tiles and blitz arrows; the win panel uses gold stats. Here a converted result shows orange stats next to the orange Share button.
-- **Size deviations** from DESIGN.md (phone): headline 52px vs `display` 50px; button radius 10px vs 16px; Copy border 2px vs 1px and radius 10px vs 16px; stat 28px vs 26px.
+- **Off-season** countdown, and whether the countdown shows for an earlier puzzle opened from Puzzles.
 
 ## Acceptance criteria
 

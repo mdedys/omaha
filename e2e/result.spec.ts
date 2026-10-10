@@ -1,46 +1,6 @@
 import { expect, test } from "@playwright/test";
 import type { Locator, Page } from "@playwright/test";
-
-const routes = [
-  ["TE", "Hitch"],
-  ["Right WR", "Go"],
-  ["RB", "Flat"],
-];
-
-// On puzzle 1, with the Slot WR read first, the Slot WR's route picks the
-// outcome: Out breaks up, Hitch is short, Comeback is sacked, Post is
-// intercepted and In converts.
-async function snapFirstRep(
-  page: Page,
-  slotRoute: string,
-  reads = [`Slot WR, ${slotRoute}`, "Left WR, Post"],
-) {
-  await page.goto("/puzzle/1");
-  await page.getByRole("button", { name: "Next: routes" }).click();
-  await page.getByRole("option", { name: "Post", exact: true }).click();
-  for (const [receiver, route] of [...routes, ["Slot WR", slotRoute]]) {
-    await page
-      .getByRole("button", { name: `${receiver}, no route`, exact: true })
-      .click();
-    await page.getByRole("option", { name: route, exact: true }).click();
-  }
-  await page.getByRole("button", { name: "Next: read" }).click();
-  for (const read of reads) {
-    await page.getByRole("button", { name: read, exact: true }).click();
-  }
-  await page.getByRole("button", { name: "Snap" }).click();
-  await page.getByRole("button", { name: "Skip to result" }).click();
-}
-
-async function runItBack(page: Page, slotRoute: string) {
-  await page.getByRole("button", { name: "Run it back" }).click();
-  await page.getByRole("button", { name: "Next: routes" }).click();
-  await page.getByRole("button", { name: /^Slot WR,/ }).click();
-  await page.getByRole("option", { name: slotRoute, exact: true }).click();
-  await page.getByRole("button", { name: "Next: read" }).click();
-  await page.getByRole("button", { name: "Snap" }).click();
-  await page.getByRole("button", { name: "Skip to result" }).click();
-}
+import { routes, runItBack, snapFirstRep } from "./page";
 
 function labels(locator: Locator) {
   return locator.evaluateAll((elements) =>
@@ -200,9 +160,7 @@ test("plays to a converted finish", async ({ page }) => {
   await expect(result.getByRole("button", { name: "Run it back" })).toHaveCount(
     0,
   );
-  await expect(
-    result.getByRole("button", { name: "See how the pros did" }),
-  ).toHaveAttribute("aria-disabled", "true");
+  await expect(result.locator(".result-cta")).toHaveText("Share result");
 });
 
 test("plays to an out-of-reps finish", async ({ page }) => {
@@ -234,9 +192,7 @@ test("plays to an out-of-reps finish", async ({ page }) => {
   await expect(result.getByRole("button", { name: "Run it back" })).toHaveCount(
     0,
   );
-  await expect(
-    result.getByRole("button", { name: "See how the pros did" }),
-  ).toBeVisible();
+  await expect(result.locator(".result-cta")).toHaveText("Share result");
 });
 
 test("desktop Enter runs it back", async ({ page }) => {

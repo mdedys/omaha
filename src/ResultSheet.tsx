@@ -57,11 +57,13 @@ export function ResultSheet({
   sheet,
   onRunItBack,
   onReplay,
+  onShare,
   bottom,
 }: {
   sheet: Sheet;
   onRunItBack: () => void;
   onReplay: () => void;
+  onShare: () => void;
   bottom?: number;
 }) {
   const desktop = useDesktop();
@@ -152,8 +154,8 @@ export function ResultSheet({
           </svg>
         </button>
         {sheet.ended ? (
-          <button type="button" className="result-cta" aria-disabled="true">
-            See how the pros did
+          <button type="button" className="result-cta" onClick={onShare}>
+            Share result
           </button>
         ) : (
           <button type="button" className="result-cta" onClick={onRunItBack}>

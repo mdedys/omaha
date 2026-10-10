@@ -20,3 +20,36 @@ export function screenMarkup(page: Page) {
     .locator("main")
     .evaluate((main) => main.outerHTML.replaceAll(' style=""', ""));
 }
+
+export const routes = [
+  ["TE", "Hitch"],
+  ["Slot WR", "Out"],
+  ["Right WR", "Go"],
+  ["RB", "Flat"],
+];
+
+export async function snapFirstRep(page: Page, leftRoute: string) {
+  await page.goto("/puzzle/1");
+  await page.getByRole("button", { name: "Next: routes" }).click();
+  await page.getByRole("option", { name: leftRoute, exact: true }).click();
+  for (const [receiver, route] of routes) {
+    await page
+      .getByRole("button", { name: `${receiver}, no route`, exact: true })
+      .click();
+    await page.getByRole("option", { name: route, exact: true }).click();
+  }
+  await page.getByRole("button", { name: "Next: read" }).click();
+  await page.getByRole("button", { name: "TE, Hitch", exact: true }).click();
+  await page.getByRole("button", { name: "Snap" }).click();
+  await page.getByRole("button", { name: "Skip to result" }).click();
+}
+
+export async function runItBack(page: Page, leftRoute: string) {
+  await page.getByRole("button", { name: "Run it back" }).click();
+  await page.getByRole("button", { name: "Next: routes" }).click();
+  await page.getByRole("button", { name: /^Left WR,/ }).click();
+  await page.getByRole("option", { name: leftRoute, exact: true }).click();
+  await page.getByRole("button", { name: "Next: read" }).click();
+  await page.getByRole("button", { name: "Snap" }).click();
+  await page.getByRole("button", { name: "Skip to result" }).click();
+}
