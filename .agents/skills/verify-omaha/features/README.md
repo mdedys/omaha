@@ -40,5 +40,6 @@ Each feature file starts with an H1 and one paragraph on what the player sees. I
 | [Result](./result.md)       | Live (sheet, play art)   | #64 (sheet), #65 (play art), #71 (reveal) |
 | [Replay](./replay.md)       | Live                     | #67                                       |
 | [Share](./share.md)         | Live                     | #68                                       |
+| [Tutorial](./tutorial.md)   | Live                     | #69                                       |
 
-Issue numbers are GitHub issues on `mdedys/omaha`, all children of #58. Not mapped yet: Puzzles (#70), Tutorial (#69), Pros reveal (#72), stored progress (#57). Add a file for each when its issue starts.
+Issue numbers are GitHub issues on `mdedys/omaha`, all children of #58. Not mapped yet: Puzzles (#70), Pros reveal (#72), stored progress (#57). Add a file for each when its issue starts.

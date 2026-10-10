@@ -23,9 +23,9 @@ Precondition: `doctor.sh` exits `0`.
 
 - **Card:** `drive.mjs landing expect-role=heading:Omaha expect-role=link:"Play today's puzzle" shot=card`. Inspect the screenshot and `aria.yml` against the newest eligible `public/puzzles/index.json` entry. Puzzle 1 is 3rd & 10, own 45, first-down goal; puzzle 2 is 2nd & goal, opp 6, touchdown goal.
 - **Hero:** `aria.yml` must contain `img "A play drawn on the field: four receivers' routes and the running back's check-down"`.
-- **Phone focus:** add `press=Tab shot=cta-focus press=Tab shot=all-focus press=Tab shot=help-focus press=Space expect-role=heading:"How to play" shot=activated`.
+- **Phone focus:** add `press=Tab shot=cta-focus press=Tab shot=all-focus press=Tab shot=help-focus press=Space expect-role=heading:"Read the situation" shot=activated`.
 - **Desktop focus:** with `--viewport desktop`, tab through the two top-bar links, CTA and two panel links, capturing each focus. The links each have at least 44×44px hit areas.
-- **Play:** capture before and after `click=link:"Play today's puzzle" expect="This screen is not available yet."`; this proves navigation only.
+- **Play:** capture before and after `click=link:"Play today's puzzle" expect-role=radiogroup:Blockers`: today's puzzle opens on Protect.
 - **Theme/layout:** run the card recipe for both viewports in light and dark. Inspect against all four prototypes, with spec corrections for field centering and desktop CTA 58px / 10px radius / 19px label.
 - **Failure/date paths:** `pnpm test:e2e` uses controlled browser time and intercepted index/puzzle responses to cover Eastern summer/winter midnight, unsorted indexes, authored changes, independent pending requests, network/HTTP errors, engine rejection and empty/future-only indexes. Do not edit fixtures just to drive failures manually.
 

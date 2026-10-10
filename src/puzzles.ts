@@ -40,9 +40,9 @@ export async function loadNumberedPuzzle(number: number, signal: AbortSignal) {
   return loadPuzzle(await fetchJson(`/puzzles/${number}.json`, signal));
 }
 
-export async function loadTodaysPuzzle(
+export async function todaysPuzzleNumber(
   signal: AbortSignal,
-): Promise<LandingPuzzle | null> {
+): Promise<number | null> {
   const index = parseIndex(await fetchJson("/puzzles/index.json", signal));
   const today = new Intl.DateTimeFormat("en-CA", {
     timeZone: "America/New_York",
@@ -56,8 +56,15 @@ export async function loadTodaysPuzzle(
       latest = entry;
     }
   }
-  if (!latest) return null;
-  const json = await fetchJson(`/puzzles/${latest.number}.json`, signal);
+  return latest ? latest.number : null;
+}
+
+export async function loadTodaysPuzzle(
+  signal: AbortSignal,
+): Promise<LandingPuzzle | null> {
+  const number = await todaysPuzzleNumber(signal);
+  if (number === null) return null;
+  const json = await fetchJson(`/puzzles/${number}.json`, signal);
   const { puzzle } = await loadPuzzle(json);
   if (
     typeof json !== "object" ||

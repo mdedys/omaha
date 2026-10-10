@@ -1,4 +1,5 @@
 import { memo } from "react";
+import type { ReactNode } from "react";
 import type {
   Badge,
   DefenderId,
@@ -641,6 +642,7 @@ export const Field = memo(function Field({
   ballPath,
   pan,
   label,
+  children,
 }: {
   puzzle: Puzzle;
   engine: Engine;
@@ -659,6 +661,8 @@ export const Field = memo(function Field({
   // Phone camera from the live framing (0) to the result framing (1).
   pan?: number;
   label?: string;
+  // Markings drawn over the turf and lines, under the routes and players.
+  children?: ReactNode;
 }) {
   const { spot, down, distance } = puzzle.situation;
   const targetYards = puzzle.goal === "touchdown" ? 100 - spot : distance;
@@ -750,6 +754,7 @@ export const Field = memo(function Field({
         stroke="#3B8EEA"
         strokeWidth="2"
       />
+      {children}
       {drawRoutes
         ? runners.map((letter) => {
             const route = routes[letter];
