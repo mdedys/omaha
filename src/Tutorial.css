@@ -1,0 +1,279 @@
+.tutorial {
+  --chevron: var(--sand-strong);
+  position: relative;
+  height: 100svh;
+  min-height: 740px;
+  overflow: hidden;
+}
+.tutorial-stage {
+  position: relative;
+  overflow: hidden;
+}
+.tutorial-stage .puzzle-field {
+  margin-top: -32px;
+}
+.tutorial-pill {
+  position: absolute;
+  left: 16px;
+  top: 16px;
+  height: 30px;
+  padding: 0 12px;
+  border-radius: 15px;
+  background: rgba(6, 13, 10, 0.82);
+  color: var(--cream);
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 700;
+}
+.situation-pill {
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+.tutorial-skip {
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  height: 44px;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  color: var(--cream);
+  font-size: 14px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+.tutorial-skip:hover {
+  color: var(--paper-white);
+}
+.tutorial-sheet {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 428px;
+  background: var(--page);
+  border-radius: var(--sheet-radius) var(--sheet-radius) 0 0;
+  box-shadow: var(--sheet-shadow);
+  padding: 24px 20px 28px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.tutorial[data-step="1"] .tutorial-sheet {
+  height: 398px;
+}
+.tutorial-intro {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.tutorial-dots {
+  display: flex;
+  gap: 6px;
+}
+.tutorial-dots i {
+  width: 8px;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--border);
+}
+.tutorial-dots i.current {
+  width: 24px;
+  background: var(--ink);
+}
+.tutorial h1 {
+  font-size: 36px;
+  font-weight: 900;
+  line-height: 0.95;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+}
+.tutorial h1:focus {
+  outline: none;
+}
+.tutorial-intro p {
+  font-size: 16px;
+  line-height: 1.45;
+  color: var(--body-ink);
+}
+.tutorial-reps {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.tutorial-rep-boxes {
+  display: flex;
+  gap: 6px;
+}
+.tutorial-rep-boxes span {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1.5px solid var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+}
+.tutorial-reps p {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--body-ink);
+}
+.tutorial-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.tutorial-list li {
+  display: flex;
+  gap: 12px;
+}
+.tutorial-list li > span {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  border-radius: 14px;
+  background: var(--ink);
+  color: var(--page);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 900;
+}
+.tutorial-list div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.tutorial-list b {
+  font-size: 15px;
+  font-weight: 900;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+.tutorial-list p {
+  font-size: 14px;
+  line-height: 1.35;
+  color: var(--body-ink);
+}
+.tutorial-strip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.tutorial-phase {
+  flex: 1;
+  height: 64px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+.tutorial-chevron {
+  flex-shrink: 0;
+  fill: none;
+  stroke: var(--chevron);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.tutorial-actions {
+  display: flex;
+  gap: 8px;
+}
+.tutorial-actions .cta {
+  flex: 1;
+  border: 0;
+  font-family: inherit;
+  cursor: pointer;
+}
+.tutorial-back {
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface);
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.tutorial button:focus-visible {
+  outline: 3px solid var(--accent-text);
+  outline-offset: 4px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .tutorial {
+    --chevron: var(--sage-muted);
+  }
+}
+
+@media (min-width: 900px) {
+  .tutorial {
+    display: flex;
+    flex-direction: column;
+  }
+  .tutorial-body {
+    flex: 1;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 440px;
+    min-height: 0;
+  }
+  .tutorial-stage {
+    padding: 24px;
+    background: var(--turf-stage);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+  }
+  .tutorial-stage .puzzle-field {
+    margin-top: 0;
+  }
+  .tutorial-pill {
+    left: 36px;
+    top: 36px;
+  }
+  .tutorial-sheet,
+  .tutorial[data-step="1"] .tutorial-sheet {
+    position: static;
+    height: auto;
+    border-radius: 0;
+    box-shadow: none;
+    border-left: 1px solid var(--border);
+    padding: 48px 40px;
+    gap: 28px;
+  }
+  .tutorial-actions {
+    gap: 10px;
+  }
+  .tutorial-back {
+    width: 58px;
+    height: 58px;
+    border-width: 2px;
+    border-radius: 10px;
+  }
+}

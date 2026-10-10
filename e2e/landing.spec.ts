@@ -207,7 +207,7 @@ for (const index of [[], [{ number: 1, date: "2026-10-10" }]]) {
 for (const destination of [
   { name: "Play today's puzzle", path: "/puzzle/2", title: "2nd & goal" },
   { name: "All puzzles", path: "/puzzles", title: "All puzzles" },
-  { name: "How to play", path: "/how-to-play", title: "How to play" },
+  { name: "How to play", path: "/how-to-play", title: "Read the situation" },
 ]) {
   for (const activation of ["click", "Enter", "Space"]) {
     test(`${destination.name} navigates via ${activation} without reloading`, async ({
@@ -259,10 +259,10 @@ for (const destination of [
     await expect(
       page.getByRole("heading", { name: destination.title, exact: true }),
     ).toBeVisible();
-    if (destination.path === "/puzzle/2") {
-      await page.goto("/");
-    } else {
+    if (destination.path === "/puzzles") {
       await page.getByRole("link", { name: "Back to Landing" }).click();
+    } else {
+      await page.goto("/");
     }
     await expect(page).toHaveURL("/");
     await expect(

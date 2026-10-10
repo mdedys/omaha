@@ -196,7 +196,7 @@ test("browser back preserves a different origin", async ({ page }) => {
   await page.goBack();
   await expect(page).toHaveURL("/how-to-play");
   await expect(
-    page.getByRole("heading", { name: "How to play" }),
+    page.getByRole("heading", { name: "Read the situation" }),
   ).toBeVisible();
 });
 
