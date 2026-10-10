@@ -7,7 +7,13 @@ import type {
   Score,
 } from "../contract";
 import { EngineError } from "../error";
-import { letters, preSnap, protections, routeMenu } from "../v1/formations";
+import {
+  displayName,
+  letters,
+  preSnap,
+  protections,
+  routeMenu,
+} from "../v1/formations";
 import { availableDepths, routePath } from "../v1/routes";
 import { scenarios } from "./fixtures";
 
@@ -90,6 +96,7 @@ export const engine: Engine = {
   score,
   revealedPlayArt,
   preSnap,
+  displayName,
   routeMenu,
   availableDepths,
   protections,

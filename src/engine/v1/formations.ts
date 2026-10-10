@@ -186,6 +186,30 @@ export function routeMenu(
         : "Inside");
   return [...(menu === "RB" ? rb : menu === "WR" ? wr : inside)];
 }
+export function displayName(puzzle: Puzzle, letter: Letter) {
+  const original = formations[puzzle.formation.id].names[letter];
+  const name = puzzle.formation.flip
+    ? original.replace(/Left|Right/g, (side) =>
+        side === "Left" ? "Right" : "Left",
+      )
+    : original;
+  return {
+    name:
+      name === "Slot"
+        ? "Slot WR"
+        : name === "Tight end"
+          ? "TE"
+          : name === "Running back"
+            ? "RB"
+            : name,
+    short:
+      letter === "RB"
+        ? "RB"
+        : letter === "Y" || original.includes("tight end")
+          ? "TE"
+          : "WR",
+  };
+}
 export function ballX(puzzle: Puzzle): number {
   return puzzle.situation.hash === "left"
     ? -t.HASH_OFFSET_YARDS

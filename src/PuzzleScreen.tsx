@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
-import type { Design, Engine, Puzzle } from "./engine/contract";
+import type { Design, Engine, Letter, Puzzle } from "./engine/contract";
 import { loadNumberedPuzzle } from "./puzzles";
 import { Field } from "./Field";
 import { Protect } from "./Protect";
+import { RoutesPanel } from "./RoutesPanel";
+import { changeProtection, routeRunners } from "./routes";
 import "./PuzzleScreen.css";
 
 type Step = "Protect" | "Routes" | "Read";
@@ -10,6 +12,7 @@ export function createPuzzleSession(): {
   rep: number;
   draft: Design;
   step: Step;
+  selected: Letter | null;
 } {
   return {
     rep: 1,
@@ -19,6 +22,7 @@ export function createPuzzleSession(): {
       readOrder: [],
     },
     step: "Protect",
+    selected: null,
   };
 }
 
@@ -29,6 +33,15 @@ type LoadState =
 
 function PlayScreen({ puzzle, engine }: { puzzle: Puzzle; engine: Engine }) {
   const [session, setSession] = useState(createPuzzleSession);
+  const runners = routeRunners(session.draft.protection);
+  const positions = engine.preSnap(puzzle);
+  const selected =
+    session.selected && runners.includes(session.selected)
+      ? session.selected
+      : [...runners].sort((a, b) => positions[a].x - positions[b].x)[0];
+  function goTo(step: Step) {
+    setSession((current) => ({ ...current, step, selected }));
+  }
   const { down, distance, spot, scoreDiff, clock } = puzzle.situation;
   const ordinal = ["", "1st", "2nd", "3rd", "4th"][down];
   const location = spot <= 50 ? `own ${spot}` : `opp ${100 - spot}`;
@@ -75,6 +88,14 @@ function PlayScreen({ puzzle, engine }: { puzzle: Puzzle; engine: Engine }) {
             puzzle={puzzle}
             engine={engine}
             protection={session.draft.protection}
+            routes={session.draft.routes}
+            selected={session.step === "Routes" ? selected : undefined}
+            onSelect={
+              session.step === "Routes"
+                ? (letter) =>
+                    setSession((current) => ({ ...current, selected: letter }))
+                : undefined
+            }
           />
         </div>
         <aside className="play-panel" aria-label="Design the play">
@@ -83,8 +104,9 @@ function PlayScreen({ puzzle, engine }: { puzzle: Puzzle; engine: Engine }) {
               <button
                 key={step}
                 type="button"
+                className={index < steps.indexOf(session.step) ? "done" : ""}
                 aria-current={session.step === step ? "step" : undefined}
-                onClick={() => setSession((current) => ({ ...current, step }))}
+                onClick={() => goTo(step)}
               >
                 <span className="step-bar" aria-hidden="true" />
                 <span>
@@ -100,12 +122,28 @@ function PlayScreen({ puzzle, engine }: { puzzle: Puzzle; engine: Engine }) {
               onChange={(protection) =>
                 setSession((current) => ({
                   ...current,
-                  draft: { ...current.draft, protection },
+                  draft: changeProtection(current.draft, protection),
                 }))
               }
-              onNext={() =>
-                setSession((current) => ({ ...current, step: "Routes" }))
+              onNext={() => goTo("Routes")}
+            />
+          ) : session.step === "Routes" ? (
+            <RoutesPanel
+              puzzle={puzzle}
+              engine={engine}
+              selected={selected}
+              call={session.draft.routes[selected]}
+              onChange={(call) =>
+                setSession((current) => ({
+                  ...current,
+                  selected,
+                  draft: {
+                    ...current.draft,
+                    routes: { ...current.draft.routes, [selected]: call },
+                  },
+                }))
               }
+              onNext={() => goTo("Read")}
             />
           ) : (
             <section
@@ -113,11 +151,7 @@ function PlayScreen({ puzzle, engine }: { puzzle: Puzzle; engine: Engine }) {
               aria-labelledby="step-heading"
             >
               <h2 id="step-heading">{session.step}</h2>
-              <p>
-                {session.step === "Routes"
-                  ? "Route controls are not available yet."
-                  : "Read controls are not available yet."}
-              </p>
+              <p>Read controls are not available yet.</p>
               <p className="draft-summary">
                 Current draft: {session.draft.protection.blockers}-man ·{" "}
                 {session.draft.protection.lineCall}. No routes or reads set.

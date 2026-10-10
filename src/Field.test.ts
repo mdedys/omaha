@@ -34,6 +34,7 @@ test("creates an independent fresh puzzle draft", () => {
   first.draft.protection.blockers = 7;
   first.draft.routes.X = { route: "Go" };
   first.step = "Read";
+  first.selected = "H";
   expect(createPuzzleSession()).toEqual({
     rep: 1,
     draft: {
@@ -42,6 +43,7 @@ test("creates an independent fresh puzzle draft", () => {
       readOrder: [],
     },
     step: "Protect",
+    selected: null,
   });
 });
 
