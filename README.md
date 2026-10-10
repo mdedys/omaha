@@ -6,7 +6,7 @@ The name comes from Peyton Manning's audible call at the line.
 
 ## Status
 
-Pre-MVP. The visual design lives in [design/](design/README.md). The app shell, Landing and numbered puzzle play-screen frame are implemented in React and SVG, with system light/dark themes and a static daily puzzle source. Protect, Routes and Read currently have placeholder panels; their controls and play art are not built. The Puzzles list and How to play routes remain labelled placeholders. The engine contract and Gun Trey stub are ready for screen development while v1 is built; work is tracked in [GitHub issues](https://github.com/mdedys/omaha/issues).
+Pre-MVP. The visual design lives in [design/](design/README.md). The app shell, Landing and numbered puzzle play-screen frame are implemented in React and SVG, with system light/dark themes and a static daily puzzle source. Protect has engine-backed blocker/line-call controls and pre-snap protection art; Routes and Read retain placeholder panels. The Puzzles list and How to play routes remain labelled placeholders. The engine contract, v1 design helpers and fixture-backed simulation are ready for screen development while the v1 tick loop is built; work is tracked in [GitHub issues](https://github.com/mdedys/omaha/issues).
 
 ## Getting started
 
@@ -44,7 +44,7 @@ Playwright runs both 390×844 and 1280×800 projects in the pull-request `checks
 
 The shared `Field` uses `engine.preSnap(puzzle)` in engine yards, projected by `fieldPoint`: center `(201.5, 366)`, downfield y decreasing by 12.8 units per yard, and 31.5 yards across the 403-unit width. The fixed viewBox is `0 0 403 495`. Turf stripes, numbers and hashes follow absolute field position; the yellow line marks the first-down target or replaces the goal line for a touchdown target. A visible end line adds the path, wall and a deterministic seat-hashed crowd, extended across the desktop stage. Field colors never change with theme.
 
-Each numbered puzzle owns an in-memory session: rep 1, 5-man/man protection, no routes, empty read order, Protect selected. The ungated step buttons switch placeholder panels without replacing the draft. Reloading or opening a different puzzle creates a fresh session; no progress is persisted. The phone step bar sits inside the panel below the field, with the spot retained below 900px. Desktop uses a 64px header and 440px named design aside. Header exits, protection controls and protection art belong to #62.
+Each numbered puzzle owns an in-memory session: rep 1, 5-man/man protection, no routes, empty read order, Protect selected. Protect offers exactly the engine's blocker counts at equal widths, updates the shared draft and field immediately, and advances to Routes without gating. The ungated step buttons retain the draft; Routes and Read remain placeholder panels. Reloading or opening a different puzzle creates a fresh session; no progress is persisted. The phone step bar sits inside the panel below the field, with the spot retained below 900px. Desktop uses a 64px header and 440px named design aside. Exit uses browser Back.
 
 Unit coverage exercises projection, actual pre-snap player mapping and fresh session isolation; browser coverage exercises numbered loading/errors, goal decorations, steps, history, reload, responsive geometry, accessibility and theme invariance. The `checks` CI job runs both suites.
 
@@ -57,12 +57,14 @@ method after loading is synchronous and pure. Unknown versions reject before
 loading a version chunk. Version 1 currently loads the fixture-backed stub,
 not the real simulation.
 
-`src/engine/stub/gun-trey.json` is a complete example puzzle. The stub parses
-assignment strings into tagged objects, checks field types, and requires exactly
-11 defenders with unique roster IDs. v1 adds full puzzle validation and the seven
-formations. Design screens use `preSnap`, `routeMenu`, `availableDepths`,
-`protections` and `routePath` before calling `simulate`; impossible designs throw
-`EngineError`.
+`src/engine/stub/gun-trey.json` is a complete example puzzle. The active
+fixture-backed engine uses v1's parser and all five design helpers directly,
+so every supported formation has truthful alignment, route menus and blocker
+availability through the public loader. The duplicate Gun-Trey-only parser
+and catalog are removed. `simulate` still selects authored replay fixtures;
+this is not a cutover to v1's unfinished tick loop. Design screens use
+`preSnap`, `routeMenu`, `availableDepths`, `protections` and `routePath` before
+calling `simulate`; impossible designs throw `EngineError`.
 
 For the example puzzle, use five blockers, a `man` line call, read order `["X"]`,
 and routes Y = Seam, Z = Go, H = Seam, RB = Flat. X selects these authored replay
@@ -91,13 +93,14 @@ job via `pnpm test`.
 
 ### v1 authoring helpers
 
-Until the version map switches, engine authors and tests import `{ parsePuzzle,
-engine }` directly from `src/engine/v1/index.ts`. `parsePuzzle(json)` validates
-every required field, the formation and defensive assignment catalogs, the
+Engine authors and tests can import `{ parsePuzzle, engine }` directly from
+`src/engine/v1/index.ts`. The public `loadPuzzle` uses that same parser and
+design catalog through the fixture-backed engine, while retaining authored
+simulation until the tick-loop cutover. `parsePuzzle(json)` validates every
+required field, the formation and defensive assignment catalogs, the
 eleven-player roster, a distance of at least one yard, field limits and the
 goal-to-go equivalence: a touchdown goal requires `spot + distance === 100`,
 and that sum requires a touchdown goal.
-The public `loadPuzzle` continues to load the stub for version 1.
 
 v1 supports Gun Trey, Gun Doubles, Gun Trips, Gun Spread, Gun Empty, Gun Doubles
 12 and Ace, each flipped or unflipped on all three hashes. Outside receivers

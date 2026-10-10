@@ -1,5 +1,6 @@
 import { memo } from "react";
-import type { Engine, Puzzle, Vec } from "./engine/contract";
+import type { Design, Engine, PlayerId, Puzzle, Vec } from "./engine/contract";
+import { protectionCopy } from "./Protect";
 
 export function fieldPoint({ x, y }: Vec): Vec {
   return { x: 201.5 + (403 / 31.5) * x, y: 366 - 12.8 * y };
@@ -33,12 +34,94 @@ const crowd = Array.from({ length: 18 }, (_, row) =>
   }),
 ).flat();
 
+function ProtectionArt({
+  positions,
+  protection,
+}: {
+  positions: Record<PlayerId, Vec>;
+  protection: Design["protection"];
+}) {
+  const line = ["LT", "LG", "C", "RG", "RT"] as const;
+  const points = line.map((id) => fieldPoint(positions[id]));
+  const left = Math.min(...points.map((point) => point.x)) - 12;
+  const right = Math.max(...points.map((point) => point.x)) + 12;
+  const y = points[2].y + 27;
+  const slides = protection.lineCall !== "man";
+  const direction = protection.lineCall === "slide-left" ? -1 : 1;
+  const end = direction === -1 ? left : right;
+  const blocking: PlayerId[] = [...line];
+  if (protection.blockers === 7) blocking.push("Y");
+  if (protection.blockers > 5) blocking.push("RB");
+  return (
+    <g
+      data-field-layer="protection"
+      fill="none"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      {slides ? (
+        <path
+          data-protection="slide"
+          d={`M${direction === -1 ? right : left} ${y}H${end}M${end - direction * 6} ${y - 6}L${end} ${y}L${end - direction * 6} ${y + 6}`}
+          stroke="#DADDE0"
+        />
+      ) : null}
+      {blocking.map((id) => {
+        const at = positions[id];
+        const { x, y: playerY } = fieldPoint(at);
+        const color = id === "RB" ? "#5BDB8C" : "#DADDE0";
+        if (!slides) {
+          return (
+            <path
+              key={id}
+              data-protection={id}
+              d={`M${x} ${playerY - 30}V${playerY - 12}M${x - 6} ${playerY - 12}H${x + 6}`}
+              stroke={color}
+            />
+          );
+        }
+        if (id === "RB") {
+          const edgeX = direction === -1 ? right : left;
+          const edgeY = points[2].y + 20;
+          const dx = edgeX - x;
+          const dy = edgeY - playerY;
+          const length = Math.hypot(dx, dy);
+          const capX = (-dy / length) * 6;
+          const capY = (dx / length) * 6;
+          return (
+            <path
+              key={id}
+              data-protection="RB"
+              d={`M${x} ${playerY}L${edgeX} ${edgeY}M${edgeX - capX} ${edgeY - capY}L${edgeX + capX} ${edgeY + capY}`}
+              stroke={color}
+            />
+          );
+        }
+        if (id === "Y") {
+          return (
+            <path
+              key={id}
+              data-protection="Y"
+              d={`M${x - direction * 10} ${playerY + 27}H${x + direction * 10}M${x + direction * 4} ${playerY + 21}L${x + direction * 10} ${playerY + 27}L${x + direction * 4} ${playerY + 33}`}
+              stroke={color}
+            />
+          );
+        }
+        return null;
+      })}
+    </g>
+  );
+}
+
 export const Field = memo(function Field({
   puzzle,
   engine,
+  protection,
 }: {
   puzzle: Puzzle;
   engine: Engine;
+  protection?: Design["protection"];
 }) {
   const { spot, down, distance } = puzzle.situation;
   const goalY = fieldPoint({ x: 0, y: 100 - spot }).y;
@@ -49,12 +132,14 @@ export const Field = memo(function Field({
   const ordinal = ["", "1st", "2nd", "3rd", "4th"][down];
   const location = spot <= 50 ? `own ${spot}` : `opponent ${100 - spot}`;
   const situation = `${ordinal} and ${distance >= 100 - spot ? "goal" : distance}, ${location}`;
+  const positions = engine.preSnap(puzzle);
+  const copy = protection ? protectionCopy(protection) : null;
   return (
     <svg
       className="puzzle-field"
       viewBox="0 0 403 495"
       role="img"
-      aria-label={`Field: ${situation}. Pre-snap offense and defense; blue line of scrimmage, yellow line to gain.`}
+      aria-label={`Field: ${situation}. Pre-snap offense and defense; blue line of scrimmage, yellow line to gain.${protection && copy ? ` ${protection.blockers}-man protection. ${copy.blockersHelper}. ${copy.lineHelper}${copy.lineHelper.endsWith(".") ? "" : "."}` : ""}`}
       overflow="visible"
     >
       <rect width="403" height="495" fill="#0F3A27" />
@@ -242,7 +327,10 @@ export const Field = memo(function Field({
         stroke="#3B8EEA"
         strokeWidth="2"
       />
-      {Object.entries(engine.preSnap(puzzle)).map(([id, at]) => {
+      {protection ? (
+        <ProtectionArt positions={positions} protection={protection} />
+      ) : null}
+      {Object.entries(positions).map(([id, at]) => {
         const { x, y } = fieldPoint(at);
         const receiver = receivers[id];
         const lineman = ["LT", "LG", "C", "RG", "RT"].includes(id);

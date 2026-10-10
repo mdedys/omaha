@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import type { Design, Engine, Puzzle } from "./engine/contract";
 import { loadNumberedPuzzle } from "./puzzles";
 import { Field } from "./Field";
+import { Protect } from "./Protect";
 import "./PuzzleScreen.css";
 
 type Step = "Protect" | "Routes" | "Read";
@@ -70,7 +71,11 @@ function PlayScreen({ puzzle, engine }: { puzzle: Puzzle; engine: Engine }) {
       </header>
       <div className="play-body">
         <div className="play-stage">
-          <Field puzzle={puzzle} engine={engine} />
+          <Field
+            puzzle={puzzle}
+            engine={engine}
+            protection={session.draft.protection}
+          />
         </div>
         <aside className="play-panel" aria-label="Design the play">
           <nav className="play-steps" aria-label="Play steps">
@@ -88,20 +93,37 @@ function PlayScreen({ puzzle, engine }: { puzzle: Puzzle; engine: Engine }) {
               </button>
             ))}
           </nav>
-          <section className="step-placeholder" aria-labelledby="step-heading">
-            <h2 id="step-heading">{session.step}</h2>
-            <p>
-              {session.step === "Protect"
-                ? "Protection controls are not available yet."
-                : session.step === "Routes"
+          {session.step === "Protect" ? (
+            <Protect
+              protection={session.draft.protection}
+              offered={engine.protections(puzzle)}
+              onChange={(protection) =>
+                setSession((current) => ({
+                  ...current,
+                  draft: { ...current.draft, protection },
+                }))
+              }
+              onNext={() =>
+                setSession((current) => ({ ...current, step: "Routes" }))
+              }
+            />
+          ) : (
+            <section
+              className="step-placeholder"
+              aria-labelledby="step-heading"
+            >
+              <h2 id="step-heading">{session.step}</h2>
+              <p>
+                {session.step === "Routes"
                   ? "Route controls are not available yet."
                   : "Read controls are not available yet."}
-            </p>
-            <p className="draft-summary">
-              Current draft: {session.draft.protection.blockers}-man ·{" "}
-              {session.draft.protection.lineCall}. No routes or reads set.
-            </p>
-          </section>
+              </p>
+              <p className="draft-summary">
+                Current draft: {session.draft.protection.blockers}-man ·{" "}
+                {session.draft.protection.lineCall}. No routes or reads set.
+              </p>
+            </section>
+          )}
         </aside>
       </div>
     </main>

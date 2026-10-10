@@ -7,16 +7,11 @@ import type {
   Score,
 } from "../contract";
 import { EngineError } from "../error";
-import {
-  availableDepths,
-  letters,
-  preSnap,
-  routeMenu,
-  routePath,
-} from "./catalog";
+import { letters, preSnap, protections, routeMenu } from "../v1/formations";
+import { availableDepths, routePath } from "../v1/routes";
 import { scenarios } from "./fixtures";
 
-export { parsePuzzle } from "./puzzle";
+export { parsePuzzle } from "../v1/puzzle";
 
 function simulate(puzzle: Puzzle, design: Design): Rep {
   if (!engine.protections(puzzle).includes(design.protection.blockers)) {
@@ -97,6 +92,6 @@ export const engine: Engine = {
   preSnap,
   routeMenu,
   availableDepths,
-  protections: () => [5, 6, 7],
+  protections,
   routePath,
 };
