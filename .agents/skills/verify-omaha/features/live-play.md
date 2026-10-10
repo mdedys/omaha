@@ -1,6 +1,6 @@
 # Live play
 
-**Status:** Live (#66). Snap on Read opens Live play on the play screen at `/puzzle/:n`; it ends on Result. Replay (#67) will drive the same playback clock (`src/playback.ts`).
+**Status:** Live (#66). Snap on Read opens Live play on the play screen at `/puzzle/:n`; it ends on Result. Replay (#67, replay.md) drives the same playback clock (`src/playback.ts`).
 
 Live play animates the rep the player just designed. Every player holds his pre-snap spot through Set (0.8 s), then moves along the `Rep`'s tracks, one tick per `TICK_SECONDS`. A gold vision cone follows the QB's current read, the football flies from the throw to the catch, and a caption narrates Set, Snap, Throw and the outcome. Nothing of the play art (routes, zones, defense paths, badges, ball path) is drawn until the reveal. At the reveal the phone sheet slides up while the camera pans to the result framing and the play art fades in. On desktop the panel swaps to the result. The last frame is the Result screen. Spec: `design/07-live-play/spec.md`.
 

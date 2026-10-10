@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import type { Browser, Page } from "@playwright/test";
+import { rendered, screenMarkup } from "./page";
 
 type Play = {
   routes: (readonly [receiver: string, route: string, yards?: number])[];
@@ -76,19 +77,6 @@ async function designPlay(page: Page, { routes, reads }: Play) {
   }
 }
 
-// Resolves after the tasks already queued, such as React's render of the
-// last animation frame. The page clock doesn't fake message channels.
-function rendered(page: Page) {
-  return page.evaluate(
-    () =>
-      new Promise((resolve) => {
-        const channel = new MessageChannel();
-        channel.port1.onmessage = resolve;
-        channel.port2.postMessage(null);
-      }),
-  );
-}
-
 // Snaps with the page clock paused on a 16 ms frame boundary and returns a
 // function that plays the rep up to a moment, in seconds from Snap.
 async function snapPaused(page: Page, play: Play) {
@@ -103,14 +91,6 @@ async function snapPaused(page: Page, play: Play) {
     now = seconds;
     await rendered(page);
   };
-}
-
-// The screen as markup: React leaves an empty style attribute where an inline
-// style was removed, which draws nothing.
-function screenMarkup(page: Page) {
-  return page
-    .locator("main")
-    .evaluate((main) => main.outerHTML.replaceAll(' style=""', ""));
 }
 
 // Share of pixels whose color differs by more than 8 in a channel, decoded in

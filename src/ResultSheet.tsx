@@ -56,10 +56,12 @@ function Box({ box, number }: { box: RepBox; number: number }) {
 export function ResultSheet({
   sheet,
   onRunItBack,
+  onReplay,
   bottom,
 }: {
   sheet: Sheet;
   onRunItBack: () => void;
+  onReplay: () => void;
   bottom?: number;
 }) {
   const desktop = useDesktop();
@@ -134,7 +136,7 @@ export function ResultSheet({
           type="button"
           className="result-replay"
           aria-label="Watch the replay again"
-          aria-disabled="true"
+          onClick={onReplay}
         >
           <svg
             viewBox="0 0 24 24"

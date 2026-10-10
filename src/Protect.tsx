@@ -25,23 +25,24 @@ const lineNames = {
   "slide-right": "Slide right",
 };
 
-function RadioGroup<T extends string | number>({
-  label,
-  helper,
-  values,
-  selected,
-  name,
-  render,
-  onSelect,
-}: {
+type Options<T> = {
   label: string;
-  helper: string;
   values: readonly T[];
   selected: T;
   name: (value: T) => string;
   render: (value: T) => ReactNode;
   onSelect: (value: T) => void;
-}) {
+};
+
+export function Segment<T extends string | number>({
+  className,
+  label,
+  values,
+  selected,
+  name,
+  render,
+  onSelect,
+}: Options<T> & { className: string }) {
   function move(event: KeyboardEvent<HTMLButtonElement>, index: number) {
     const delta =
       event.key === "ArrowRight" || event.key === "ArrowDown"
@@ -59,27 +60,36 @@ function RadioGroup<T extends string | number>({
     buttons?.[nextIndex]?.focus();
   }
   return (
+    <div className={className} role="radiogroup" aria-label={label}>
+      {values.map((value, index) => (
+        <button
+          key={value}
+          type="button"
+          role="radio"
+          aria-label={name(value)}
+          aria-checked={value === selected}
+          tabIndex={value === selected ? 0 : -1}
+          onClick={() => onSelect(value)}
+          onKeyDown={(event) => move(event, index)}
+        >
+          {render(value)}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function RadioGroup<T extends string | number>({
+  helper,
+  ...options
+}: Options<T> & { helper: string }) {
+  return (
     <section className="protect-group">
       <div className="protect-label">
-        <span>{label}</span>
+        <span>{options.label}</span>
         <p>{helper}</p>
       </div>
-      <div className="protect-segment" role="radiogroup" aria-label={label}>
-        {values.map((value, index) => (
-          <button
-            key={value}
-            type="button"
-            role="radio"
-            aria-label={name(value)}
-            aria-checked={value === selected}
-            tabIndex={value === selected ? 0 : -1}
-            onClick={() => onSelect(value)}
-            onKeyDown={(event) => move(event, index)}
-          >
-            {render(value)}
-          </button>
-        ))}
-      </div>
+      <Segment className="protect-segment" {...options} />
     </section>
   );
 }
