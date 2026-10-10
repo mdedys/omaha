@@ -9,6 +9,7 @@ import { cubicBezier, motionEase, playback, timeline } from "./playback";
 import { usePlaybackSeconds } from "./playbackSeconds";
 import { Protect } from "./Protect";
 import { ReadPanel } from "./ReadPanel";
+import { Replay } from "./Replay";
 import { ResultSheet } from "./ResultSheet";
 import { liveCaption, liveLabel, resultSheet } from "./result";
 import type { Played } from "./result";
@@ -25,7 +26,7 @@ type Step = "Protect" | "Routes" | "Read";
 export function createPuzzleSession(): {
   played: readonly Played[];
   draft: Design;
-  step: Step | "Live" | "Result";
+  step: Step | "Live" | "Result" | "Replay";
   selected: Letter | null;
 } {
   return {
@@ -56,7 +57,10 @@ function PlayScreen({ puzzle, engine }: { puzzle: Puzzle; engine: Engine }) {
       ? session.selected
       : fieldOrder(engine.preSnap(puzzle), runners)[0];
   const desktop = useDesktop();
-  const designing = session.step !== "Live" && session.step !== "Result";
+  const designing =
+    session.step !== "Live" &&
+    session.step !== "Result" &&
+    session.step !== "Replay";
   const last = designing ? null : session.played[session.played.length - 1];
   const showResult = useCallback(
     () => setSession((current) => ({ ...current, step: "Result" })),
@@ -74,6 +78,7 @@ function PlayScreen({ puzzle, engine }: { puzzle: Puzzle; engine: Engine }) {
       ? live.reveal
       : undefined;
   const result = session.step === "Result" || reveal !== undefined;
+  const used = result || session.step === "Replay";
   const rep = session.played.length + (designing ? 1 : 0);
   useDesktopKeys((key) => {
     if (key !== "Escape" || session.step !== "Live") return false;
@@ -126,40 +131,57 @@ function PlayScreen({ puzzle, engine }: { puzzle: Puzzle; engine: Engine }) {
       </span>
     </div>
   );
+  const header = (
+    <header className="play-header">
+      <span className="play-brand">OMAHA</span>
+      <div className="play-situation">
+        <h1>
+          {ordinal} &amp; {distance >= 100 - spot ? "goal" : distance}
+        </h1>
+        <span>{location}</span>
+      </div>
+      <div className="play-meta">
+        <span className="play-number">#{puzzle.number}</span>
+        <span>
+          {score} · {clock}
+        </span>
+        <span
+          className="play-reps"
+          role="group"
+          aria-label={
+            used ? `Rep ${rep} used, ${4 - rep} left` : `Rep ${rep} of 4`
+          }
+        >
+          {[1, 2, 3, 4].map((pip) => (
+            <i
+              key={pip}
+              className={
+                pip === rep && !used ? "current" : pip <= rep ? "used" : ""
+              }
+              aria-hidden="true"
+            />
+          ))}
+        </span>
+      </div>
+    </header>
+  );
+  if (last && session.step === "Replay") {
+    return (
+      <main className="play-screen">
+        {header}
+        <Replay
+          puzzle={puzzle}
+          engine={engine}
+          played={last}
+          number={rep}
+          onBack={showResult}
+        />
+      </main>
+    );
+  }
   return (
     <main className={designing ? "play-screen" : "play-screen result-screen"}>
-      <header className="play-header">
-        <span className="play-brand">OMAHA</span>
-        <div className="play-situation">
-          <h1>
-            {ordinal} &amp; {distance >= 100 - spot ? "goal" : distance}
-          </h1>
-          <span>{location}</span>
-        </div>
-        <div className="play-meta">
-          <span className="play-number">#{puzzle.number}</span>
-          <span>
-            {score} · {clock}
-          </span>
-          <span
-            className="play-reps"
-            role="group"
-            aria-label={
-              result ? `Rep ${rep} used, ${4 - rep} left` : `Rep ${rep} of 4`
-            }
-          >
-            {[1, 2, 3, 4].map((pip) => (
-              <i
-                key={pip}
-                className={
-                  pip === rep && !result ? "current" : pip <= rep ? "used" : ""
-                }
-                aria-hidden="true"
-              />
-            ))}
-          </span>
-        </div>
-      </header>
+      {header}
       <div className="play-body">
         <div className="play-stage">
           {last && sheet ? (
@@ -240,6 +262,9 @@ function PlayScreen({ puzzle, engine }: { puzzle: Puzzle; engine: Engine }) {
           <ResultSheet
             sheet={sheet}
             onRunItBack={() => goTo("Protect")}
+            onReplay={() =>
+              setSession((current) => ({ ...current, step: "Replay" }))
+            }
             bottom={
               reveal === undefined || desktop
                 ? undefined

@@ -111,11 +111,11 @@ Desktop: the same mapping (scrubber, time, speed control, transport buttons, `Ju
 | State | Description |
 |---|---|
 | **Paused at a moment** (prototyped) | Thumb at the moment's time; matching jump-to button selected (`aria-pressed="true"`); play button shows the play icon with `aria-label="Play"`; pill shows the pause glyph. |
-| **Paused between moments** | Not prototyped. Whether any jump-to button is selected is open. |
-| **Playing** | Not prototyped. Field animates at the selected speed; time readout and thumb update; play button shows a pause icon and `aria-label="Pause"`. The pill glyph while playing is open. |
+| **Paused between moments** | Not prototyped. No jump-to button is selected (`aria-pressed="false"` on all). |
+| **Playing** | Not prototyped. Field animates at the selected speed; time readout and thumb update; play button shows a two-bar pause icon and `aria-label="Pause"`. The pill shows the play glyph. |
 | **At the start** (0.0s) | Pre-snap alignment. No ball drawn (the QB holds it, as in the live play). |
 | **At the end** | Final positions; full ball path drawn if the ball was thrown. |
-| **No throw** (sack) | Not prototyped. The Throw moment and the Break–Throw split depend on a throw; what the scrubber and jump-to row show is open. |
+| **No throw** (sack) | Not prototyped. No Throw moment: the scrubber has two phase segments split at Break, and the jump-to row has three buttons: Snap, Break, End. |
 | **Speed** | One of 0.25×, 0.5×, 1× selected. |
 | **Dark** | Per Layout › Dark theme. |
 
@@ -127,7 +127,7 @@ Desktop: the same mapping (scrubber, time, speed control, transport buttons, `Ju
 - **Speed option**: changes the playback rate; the position is kept.
 - **Jump-to button**: moves the position to that moment's time and marks the button selected.
 - **Back to the result**: exit to the result screen.
-- **Desktop keyboard** (proposal; from the hint line and button): `Space` play/pause; `,` back one frame; `.` forward one frame; `Enter` Back to the result.
+- **Desktop keyboard**: `Space` play/pause; `,` back one frame; `.` forward one frame; `Enter` Back to the result. These are shortcuts only when focus is not on a button or the slider; a focused control keeps its native keys.
 - **Focus order**: scrubber (slider) → speed group → back one frame → play/pause → forward one frame → jump-to buttons (Snap, Break, Throw, End) → Back to the result.
 
 ## Motion
@@ -159,19 +159,27 @@ Desktop: the same mapping (scrubber, time, speed control, transport buttons, `Ju
   - Moment times: snap (0.0s), break (1.6s), throw (2.3s), end (3.4s).
 - **Playback state (UI):** position (seconds), playing or paused, speed (0.25 | 0.5 | 1).
 
+## Decisions
+
+Settled with Mike before building:
+
+1. **Initial state:** every time Replay opens it is paused at 0.0s, at 0.5×. The player starts playback.
+2. **One frame**, for frame stepping and the slider's arrow keys, is one simulation tick (0.05s).
+3. **At the end:** playback stops and the button shows Play. Pressing Play restarts from 0.0s.
+4. **Scrubbing, frame stepping or picking a jump-to moment while playing** pauses playback.
+5. **Between moments:** no jump-to button is selected (`aria-pressed="false"` on all).
+6. **Icons:** while playing, the play button shows a two-bar pause icon (`aria-label="Pause"`) and the pill shows the play glyph; while paused, the pill shows the pause glyph.
+7. **Sack (no throw):** no Throw moment. The scrubber has two phase segments split at Break, and the jump-to row has three buttons: Snap, Break, End.
+8. **Break:** when the first read's receiver reaches the first break in his route, derived from the engine's route path breaks and that receiver's track.
+9. **Frame accuracy:** follow the live play. At the Throw moment the ball is still in the QB's hands; it leaves at the throw tick. The prototype's mid-flight ball at the throw is wrong.
+10. **Desktop keyboard:** `Space`, `,`, `.` and `Enter` are shortcuts only when focus is not on a button or the slider. A focused control keeps its native keys.
+11. **Reduced motion:** no change, because the player starts playback.
+
 ## Open questions
 
-- Initial state on entry: start position (0.0s?), playing or paused, and default speed. The prototype shows a paused frame at 0.5×.
-- What one "frame" is for frame stepping and slider arrow keys (a fixed time step or one simulation tick).
-- What playback does at the end (stop, or restart from 0 when Play is pressed again).
-- Whether scrubbing, frame stepping or picking a jump-to moment while playing keeps playing or pauses.
-- Which jump-to button is selected when the position is between moments (none, or the last one passed).
-- Pause icon for the play button and the pill glyph while playing (not prototyped).
-- How a sack (no throw) shows on the scrubber and in the jump-to row.
-- What "Break" marks when several receivers break at different times (simulation definition).
-- Prototype frame accuracy: at the Throw moment (2.3s) the prototype shows the ball already halfway to the TE, but in the live play the ball leaves the QB at 2.3s.
-- Desktop keyboard: how `Space` and `Enter` interact with a focused button (both activate buttons natively).
-- Whether reduced-motion preferences change anything here, given that playback is started by the player.
+- **Break with no break to reach.** Go and Seam routes have no break, and the rep can end (a sack, or a short rep) before the first read reaches his break. The build leaves the Break moment out in both cases: no Break button, and no Break split on the scrubber. A sack with no Break shows Snap and End over one segment.
+- **Break after the throw.** When the first read breaks after the ball is out, the jump-to buttons and scrubber segments follow time order (Snap, Throw, Break, End).
+- **Break timing.** Every first break sits at the top of a straight stem, so the build takes the first tick at which the receiver's track is at least as deep as the break point. Confirm once the engine's tracks replace the stub's straight-line fixtures.
 
 ## Acceptance criteria
 

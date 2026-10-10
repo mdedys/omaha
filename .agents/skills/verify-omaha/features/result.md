@@ -1,6 +1,6 @@
 # Result
 
-**Status:** Live for the sheet and Run it back (#64) and the play art (#65): the field shows every player at the final frame with the revealed defense play art, feedback badges, ball path and, on a converted rep or rep 4, the key pill. #71 builds the reveal by rep (the decisive-defender ring, partial art on rep 2 and the hidden-art field label). The replay square and "See how the pros did" render with `aria-disabled="true"` until Replay (#67) and the Pros reveal land, so report `result-pros` and `result-replay` as skipped. Result is shown on the play screen at `/puzzle/:n`.
+**Status:** Live for the sheet and Run it back (#64) and the play art (#65): the field shows every player at the final frame with the revealed defense play art, feedback badges, ball path and, on a converted rep or rep 4, the key pill. #71 builds the reveal by rep (the decisive-defender ring, partial art on rep 2 and the hidden-art field label). The replay square opens Replay (#67, replay.md). "See how the pros did" renders with `aria-disabled="true"` until the Pros reveal lands, so report `result-pros` as skipped. Result is shown on the play screen at `/puzzle/:n`.
 
 Result shows how the rep ended. The field shows the defense's play art and receiver feedback badges, and a sheet holds the headline, outcome tile, stats, rep boxes and the next action. The sheet is cream when reps remain, ink green when converted, and charcoal when out of reps. Spec: `design/08-result/spec.md`, with the seven end states (incomplete, short, sack, interception, throwaway, converted, out of reps) in `design/08-result/states/`.
 
@@ -35,7 +35,7 @@ Preconditions:
 - **Play art.** The stub reveals nothing on rep 1, DL and LB only on rep 2, and everything from rep 3 or once the puzzle ends. To see full art for a cause, play Out, then Out, then X's route for that cause on rep 3, and `shot=` it. Under the stub only the decisive defender moves, so only its line and start dot show; zones show for every revealed zone defender. Elements carry `data-zone`, `data-defense-path` (with `data-path-kind` drop, man, rush or blitz), `data-start-dot`, `data-feedback-badge`, `data-ball-path` and `data-football`.
 - **Key pill.** Converted (`Comeback` on X) shows "Defense · Cover 1 pressure" on phone and desktop. On desktop the "Final · defense revealed" pill sits at the stage's top left with the key pill 8 px below it.
 - **Run it back.** Run `click=button:"Run it back" expect-role=radiogroup:Blockers`. The previous protection is still selected.
-- **Replay.** Run `click=button:"Watch the replay again" shot=replay`, then return and `shot=back`. The two result screenshots match.
+- **Replay.** Run `shot=result click=button:"Watch the replay again" expect-role=slider:"Replay position" shot=replay click=button:"Back to the result" shot=back`. The `result` and `back` screenshots match (replay.md).
 - **Determinism.** Run the same design twice in separate drives. The `final` screenshots and `aria.yml` files must be identical.
 
 ## Gotchas

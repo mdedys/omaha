@@ -638,6 +638,7 @@ export const Field = memo(function Field({
   frame,
   reveal,
   live,
+  ballPath,
   pan,
   label,
 }: {
@@ -653,6 +654,8 @@ export const Field = memo(function Field({
   // fade in.
   reveal?: number;
   live?: Playback;
+  // Draws the live ball's dashed path from its release point.
+  ballPath?: boolean;
   // Phone camera from the live framing (0) to the result framing (1).
   pan?: number;
   label?: string;
@@ -840,6 +843,17 @@ export const Field = memo(function Field({
           </linearGradient>
           <path d="M0 0L176 -41L176 41Z" fill="url(#vision-cone)" />
         </g>
+      ) : null}
+      {ballPath && live?.ball ? (
+        <path
+          data-ball-path=""
+          d={`M${fieldPoint(live.ball.from).x} ${fieldPoint(live.ball.from).y}L${fieldPoint(live.ball.at).x} ${fieldPoint(live.ball.at).y}`}
+          fill="none"
+          stroke="#F2F5F3"
+          strokeWidth="1.8"
+          strokeDasharray="2 5"
+          strokeLinecap="round"
+        />
       ) : null}
       {players.map(([id, at]) => {
         const { x, y } = fieldPoint(at);

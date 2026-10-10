@@ -6,7 +6,7 @@ export type Phase = "set" | "snap" | "throw" | "outcome" | "reveal" | "done";
 export type Playback = {
   phase: Phase;
   players: (readonly [string, Vec])[];
-  ball: { at: Vec; angle: number } | null;
+  ball: { from: Vec; at: Vec; angle: number } | null;
   read: Letter | null;
   cone: { angle: number; opacity: number } | null;
   reveal: number;
@@ -111,8 +111,9 @@ export function playback(rep: Rep, time: number): Playback {
       ? clamp((time - times.snap) / coneFadeIn)
       : clamp(1 - (time - times.release) / coneFadeOut);
   const ball =
-    rep.ball && time >= times.release && time < times.revealStart
+    rep.ball && time > times.release && time < times.revealStart
       ? {
+          from: rep.ball.from,
           at: trackAt(
             [rep.ball.from, rep.ball.to],
             clamp((time - times.release) / (times.outcome - times.release)),
