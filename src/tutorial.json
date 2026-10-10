@@ -1,0 +1,32 @@
+{
+  "engine": 1,
+  "number": 0,
+  "date": "",
+  "situation": {
+    "down": 3,
+    "distance": 10,
+    "spot": 45,
+    "hash": "middle",
+    "scoreDiff": -4,
+    "quarter": 4,
+    "clock": "1:12"
+  },
+  "goal": "first-down",
+  "briefing": "",
+  "formation": { "id": "gun-trey", "flip": false },
+  "defense": [
+    { "id": "DL1", "at": [-3, 1], "assignment": "rush L-C" },
+    { "id": "DL2", "at": [-1, 1], "assignment": "rush L-A" },
+    { "id": "DL3", "at": [1, 1], "assignment": "rush R-A" },
+    { "id": "DL4", "at": [3, 1], "assignment": "zone hook-R" },
+    { "id": "LB1", "at": [-4, 5], "assignment": "zone hook-L" },
+    { "id": "LB2", "at": [0, 5], "assignment": "zone hook-M" },
+    { "id": "LB3", "at": [4, 5], "assignment": "man RB" },
+    { "id": "CB1", "at": [-12, 7], "assignment": "man X" },
+    { "id": "CB2", "at": [12, 7], "assignment": "man Z" },
+    { "id": "NB", "at": [8, 5], "assignment": "rush R-D" },
+    { "id": "S1", "at": [0, 15], "assignment": "zone deep-middle" }
+  ],
+  "coverageName": "Cover 1 pressure",
+  "prosResult": ""
+}

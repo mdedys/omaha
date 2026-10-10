@@ -4,6 +4,7 @@ import { Link } from "./Link";
 import { downAndDistance, loadTodaysPuzzle } from "./puzzles";
 import type { LandingPuzzle } from "./puzzles";
 import { PuzzleScreen } from "./PuzzleScreen";
+import { Tutorial } from "./Tutorial";
 import "./App.css";
 
 type LandingState =
@@ -193,16 +194,11 @@ function App() {
       />
     );
   }
-  const title =
-    path === "/puzzles"
-      ? "All puzzles"
-      : path === "/how-to-play"
-        ? "How to play"
-        : null;
-  if (!title) return <Landing />;
+  if (path === "/how-to-play") return <Tutorial />;
+  if (path !== "/puzzles") return <Landing />;
   return (
     <main className="route-placeholder">
-      <h1>{title}</h1>
+      <h1>All puzzles</h1>
       <p>This screen is not available yet.</p>
       <Link href="/">Back to Landing</Link>
     </main>

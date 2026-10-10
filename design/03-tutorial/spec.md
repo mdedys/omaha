@@ -27,22 +27,26 @@ Where the prototypes and DESIGN.md disagree on a token value (the CTA label size
 
 **Exit**
 - "Next" on step 1 → step 2. "Next" on step 2 → step 3.
-- "Play your first puzzle" on step 3 → Protect (`04-protect`) for today's puzzle.
-- "Skip" on any step → Protect for today's puzzle.
-- System/browser back: behavior not specified (open question).
+- "Back" on step 2 → step 1. "Back" on step 3 → step 2 (Decisions 1).
+- "Play today's puzzle" on step 3 → Protect (`04-protect`) for today's puzzle (Decisions 3, 4).
+- "Skip" on any step → Protect for today's puzzle (Decisions 3).
+- System/browser back → the page the player came from. Steps don't add history entries (Decisions 1).
 
 ## Layout
 
 Phone baseline 390×844. Background `cream`, text `ink-green`. Every step has the same structure: a field SVG at the top (full width), a Skip link over the field's top right, and a bottom sheet. No page scroll.
+
+Every step's field is the shared play-screen field (`viewBox 0 0 403 495`, the same turf, players and play art as Protect and Result), not the prototypes' hand-drawn art. On phone it is shifted up 32px so the yard number under Skip is cut off; on desktop it fills the stage as on the play screen. The coordinates below describe the prototypes.
 
 **Shared elements**
 - **Skip**: absolute, right 8, top 8; 44px tall, padding 0 12px, `cream` text 14px 800 uppercase, no background. Hover: white text.
 - **Sheet**: absolute, bottom 0, full width; `cream`; top corners 28px (`sheet`); shadow `0 -12px 32px rgba(0,0,0,.35)`; padding 24px 20px 28px; column, `justify-content: space-between`. It overlaps the bottom of the field.
 - **Top group** in the sheet: column, 14px gap: progress dots, then the step heading, then (steps 1 and 3) a paragraph.
 - **Progress dots**: row, 6px gap. Inactive dot 8×8, 4px radius, `sand-border`. Active dot 24×8, `ink-green`.
-- **Heading**: `h2`, 36px, 900, line-height 0.95, uppercase, -0.01em.
+- **Heading**: `h1` (Decisions 7), 36px, 900, line-height 0.95, uppercase, -0.01em.
 - **Paragraph**: 16px, line-height 1.45, `sage-body`.
 - **CTA**: full width, 56px, 16px radius (`cta-result`), `snap-orange`, white label in `button` type (19px, 900, uppercase, 0.01em; the prototypes still show 18px). Hover `snap-orange-deep`.
+- **Back** (steps 2 and 3, Decisions 1): a `button-secondary-square` left of the CTA, 8px gap: 56×56, 16px radius, 1px `sand-border`, `paper-white`, an `ink-green` left chevron, `aria-label="Back"`. The CTA takes the rest of the row. Desktop: 58×58, 10px radius, 2px border, 10px gap. Dark: `dark-surface` with a `dark-border` border and a Cream chevron. Not in the prototypes.
 
 **Step 1** (`prototype-1.html`)
 - Field SVG 390×470 (viewBox `0 0 390 470`). Turf with stripe bands at y 40, 168, 296 (64px) and 424 (46px); lines every 64 from y 40. Yard numbers "40", "50", "40" at x 40, y 104/232/360, rotated 90°, 22px 700, `field-number` at 70% opacity. First-down zone: rect y 232–360 in `first-down-line` at 8% opacity. First-down line y 232 and line of scrimmage y 360, both 3px. Seven defenders (r 7.5, `defender-fill`, 2.2px `defender-ring`) at 70% group opacity. Five linemen at y 360, QB at 200,410. A two-headed cream arrow at x 338 from y 240 to 352 with "10 YDS" (14px 900 cream, right-aligned at x 326, y 300). Labels "FIRST DOWN" at 16,224 in `first-down-line` and "LINE OF SCRIMMAGE" at 16,380 in `scrimmage-label`, both 11px 800, 0.04em.
@@ -61,7 +65,7 @@ Phone baseline 390×844. Background `cream`, text `ink-green`. Every step has th
 **Step 3** (`prototype-3.html`)
 - Field SVG 390×440, same frame as step 2. The result frame of rep 1, at the throw: 11 defenders in their post-snap positions, four defender paths (`defense-path` 1.6px at 80% opacity), receivers mid-route, linemen at y 344, a dashed ball path from the QB (2 on / 5 off, `quarterback` color, 1.8px) curving to the TE, the football (`football`, 4.5×2.8, rotated -44°, white 0.8px edge) in the air, and an Open receiver feedback badge (r 7 white disc with dark check) on the Left WR at 149,192.
 - Result pill: absolute, left 16, top 16; 30px tall, padding 0 12px, 15px radius, `rgba(6,13,10,.82)`, `cream` 12px 700, text only (no icon).
-- Sheet 428px tall. Top group: dots, heading, paragraph. Then a strip (row, centered, 6px gap) of three equal cards separated by 14px chevrons (`sand-strong`, 2px). Each card: 64px tall, 12px radius, 1px `sand-border`, `paper-white`, column centered, 6px gap, 18px icon over a 12px 900 uppercase label. Icons: filled play triangle (Snap), screen with a play triangle (Result), counter-clockwise arrow (Run it back).
+- Sheet 428px tall. Top group: dots, heading, paragraph. Then a strip (row, centered, 6px gap) of three equal cards separated by 14px chevrons (`sand-strong`, 2px). Each card: 64px tall, 12px radius, 1px `sand-border`, `paper-white`, column centered, 6px gap, 18px icon over a 12px 900 uppercase label. Icons: filled play triangle (Snap), the outcome-tile ✓ glyph (Result, Decisions 8), counter-clockwise arrow (Run it back).
 - CTA has an 18px filled play triangle before the label, 8px gap.
 
 ### Desktop (`prototype-1-desktop.html`, `-2-desktop`, `-3-desktop`, ≥900px)
@@ -98,6 +102,7 @@ All copy is static. Record it exactly; the casing shown is the source text (CSS 
 **Shared**
 - Skip link: `Skip`
 - Sheet `aria-label`s: `Step 1 of 3`, `Step 2 of 3`, `Step 3 of 3`
+- Back button `aria-label` (steps 2 and 3): `Back`
 
 **Step 1**
 - Situation pill: `3rd & 10 · own 45`
@@ -123,15 +128,15 @@ All copy is static. Record it exactly; the casing shown is the source text (CSS 
 - Paragraph: `Watch it play out, then see what the defense was really doing. Change the call and go again until you convert.`
 - Strip cards: `Snap`, `Result`, `Run it back` (separated by chevrons)
 - Strip `aria-label`: `Snap, then the result, then run it back`
-- Field `aria-label`: `The result of rep 1: the defense revealed, the throw to the tight end, the left receiver open`
-- CTA: `Play your first puzzle`
+- Field `aria-label`: `The result of rep 1: the defense revealed, the throw to the <receiver>`, naming the receiver the rep throws to (`Left WR` under the stub engine); without a throw it ends after `revealed`. The prototype's `…the throw to the tight end, the left receiver open` describes art the shared field doesn't draw.
+- CTA: `Play today's puzzle` (Decisions 4)
 
 **Desktop only**
 - Top-bar wordmark: `OMAHA`
 
-The example situation (3rd & 10, own 45) is fixed tutorial content, not today's puzzle.
+The example situation (3rd & 10, own 45) is fixed tutorial content, not today's puzzle (Decisions 5).
 
-**Voice:** the game's voice is trash talk everywhere (README Decisions), but this copy is straight. A voice pass is optional and not part of this spec; implement the copy as written.
+**Voice:** the game's voice is trash talk everywhere (README Decisions), but this copy is straight. No voice pass for now (Decisions 6); implement the copy as written.
 
 ## Components
 
@@ -140,22 +145,24 @@ The example situation (3rd & 10, own 45) is fixed tutorial content, not today's 
 - **Rep boxes** (step 1): four 30px boxes in the "next rep" style (Ink Green border and number).
 - **Result sheet** shape for the phone bottom sheet (28px top radius), with the Landing/Tutorial sheet shadow (`0 -12px 32px rgba(0,0,0,.35)`) from DESIGN.md Elevation.
 - **Field glyphs**: players, routes, protection zigzag and slide arrow, read ring and "1" badge, defender paths, ball path, football, Open receiver feedback badge.
+- **Secondary square** (`button-secondary-square`): Back on steps 2 and 3.
 - **Progress dots**, **Skip text link**, **numbered list item**, **phase strip card**: tutorial-specific, not in DESIGN.md. Skip here is a plain text link, not DESIGN.md's `button-skip`.
 
 ## States
 
 1. **Step 1, step 2, step 3 (prototyped).** One step shown at a time; the active dot marks the step.
-2. **Today's puzzle already in progress or finished (not prototyped).** Skip and "Play your first puzzle" go to Protect for today's puzzle. What happens if today's puzzle is already in progress or finished is an open question.
-3. **Puzzle unavailable (not prototyped).** No puzzle today or the fetch fails when leaving the tutorial. Open question.
+2. **Today's puzzle already in progress or finished (not prototyped).** Skip and "Play today's puzzle" still go to Protect for today's puzzle (Decisions 3).
+3. **Puzzle unavailable (not prototyped).** No puzzle today, or the index fetch fails or hasn't finished: Skip and "Play today's puzzle" go to Landing, which shows its loading, error or no-puzzle status.
 
 ## Interactions
 
 - Tap "Next" → next step.
-- Tap "Play your first puzzle" (step 3) → Protect.
+- Tap "Back" (steps 2 and 3) → previous step.
+- Tap "Play today's puzzle" (step 3) → Protect.
 - Tap "Skip" (any step) → Protect.
 - The field, pills, dots, rep boxes, list and strip cards are not interactive.
-- Swiping between steps and moving back a step are not in the prototypes (open question).
-- Keyboard focus order per step: Skip → CTA. Enter activates. No shortcut keys are defined.
+- No swiping between steps (Decisions 2).
+- Keyboard focus order per step: Skip → Back (steps 2 and 3) → CTA. Enter activates. No shortcut keys are defined.
 - Desktop: Skip is in the top bar, so it still comes first in focus order. Hover on Skip: `ink-green-deep`. The stage field is not interactive.
 - When a step changes, move focus to the new step's heading so screen readers announce it.
 
@@ -167,29 +174,41 @@ None in the prototypes. Step changes are instant.
 
 - Each field SVG has `role="img"` with the `aria-label` in Content and copy.
 - Each sheet is a `section` (desktop: the panel `aside`) with `aria-label="Step N of 3"`. The dots are `aria-hidden`; the label conveys progress.
-- The step heading is an `h2`. Each step needs an `h1` or the heading level raised; the prototype has no `h1` (open question).
+- The step heading is the page's `h1` (Decisions 7); the prototype's `h2` is raised.
 - Step 2's list is an `ol`.
 - Step 3's strip has `aria-label="Snap, then the result, then run it back"`; its icons and chevrons are `aria-hidden`.
 - Contrast: Skip (Cream on Turf) 11.07:1; desktop Skip (Ink Green on Cream) passes; Sage Body on Cream 6.21:1; "LINE OF SCRIMMAGE" `scrimmage-label` on Turf about 6:1; "FIRST DOWN" `first-down-line` on Turf 7.17:1. White on Snap Orange is 3.71:1, and the 19px 900 CTA label is large text, so it passes AA.
-- Touch targets: Skip 44px tall on phone; the desktop top-bar Skip needs a hit area of at least 44×44px (extend with padding). CTA 56px (58px desktop).
+- Touch targets: Skip 44px tall on phone; the desktop top-bar Skip needs a hit area of at least 44×44px (extend with padding). CTA 56px (58px desktop). Back 56×56 (58×58 desktop).
 - Reduced motion: nothing animates.
 
 ## Data
 
-None from the puzzle JSON or results API. All content is static.
+None from the puzzle JSON or results API. All content is static, except the puzzle index, read only to find today's puzzle number for Skip and the CTA. The example field is a fixed puzzle bundled with the app, simulated by the engine.
 
 If first-visit routing is adopted (Landing open question), a "tutorial seen" flag in local storage is written when the player finishes or skips.
 
+## Decisions
+
+Settled with Mike before building:
+
+1. **Back navigation:** steps 2 and 3 have a `Back` button that returns one step. Steps don't add history entries, so system back leaves the tutorial to wherever the player came from.
+2. **Swipe:** no swiping between steps.
+3. **Destination:** Skip and the final CTA always go to today's puzzle (Protect). Sending players who have finished today's puzzle to Landing instead waits for stored progress (#57).
+4. **CTA label:** one label for everyone, `Play today's puzzle`.
+5. **Example situation:** keep the fixed 3rd & 10, not today's puzzle.
+6. **Voice pass:** none for now.
+7. **Heading levels:** each step's title is the page's `h1`.
+8. **Result card icon:** the "Result" card in the strip uses the outcome-tile ✓ glyph instead of the screen-with-play icon.
+
+Settled while building:
+
+- **Puzzle unavailable:** until today's puzzle number is known, or when there is none or the index fails, Skip and the CTA go to Landing, which explains the state (States 3).
+- **Back placement:** a secondary square left of the CTA, as the replay square sits beside Run It Back on Result.
+- **Field art:** every step uses the shared field. Step 1 adds its first-down zone, `FIRST DOWN` and `LINE OF SCRIMMAGE` labels and the `10 YDS` bracket as markings on it; step 2 is a 6-man slide-left protection with four routes and the TE as the only read; step 3 is that design's simulated rep 1 with the defense's play art revealed.
+
 ## Open questions
 
-- **Back navigation:** is there a way to go back a step (button, swipe, system back)? What does system back do on step 2 or 3?
-- **Swipe** between steps?
-- **Destination when today's puzzle is in progress or finished:** Skip and the final CTA go to Protect. Should a player who opened "How to play" after finishing today's puzzle return to Landing instead?
-- **"Play your first puzzle"** reads wrong for returning players who open the tutorial from Landing. Keep one label for everyone?
-- **Example situation:** should the tutorial use today's puzzle instead of a fixed 3rd & 10?
-- **Voice pass** on the tutorial copy (optional).
-- **Heading levels:** no `h1` in the prototypes (the desktop top-bar "OMAHA" is not a heading either).
-- **Result card icon:** the "Result" card in the strip uses the screen-with-play icon, which reads as "replay". Keep it or pick a different icon?
+- None.
 
 ## Acceptance criteria
 
@@ -197,7 +216,8 @@ If first-visit routing is adopted (Landing open question), a "tutorial seen" fla
 - [ ] Every string in Content and copy appears exactly as listed, including the field and sheet `aria-label`s.
 - [ ] The active progress dot (24×8, Ink Green) matches the current step; the others are 8×8 Sand Border.
 - [ ] "Next" on step 1 shows step 2; "Next" on step 2 shows step 3.
-- [ ] "Play your first puzzle" and every "Skip" navigate to Protect for today's puzzle.
+- [ ] "Play today's puzzle" and every "Skip" navigate to Protect for today's puzzle.
+- [ ] "Back" on step 2 shows step 1 and on step 3 shows step 2; step 1 has no Back. System back leaves the tutorial.
 - [ ] Step 1 shows the situation pill; step 2 shows no pill; step 3 shows the "Rep 1 result" pill with no icon.
 - [ ] Step 3's strip reads Snap › Result › Run it back, and its `aria-label` is "Snap, then the result, then run it back".
 - [ ] The CTA label is 19px 900 (`button` type) at every width.
@@ -205,7 +225,7 @@ If first-visit routing is adopted (Landing open question), a "tutorial seen" fla
 - [ ] At ≥900px each step matches its `-desktop` prototype: 64px top bar with wordmark and Skip, field centered on a `turf-stage` stage with pills at 36/36, a 440px panel with the step content, CTA 58px tall with a 10px radius.
 - [ ] Below 900px the phone layout is shown.
 - [ ] Field art uses DESIGN.md field and player tokens (receiver colors, read gold ring and "1" badge, defense-path lines, football color).
-- [ ] Focus order on each step is Skip → CTA; after a step change, focus is on the new heading.
+- [ ] Focus order on each step is Skip → Back (steps 2 and 3) → CTA; after a step change, focus is on the new heading.
 - [ ] Dots and icons are `aria-hidden`; each sheet section is labeled "Step N of 3".
-- [ ] The tutorial reads nothing from the puzzle JSON or the results API.
+- [ ] The tutorial reads nothing from the puzzle JSON or the results API beyond the index entry that names today's puzzle.
 - [ ] Dark theme matches `prototype-N-dark.html` and `prototype-N-desktop-dark.html` for each step; the field art and pills are identical in both themes.
