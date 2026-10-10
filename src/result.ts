@@ -1,5 +1,6 @@
 import { TICK_SECONDS } from "./engine/contract";
 import type {
+  Blockers,
   CauseCode,
   DefenderId,
   DefensePlayArt,
@@ -7,9 +8,11 @@ import type {
   Engine,
   ForcedBy,
   Letter,
+  LineCall,
   Puzzle,
   Rep,
 } from "./engine/contract";
+import type { Phase } from "./playback";
 
 export type Played = { design: Design; rep: Rep };
 export type RepBox =
@@ -121,6 +124,22 @@ const lines: Record<
   ],
 };
 
+function facts(puzzle: Puzzle, engine: Engine, { design, rep }: Played): Facts {
+  const toGo =
+    puzzle.goal === "touchdown"
+      ? 100 - puzzle.situation.spot
+      : puzzle.situation.distance;
+  return {
+    defender: rep.cause.decisive ? roles[rep.cause.decisive] : "defense",
+    receiver: rep.cause.thrownTo
+      ? engine.displayName(puzzle, rep.cause.thrownTo).name
+      : "receiver",
+    yards: rep.outcome.yards,
+    short: toGo - rep.outcome.yards,
+    reads: design.readOrder.length,
+  };
+}
+
 function causeLine({ cause }: Rep): Line {
   switch (cause.code) {
     case "breakup-forced":
@@ -182,19 +201,7 @@ export function resultSheet(
   const count = played.length;
   const converted = rep.verdict === "converted";
   const variant = converted ? "win" : count === 4 ? "over" : "cream";
-  const toGo =
-    puzzle.goal === "touchdown"
-      ? 100 - puzzle.situation.spot
-      : puzzle.situation.distance;
-  const [cause, jab] = causeLine(rep)({
-    defender: rep.cause.decisive ? roles[rep.cause.decisive] : "defense",
-    receiver: rep.cause.thrownTo
-      ? engine.displayName(puzzle, rep.cause.thrownTo).name
-      : "receiver",
-    yards: rep.outcome.yards,
-    short: toGo - rep.outcome.yards,
-    reads: last.design.readOrder.length,
-  });
+  const [cause, jab] = causeLine(rep)(facts(puzzle, engine, last));
   const reps = played.map((entry) => entry.rep);
   const points = String(engine.score(puzzle, reps).total);
   const stats: Stat[] =
@@ -266,4 +273,132 @@ export function resultSheet(
     fieldLabel: `Rep ${count} final frame ${ended ? `against ${puzzle.coverageName}` : "with the defense revealed"}: ${headlines[rep.cause.code].toLowerCase()}. ${cause}`,
     playArt: engine.revealedPlayArt(rep.playArt, failed, ended),
   };
+}
+
+export type Caption = { word: string; line: string };
+
+const blockerCounts: Record<Blockers, string> = {
+  5: "Five",
+  6: "Six",
+  7: "Seven",
+};
+const lineCalls: Record<LineCall, string> = {
+  man: "Man up front.",
+  "slide-left": "Line slides left.",
+  "slide-right": "Line slides right.",
+};
+
+// Play-by-play words, kept apart from the sheet's verdict headlines.
+const outcomes: Record<CauseCode, (facts: Facts) => Caption> = {
+  "sack-free-rusher": ({ defender }) => ({
+    word: "Sacked",
+    line: `Nobody blocked the ${defender}.`,
+  }),
+  "sack-beat-block": ({ defender }) => ({
+    word: "Sacked",
+    line: `The ${defender} beat his block.`,
+  }),
+  throwaway: ({ reads }) => ({
+    word: "Thrown away",
+    line:
+      reads === 1 ? "His only read was covered." : "Every read was covered.",
+  }),
+  "breakup-closed": ({ defender }) => ({
+    word: "Broken up",
+    line: `Swatted. The ${defender} closed on it.`,
+  }),
+  "breakup-forced": ({ defender }) => ({
+    word: "Broken up",
+    line: `Swatted. The ${defender} was waiting.`,
+  }),
+  "interception-closed": ({ defender }) => ({
+    word: "Picked off",
+    line: `The ${defender} jumped the throw.`,
+  }),
+  "interception-forced": ({ defender }) => ({
+    word: "Picked off",
+    line: `The ${defender} was sitting on it.`,
+  }),
+  short: ({ short }) => ({
+    word: "Stopped short",
+    line: `${plural(short, "yard")} shy of the sticks.`,
+  }),
+  converted: ({ receiver }) => ({
+    word: "First down",
+    line: `The ${receiver} moves the chains.`,
+  }),
+  touchdown: ({ receiver }) => ({
+    word: "Touchdown",
+    line: `The ${receiver} takes it to the house.`,
+  }),
+};
+
+function throwLine({ cause }: Rep, receiver: string) {
+  switch (cause.code) {
+    case "throwaway":
+      return "Nobody open. Into the seats.";
+    case "breakup-forced":
+    case "interception-forced":
+      return cause.forcedBy === "pressure"
+        ? `Heat's coming. He forces it to the ${receiver}.`
+        : `Nothing clean. He forces it to the ${receiver}.`;
+    default:
+      return `Let it rip to the ${receiver}.`;
+  }
+}
+
+function setLine({ protection }: Design) {
+  return `${blockerCounts[protection.blockers]} in protection. ${lineCalls[protection.lineCall]}`;
+}
+
+export function liveCaption(
+  puzzle: Puzzle,
+  engine: Engine,
+  played: Played,
+  { phase, read }: { phase: Phase; read: Letter | null },
+): Caption {
+  const { rep } = played;
+  switch (phase) {
+    case "set":
+      return { word: "Set", line: setLine(played.design) };
+    case "snap": {
+      if (read === null) return { word: "Snap", line: "Eyes downfield." };
+      const name = engine.displayName(puzzle, read).name;
+      return {
+        word: "Snap",
+        line:
+          read === rep.reads[0].letter
+            ? `Eyes locked on the ${name}.`
+            : `Nothing there. Eyes to the ${name}.`,
+      };
+    }
+    case "throw":
+      return {
+        word: "Throw",
+        line: throwLine(rep, facts(puzzle, engine, played).receiver),
+      };
+    case "outcome":
+    case "reveal":
+    case "done":
+      return outcomes[rep.cause.code](facts(puzzle, engine, played));
+  }
+}
+
+export function liveLabel(
+  puzzle: Puzzle,
+  engine: Engine,
+  played: readonly Played[],
+): string {
+  const last = played[played.length - 1];
+  const { rep } = last;
+  const { receiver } = facts(puzzle, engine, last);
+  const looks = rep.reads
+    .map(({ letter }) => `the ${engine.displayName(puzzle, letter).name}`)
+    .join(", then ");
+  const thrown = rep.ball ? ` ${throwLine(rep, receiver)}` : "";
+  const { word, line } = liveCaption(puzzle, engine, last, {
+    phase: "outcome",
+    read: null,
+  });
+  return `Live play, rep ${played.length}: ${setLine(last.design)} The quarterback looks to ${looks}.${thrown} ${word}. ${line} Then the result appears.`;
 }

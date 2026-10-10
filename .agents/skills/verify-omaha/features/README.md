@@ -36,6 +36,7 @@ Each feature file starts with an H1 and one paragraph on what the player sees. I
 | [Protect](./protect.md)     | Live                     | #61 (play screen), #62 (controls)         |
 | [Routes](./routes.md)       | Live                     | #63                                       |
 | [Read and snap](./read.md)  | Live                     | #64                                       |
+| [Live play](./live-play.md) | Live                     | #66                                       |
 | [Result](./result.md)       | Live (sheet, play art)   | #64 (sheet), #65 (play art), #71 (reveal) |
 
-Issue numbers are GitHub issues on `mdedys/omaha`, all children of #58. Not mapped yet: Puzzles (#70), Tutorial (#69), Live play (#66), Replay (#67), Pros reveal (#72), Share (#68), stored progress (#57). Add a file for each when its issue starts.
+Issue numbers are GitHub issues on `mdedys/omaha`, all children of #58. Not mapped yet: Puzzles (#70), Tutorial (#69), Replay (#67), Pros reveal (#72), Share (#68), stored progress (#57). Add a file for each when its issue starts.
