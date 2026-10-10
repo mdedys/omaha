@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { Hero } from "./Hero";
 import { Link } from "./Link";
-import { downAndDistance, loadTodaysPuzzle } from "./puzzles";
+import { downAndDistance, loadTodaysPuzzle, spotText } from "./puzzles";
 import type { LandingPuzzle } from "./puzzles";
 import { PuzzleScreen } from "./PuzzleScreen";
+import { PuzzleStatus } from "./PuzzleStatus";
+import { PuzzleList } from "./PuzzleList";
 import { Tutorial } from "./Tutorial";
 import "./App.css";
 
@@ -68,8 +70,6 @@ function SecondaryNavigation() {
 }
 
 function PuzzleInfo({ puzzle }: { puzzle: LandingPuzzle }) {
-  const { spot } = puzzle.situation;
-  const location = spot <= 50 ? `own ${spot}` : `opp ${100 - spot}`;
   return (
     <div className="puzzle-info">
       <div className="puzzle-header">
@@ -79,7 +79,7 @@ function PuzzleInfo({ puzzle }: { puzzle: LandingPuzzle }) {
       <div className="situation">
         <div className="situation-heading">
           <h2>{downAndDistance(puzzle.situation)}</h2>
-          <span className="spot">{location}</span>
+          <span className="spot">{spotText(puzzle.situation.spot)}</span>
         </div>
         <p className="briefing">{puzzle.briefing}</p>
       </div>
@@ -143,23 +143,7 @@ function Landing() {
             {state.kind === "ready" ? (
               <PuzzleInfo puzzle={state.puzzle} />
             ) : (
-              <div className="puzzle-status" role="status" aria-live="polite">
-                <span className="today-label">Today's puzzle</span>
-                <h2>
-                  {state.kind === "loading"
-                    ? "Loading today's puzzle…"
-                    : state.kind === "error"
-                      ? "Couldn't load today's puzzle."
-                      : "No puzzle available yet."}
-                </h2>
-                <p>
-                  {state.kind === "loading"
-                    ? "Drawing up the situation."
-                    : state.kind === "error"
-                      ? "Please refresh to try again."
-                      : "Check back for the next situation."}
-                </p>
-              </div>
+              <PuzzleStatus kind={state.kind} />
             )}
             <div className="button-group">
               {state.kind === "ready" ? (
@@ -195,14 +179,8 @@ function App() {
     );
   }
   if (path === "/how-to-play") return <Tutorial />;
-  if (path !== "/puzzles") return <Landing />;
-  return (
-    <main className="route-placeholder">
-      <h1>All puzzles</h1>
-      <p>This screen is not available yet.</p>
-      <Link href="/">Back to Landing</Link>
-    </main>
-  );
+  if (path === "/puzzles") return <PuzzleList />;
+  return <Landing />;
 }
 
 export default App;

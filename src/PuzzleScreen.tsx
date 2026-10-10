@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import type { Design, Engine, Letter, Puzzle } from "./engine/contract";
 import { EngineError } from "./engine/error";
 import { navigate, redirect } from "./navigate";
-import { downAndDistance, loadNumberedPuzzle } from "./puzzles";
+import { downAndDistance, loadNumberedPuzzle, spotText } from "./puzzles";
 import { useDesktop, useDesktopKeys } from "./desktopKeys";
 import { Field } from "./Field";
 import { LivePanel } from "./LivePlay";
@@ -131,7 +131,7 @@ function PlayScreen({
   }
   const { spot, scoreDiff, clock } = puzzle.situation;
   const situation = downAndDistance(puzzle.situation);
-  const location = spot <= 50 ? `own ${spot}` : `opp ${100 - spot}`;
+  const location = spotText(spot);
   const score =
     scoreDiff < 0
       ? `Down ${-scoreDiff}`

@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 import type { Page } from "@playwright/test";
 import touchdown from "../public/puzzles/2.json" with { type: "json" };
+import { indexEntry } from "./page";
 
 const heroName =
   "A play drawn on the field: four receivers' routes and the running back's check-down";
@@ -96,9 +97,9 @@ for (const boundary of [
     await page.route("**/puzzles/index.json", (route) =>
       route.fulfill({
         json: [
-          { number: 99, date: boundary.next },
-          { number: 2, date: boundary.date },
-          { number: 1, date: "2025-12-01" },
+          indexEntry(99, boundary.next),
+          indexEntry(2, boundary.date),
+          indexEntry(1, "2025-12-01"),
         ],
       }),
     );
@@ -187,7 +188,7 @@ for (const json of [
   });
 }
 
-for (const index of [[], [{ number: 1, date: "2026-10-10" }]]) {
+for (const index of [[], [indexEntry(1, "2026-10-10")]]) {
   test(`shows no-puzzle for ${index.length === 0 ? "empty" : "future-only"} index`, async ({
     page,
   }) => {
@@ -206,7 +207,7 @@ for (const index of [[], [{ number: 1, date: "2026-10-10" }]]) {
 
 for (const destination of [
   { name: "Play today's puzzle", path: "/puzzle/2", title: "2nd & goal" },
-  { name: "All puzzles", path: "/puzzles", title: "All puzzles" },
+  { name: "All puzzles", path: "/puzzles", title: "Puzzles" },
   { name: "How to play", path: "/how-to-play", title: "Read the situation" },
 ]) {
   for (const activation of ["click", "Enter", "Space"]) {
@@ -260,7 +261,7 @@ for (const destination of [
       page.getByRole("heading", { name: destination.title, exact: true }),
     ).toBeVisible();
     if (destination.path === "/puzzles") {
-      await page.getByRole("link", { name: "Back to Landing" }).click();
+      await page.getByRole("link", { name: "Back", exact: true }).click();
     } else {
       await page.goto("/");
     }

@@ -6,7 +6,7 @@ The name comes from Peyton Manning's audible call at the line.
 
 ## Status
 
-Pre-MVP. The visual design lives in [design/](design/README.md). The app shell, Landing and numbered puzzle play-screen frame are implemented in React and SVG, with system light/dark themes and a static daily puzzle source. Protect has engine-backed blocker/line-call controls and pre-snap protection art; Routes and Read retain placeholder panels. The Puzzles list and How to play routes remain labelled placeholders. Version 1 of the engine (pre-snap catalogs, validation, design helpers, the simulation, scoring and disclosure tiers) runs behind the engine contract. Work is tracked in [GitHub issues](https://github.com/mdedys/omaha/issues).
+Pre-MVP. The visual design lives in [design/](design/README.md). The app shell, Landing and numbered puzzle play-screen frame are implemented in React and SVG, with system light/dark themes and a static daily puzzle source. Protect, Routes and Read are built, and Snap plays the rep live into Result, with Replay and Share. The Puzzles list and How to play are built. Version 1 of the engine (pre-snap catalogs, validation, design helpers, the simulation, scoring and disclosure tiers) runs behind the engine contract. Work is tracked in [GitHub issues](https://github.com/mdedys/omaha/issues).
 
 ## Getting started
 

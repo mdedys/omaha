@@ -17,7 +17,8 @@ Protect is step 1 of the play design. The player picks how many blockers stay in
 
 - "Play today's puzzle" on Landing.
 - Numbered puzzle links (`/puzzle/1` and `/puzzle/2`) for both shipped fixtures.
-- Puzzles, Tutorial and Result entries are not built; skip those entry paths, not the live Protect controls.
+- The today card and Earlier rows on `/puzzles`.
+- "Run it back" on Result, and Skip or "Play today's puzzle" in the Tutorial.
 - "1 Protect" in the step bar from Routes or Read.
 
 ## Driving it with drive.mjs
