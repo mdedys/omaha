@@ -159,6 +159,7 @@ export interface Engine {
     puzzleEnded: boolean,
   ): DefensePlayArt;
   preSnap(puzzle: Puzzle): Record<PlayerId, Vec>;
+  displayName(puzzle: Puzzle, letter: Letter): { name: string; short: string };
   routeMenu(puzzle: Puzzle, letter: Letter): readonly RouteName[];
   availableDepths(
     puzzle: Puzzle,

@@ -256,6 +256,161 @@
 .protect-hint {
   display: none;
 }
+.play-steps .done .step-bar {
+  background: var(--ink);
+  opacity: 0.45;
+}
+.routes-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.routes-receiver,
+.routes-depth-label {
+  display: none;
+}
+.route-menu {
+  position: relative;
+  display: flex;
+  gap: 10px;
+  margin: 0 -16px;
+  padding: 0 16px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+.route-menu[data-assigned="true"] {
+  padding-inline: calc(50vw - 46px);
+}
+.route-card {
+  flex: 0 0 92px;
+  height: 88px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--surface);
+  color: var(--ink);
+  scroll-snap-align: center;
+  cursor: pointer;
+}
+.route-card[aria-selected="true"] {
+  border: 2px solid var(--ink);
+}
+.route-card svg {
+  display: block;
+  width: 100%;
+  height: 60px;
+}
+.route-card > span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 26px;
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+.route-card:focus-visible {
+  outline: 3px solid var(--accent-text);
+  outline-offset: -3px;
+}
+.puzzle-field [data-receiver-hit] {
+  cursor: pointer;
+}
+.puzzle-field [data-receiver-hit]:focus-visible {
+  outline: none;
+  stroke: #f4b13e;
+  stroke-width: 2;
+  stroke-dasharray: 3 3;
+}
+.route-depth-control button {
+  height: 38px;
+}
+.route-depth-control button::after {
+  inset: -3px 0;
+}
+.route-depth-control button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.route-depth-control button:disabled:hover {
+  box-shadow: none;
+}
+.route-note {
+  height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 600;
+}
+@media (min-width: 900px) {
+  .routes-controls {
+    gap: 22px;
+  }
+  .routes-receiver {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 13px;
+  }
+  .routes-receiver > span,
+  .routes-depth-label {
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .routes-receiver p {
+    color: var(--muted);
+    font-weight: 700;
+  }
+  .route-menu {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin: 0;
+    padding: 0;
+    overflow: visible;
+  }
+  .route-menu[data-assigned="true"] {
+    padding: 0;
+  }
+  .route-card {
+    height: 98px;
+    min-width: 0;
+    border-width: 2px;
+    border-radius: 10px;
+  }
+  .route-card > span {
+    height: 34px;
+  }
+  .route-card[aria-selected="true"] > span {
+    background: var(--ink);
+    color: var(--page);
+  }
+  .routes-depth {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .routes-depth-label {
+    display: block;
+    font-size: 13px;
+  }
+  .route-depth-control button {
+    height: 42px;
+  }
+  .route-depth-control button::after {
+    inset: -1px 0;
+  }
+  .route-note {
+    height: 50px;
+  }
+}
 @media (min-width: 900px) {
   .play-header {
     height: 64px;
