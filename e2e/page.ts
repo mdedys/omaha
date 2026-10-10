@@ -21,6 +21,15 @@ export function screenMarkup(page: Page) {
     .evaluate((main) => main.outerHTML.replaceAll(' style=""', ""));
 }
 
+// A puzzle index entry at 3rd & 10 from the own 45.
+export function indexEntry(
+  number: number,
+  date: string,
+  label = "Field goal won't cut it.",
+) {
+  return { number, date, down: 3, distance: 10, spot: 45, label };
+}
+
 export const routes = [
   ["TE", "Hitch"],
   ["Slot WR", "Out"],
