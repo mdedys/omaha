@@ -128,7 +128,7 @@ All copy is static. Record it exactly; the casing shown is the source text (CSS 
 - Paragraph: `Watch it play out, then see what the defense was really doing. Change the call and go again until you convert.`
 - Strip cards: `Snap`, `Result`, `Run it back` (separated by chevrons)
 - Strip `aria-label`: `Snap, then the result, then run it back`
-- Field `aria-label`: `The result of rep 1: the defense revealed, the throw to the <receiver>`, naming the receiver the rep throws to (`Left WR` under the stub engine); without a throw it ends after `revealed`. The prototype's `…the throw to the tight end, the left receiver open` describes art the shared field doesn't draw.
+- Field `aria-label`: `The result of rep 1: the defense revealed, the throw to the <receiver>`, naming the receiver the rep throws to; without a throw it ends after `revealed`. The engine currently sacks the example design (see Open questions). The prototype's `…the throw to the tight end, the left receiver open` describes art the shared field doesn't draw.
 - CTA: `Play today's puzzle` (Decisions 4)
 
 **Desktop only**
@@ -208,7 +208,7 @@ Settled while building:
 
 ## Open questions
 
-- None.
+- **Step 3 example outcome:** the engine sacks the step 2 example design (a free rusher, nothing thrown), so step 3 shows a sack instead of the prototype's throw to the tight end with the left receiver open. Should the example change so rep 1 throws?
 
 ## Acceptance criteria
 

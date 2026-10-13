@@ -14,8 +14,7 @@ const steps = [
   },
   {
     title: "Snap it, then run it back",
-    field:
-      "The result of rep 1: the defense revealed, the throw to the Left WR",
+    field: "The result of rep 1: the defense revealed",
   },
 ];
 
@@ -86,7 +85,10 @@ for (const [step, layer] of [
     page,
   }) => {
     await openStep(page, step);
-    const field = page.getByRole("img", { name: steps[step - 1].field });
+    const field = page.getByRole("img", {
+      name: steps[step - 1].field,
+      exact: true,
+    });
     await expect(field).toHaveAttribute("viewBox", "0 0 403 495");
     await expect(field.locator(layer)).toHaveCount(1);
   });
