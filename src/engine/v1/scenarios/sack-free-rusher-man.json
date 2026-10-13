@@ -1,0 +1,117 @@
+{
+  "puzzle": {
+    "engine": 1,
+    "number": 2,
+    "date": "2026-10-11",
+    "situation": {
+      "down": 3,
+      "distance": 10,
+      "spot": 45,
+      "hash": "middle",
+      "scoreDiff": -4,
+      "quarter": 4,
+      "clock": "1:12"
+    },
+    "goal": "first-down",
+    "briefing": "Third and ten.",
+    "formation": {
+      "id": "gun-trey",
+      "flip": false
+    },
+    "defense": [
+      {
+        "id": "DL1",
+        "at": [-3.6, 1],
+        "assignment": "rush"
+      },
+      {
+        "id": "DL2",
+        "at": [-1, 1],
+        "assignment": "rush"
+      },
+      {
+        "id": "DL3",
+        "at": [1.2, 1],
+        "assignment": "rush"
+      },
+      {
+        "id": "DL4",
+        "at": [3.9, 1],
+        "assignment": "rush"
+      },
+      {
+        "id": "LB1",
+        "at": [0.5, 4.5],
+        "assignment": "rush"
+      },
+      {
+        "id": "LB2",
+        "at": [3, 4.5],
+        "assignment": "man Y"
+      },
+      {
+        "id": "CB1",
+        "at": [-11.25, 6],
+        "assignment": "man X"
+      },
+      {
+        "id": "CB2",
+        "at": [11.25, 6],
+        "assignment": "man Z"
+      },
+      {
+        "id": "NB",
+        "at": [7.5, 4],
+        "assignment": "man H"
+      },
+      {
+        "id": "S1",
+        "at": [0, 13],
+        "assignment": "zone deep-middle"
+      },
+      {
+        "id": "S2",
+        "at": [-4, 9],
+        "assignment": "zone hook-M"
+      }
+    ],
+    "coverageName": "Cover 1",
+    "prosResult": "Sacked"
+  },
+  "design": {
+    "protection": {
+      "blockers": 5,
+      "lineCall": "man"
+    },
+    "routes": {
+      "X": {
+        "route": "Corner",
+        "depth": 15
+      },
+      "Y": {
+        "route": "Seam"
+      },
+      "Z": {
+        "route": "Post",
+        "depth": 15
+      },
+      "H": {
+        "route": "Comeback",
+        "depth": 15
+      },
+      "RB": {
+        "route": "Flat"
+      }
+    },
+    "readOrder": ["X", "Z", "H"]
+  },
+  "expect": {
+    "cause": "sack-free-rusher",
+    "decisive": "LB1",
+    "yards": -7,
+    "target": null,
+    "times": {
+      "sack": [1.85, 1.95]
+    }
+  }
+}

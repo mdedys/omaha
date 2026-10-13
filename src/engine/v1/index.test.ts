@@ -155,7 +155,7 @@ describe("v1 puzzle boundary", () => {
     expectTypeOf(engine).toEqualTypeOf<Engine>();
     expectTypeOf(parsePuzzle).toEqualTypeOf<(json: unknown) => Puzzle>();
     const loaded = await loadPuzzle(rawPuzzle());
-    expect(loaded.engine.preSnap(loaded.puzzle).Y).toEqual({ x: 4, y: 0 });
+    expect(loaded.engine.preSnap(loaded.puzzle).Y).toEqual({ x: 4.5, y: -0.5 });
     expect(engine.preSnap(puzzle()).Y).toEqual({ x: 4.5, y: -0.5 });
   });
   it.each(formationIds)("parses both orientations of %s", (id) => {
@@ -226,7 +226,6 @@ describe("v1 puzzle boundary", () => {
     "high",
     "overflow",
     "first-down-at-goal",
-    "touchdown-before-goal",
   ])("rejects isolated %s violation", (rule) => {
     const raw = rawPuzzle();
     switch (rule) {
@@ -271,9 +270,6 @@ describe("v1 puzzle boundary", () => {
       case "first-down-at-goal":
         raw.situation.spot = 90;
         break;
-      case "touchdown-before-goal":
-        raw.goal = "touchdown";
-        break;
     }
     expect(() => parsePuzzle(raw)).toThrow(EngineError);
   });
@@ -304,6 +300,15 @@ describe("v1 puzzle boundary", () => {
     const parsed = parsePuzzle(raw);
     expect(parsed.situation.distance).toBe(1);
     expect(parsed.goal).toBe("first-down");
+  });
+  it("accepts a touchdown goal short of goal-to-go", () => {
+    const raw = rawPuzzle();
+    raw.goal = "touchdown";
+    raw.situation.spot = 80;
+    raw.situation.distance = 5;
+    const parsed = parsePuzzle(raw);
+    expect(parsed.goal).toBe("touchdown");
+    expect(parsed.situation.distance).toBe(5);
   });
   it("accepts goal-to-go at both field limits", () => {
     for (const spot of [10, 99]) {

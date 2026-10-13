@@ -1,0 +1,115 @@
+{
+  "puzzle": {
+    "engine": 1,
+    "number": 6,
+    "date": "2026-10-11",
+    "situation": {
+      "down": 3,
+      "distance": 7,
+      "spot": 40,
+      "hash": "middle",
+      "scoreDiff": -3,
+      "quarter": 4,
+      "clock": "2:00"
+    },
+    "goal": "first-down",
+    "briefing": "Third and seven. A linebacker blitzes the A gap.",
+    "formation": {
+      "id": "gun-trey",
+      "flip": false
+    },
+    "defense": [
+      {
+        "id": "DL1",
+        "at": [-3.6, 1],
+        "assignment": "rush"
+      },
+      {
+        "id": "DL2",
+        "at": [-1, 1],
+        "assignment": "rush"
+      },
+      {
+        "id": "DL3",
+        "at": [1.2, 1],
+        "assignment": "rush"
+      },
+      {
+        "id": "DL4",
+        "at": [3.9, 1],
+        "assignment": "rush"
+      },
+      {
+        "id": "LB1",
+        "at": [0, 1],
+        "assignment": "rush"
+      },
+      {
+        "id": "CB1",
+        "at": [-10.25, 1],
+        "assignment": "man X"
+      },
+      {
+        "id": "CB2",
+        "at": [11.75, 1],
+        "assignment": "man Z"
+      },
+      {
+        "id": "NB",
+        "at": [8.125, 3],
+        "assignment": "man H"
+      },
+      {
+        "id": "LB2",
+        "at": [4.5, 4.5],
+        "assignment": "man Y"
+      },
+      {
+        "id": "LB3",
+        "at": [-1.5, 4.5],
+        "assignment": "man RB"
+      },
+      {
+        "id": "S2",
+        "at": [4.5, 10],
+        "assignment": "man Y"
+      }
+    ],
+    "coverageName": "Cover 0",
+    "prosResult": "Broken up"
+  },
+  "design": {
+    "protection": {
+      "blockers": 5,
+      "lineCall": "man"
+    },
+    "routes": {
+      "X": {
+        "route": "Hitch"
+      },
+      "Y": {
+        "route": "Seam"
+      },
+      "Z": {
+        "route": "Hitch"
+      },
+      "H": {
+        "route": "Seam"
+      },
+      "RB": {
+        "route": "Flat"
+      }
+    },
+    "readOrder": ["Z", "X"]
+  },
+  "expect": {
+    "cause": "breakup-forced",
+    "decisive": "CB1",
+    "yards": 0,
+    "forcedBy": "pressure",
+    "target": "X",
+    "times": {
+      "throw": [1.2, 1.3]
+    }
+  }
+}

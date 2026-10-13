@@ -1,0 +1,122 @@
+{
+  "puzzle": {
+    "engine": 1,
+    "number": 27,
+    "date": "2026-10-11",
+    "situation": {
+      "down": 3,
+      "distance": 10,
+      "spot": 75,
+      "hash": "middle",
+      "scoreDiff": -4,
+      "quarter": 4,
+      "clock": "1:12"
+    },
+    "goal": "first-down",
+    "briefing": "Third and ten at the 25. Three deep, four under.",
+    "formation": {
+      "id": "gun-trey",
+      "flip": false
+    },
+    "defense": [
+      {
+        "id": "DL1",
+        "at": [-3.6, 1],
+        "assignment": "rush"
+      },
+      {
+        "id": "DL2",
+        "at": [-1, 1],
+        "assignment": "rush"
+      },
+      {
+        "id": "DL3",
+        "at": [1.2, 1],
+        "assignment": "rush"
+      },
+      {
+        "id": "DL4",
+        "at": [3.9, 1],
+        "assignment": "rush"
+      },
+      {
+        "id": "LB1",
+        "at": [-4, 4.5],
+        "assignment": "zone hook-L"
+      },
+      {
+        "id": "LB2",
+        "at": [2, 4.5],
+        "assignment": "zone hook-R"
+      },
+      {
+        "id": "NB",
+        "at": [7.5, 4],
+        "assignment": "zone curl-flat-R"
+      },
+      {
+        "id": "CB1",
+        "at": [-11.25, 7],
+        "assignment": "zone deep-third-L"
+      },
+      {
+        "id": "CB2",
+        "at": [11.25, 7],
+        "assignment": "zone deep-third-R"
+      },
+      {
+        "id": "S1",
+        "at": [0, 13],
+        "assignment": "zone deep-third-M"
+      },
+      {
+        "id": "S2",
+        "at": [-7, 8],
+        "assignment": "zone curl-flat-L"
+      }
+    ],
+    "coverageName": "Cover 3",
+    "prosResult": "Touchdown"
+  },
+  "design": {
+    "protection": {
+      "blockers": 6,
+      "lineCall": "slide-left"
+    },
+    "routes": {
+      "X": {
+        "route": "In",
+        "depth": 10
+      },
+      "Z": {
+        "route": "Out",
+        "depth": 10
+      },
+      "Y": {
+        "route": "Drag"
+      },
+      "H": {
+        "route": "Hook",
+        "depth": 10
+      }
+    },
+    "readOrder": ["H", "X"]
+  },
+  "expect": {
+    "cause": "converted",
+    "decisive": null,
+    "yards": 10,
+    "target": "X",
+    "times": {
+      "throw": [2.75, 2.85]
+    },
+    "events": [
+      {
+        "tick": 55,
+        "kind": "read-next",
+        "from": "H",
+        "to": "X"
+      }
+    ]
+  }
+}

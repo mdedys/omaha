@@ -1,0 +1,111 @@
+{
+  "puzzle": {
+    "engine": 1,
+    "number": 4,
+    "date": "2026-10-11",
+    "situation": {
+      "down": 3,
+      "distance": 7,
+      "spot": 40,
+      "hash": "middle",
+      "scoreDiff": -3,
+      "quarter": 4,
+      "clock": "2:00"
+    },
+    "goal": "first-down",
+    "briefing": "Third and seven. Both corners press.",
+    "formation": {
+      "id": "gun-trey",
+      "flip": false
+    },
+    "defense": [
+      {
+        "id": "DL1",
+        "at": [-3.6, 1],
+        "assignment": "rush"
+      },
+      {
+        "id": "DL2",
+        "at": [-1, 1],
+        "assignment": "rush"
+      },
+      {
+        "id": "DL3",
+        "at": [1.2, 1],
+        "assignment": "rush"
+      },
+      {
+        "id": "DL4",
+        "at": [3.9, 1],
+        "assignment": "rush"
+      },
+      {
+        "id": "LB1",
+        "at": [0, 4.5],
+        "assignment": "rush"
+      },
+      {
+        "id": "CB1",
+        "at": [-11.75, 0],
+        "assignment": "man X"
+      },
+      {
+        "id": "CB2",
+        "at": [11.75, 0],
+        "assignment": "man Z"
+      },
+      {
+        "id": "NB",
+        "at": [8.125, 3],
+        "assignment": "man H"
+      },
+      {
+        "id": "LB2",
+        "at": [4.5, 4.5],
+        "assignment": "man Y"
+      },
+      {
+        "id": "LB3",
+        "at": [6.125, 5],
+        "assignment": "man H"
+      },
+      {
+        "id": "S2",
+        "at": [4.5, 10],
+        "assignment": "man Y"
+      }
+    ],
+    "coverageName": "Cover 0",
+    "prosResult": "Thrown away"
+  },
+  "design": {
+    "protection": {
+      "blockers": 6,
+      "lineCall": "man"
+    },
+    "routes": {
+      "X": {
+        "route": "Go"
+      },
+      "Y": {
+        "route": "Seam"
+      },
+      "Z": {
+        "route": "Go"
+      },
+      "H": {
+        "route": "Seam"
+      }
+    },
+    "readOrder": ["X", "Z"]
+  },
+  "expect": {
+    "cause": "throwaway",
+    "decisive": null,
+    "yards": 0,
+    "target": null,
+    "times": {
+      "throw": [2.6, 2.7]
+    }
+  }
+}

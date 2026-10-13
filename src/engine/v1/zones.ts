@@ -67,3 +67,10 @@ export const zoneIds: readonly ZoneId[] = [
   "flat-L",
   "flat-R",
 ];
+export function inZone(zone: Zone, p: Vec): boolean {
+  return (
+    ((p.x - zone.center.x) / zone.radii.x) ** 2 +
+      ((p.y - zone.center.y) / zone.radii.y) ** 2 <=
+    1
+  );
+}
