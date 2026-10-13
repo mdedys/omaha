@@ -23,32 +23,40 @@ export function screenMarkup(page: Page) {
 
 export const routes = [
   ["TE", "Hitch"],
-  ["Slot WR", "Out"],
   ["Right WR", "Go"],
   ["RB", "Flat"],
 ];
 
-export async function snapFirstRep(page: Page, leftRoute: string) {
+// On puzzle 1, with the Slot WR read first, the Slot WR's route picks the
+// outcome: Out breaks up, Hitch is short, Comeback is sacked, Post is
+// intercepted and In converts.
+export async function snapFirstRep(
+  page: Page,
+  slotRoute: string,
+  reads = [`Slot WR, ${slotRoute}`, "Left WR, Post"],
+) {
   await page.goto("/puzzle/1");
   await page.getByRole("button", { name: "Next: routes" }).click();
-  await page.getByRole("option", { name: leftRoute, exact: true }).click();
-  for (const [receiver, route] of routes) {
+  await page.getByRole("option", { name: "Post", exact: true }).click();
+  for (const [receiver, route] of [...routes, ["Slot WR", slotRoute]]) {
     await page
       .getByRole("button", { name: `${receiver}, no route`, exact: true })
       .click();
     await page.getByRole("option", { name: route, exact: true }).click();
   }
   await page.getByRole("button", { name: "Next: read" }).click();
-  await page.getByRole("button", { name: "TE, Hitch", exact: true }).click();
+  for (const read of reads) {
+    await page.getByRole("button", { name: read, exact: true }).click();
+  }
   await page.getByRole("button", { name: "Snap" }).click();
   await page.getByRole("button", { name: "Skip to result" }).click();
 }
 
-export async function runItBack(page: Page, leftRoute: string) {
+export async function runItBack(page: Page, slotRoute: string) {
   await page.getByRole("button", { name: "Run it back" }).click();
   await page.getByRole("button", { name: "Next: routes" }).click();
-  await page.getByRole("button", { name: /^Left WR,/ }).click();
-  await page.getByRole("option", { name: leftRoute, exact: true }).click();
+  await page.getByRole("button", { name: /^Slot WR,/ }).click();
+  await page.getByRole("option", { name: slotRoute, exact: true }).click();
   await page.getByRole("button", { name: "Next: read" }).click();
   await page.getByRole("button", { name: "Snap" }).click();
   await page.getByRole("button", { name: "Skip to result" }).click();

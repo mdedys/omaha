@@ -1,31 +1,56 @@
 import { describe, expect, it } from "vitest";
-import type { RouteName } from "./engine/contract";
+import type { Design, RouteCall } from "./engine/contract";
 import { loadPuzzle } from "./engine";
-import gunTrey from "./engine/stub/gun-trey.json";
-import { scenarios } from "./engine/stub/fixtures";
+import puzzleOne from "../public/puzzles/1.json";
 import { countdown, nextPuzzleAt, shareResult } from "./share";
 
-async function share(...routes: RouteName[]) {
-  const { puzzle, engine } = await loadPuzzle(gunTrey);
-  const reps = routes.map((route) => {
-    const scenario = scenarios.find(
-      (entry) => entry.design.routes.X?.route === route,
-    );
-    if (!scenario) throw new Error(`No stub scenario for ${route}`);
-    return engine.simulate(puzzle, scenario.design);
-  });
+type Scenario = { puzzle: unknown; design: Design };
+const scenarios = import.meta.glob<Scenario>("./engine/v1/scenarios/*.json", {
+  eager: true,
+  import: "default",
+});
+
+function scenario(name: string): Scenario {
+  const found = scenarios[`./engine/v1/scenarios/${name}.json`];
+  if (!found) throw new Error(`No v1 scenario named ${name}`);
+  return found;
+}
+
+async function share(puzzleJson: unknown, ...designs: Design[]) {
+  const { puzzle, engine } = await loadPuzzle(puzzleJson);
+  const reps = designs.map((design) => engine.simulate(puzzle, design));
   return shareResult(puzzle, engine, reps);
 }
 
+// Puzzle 1 with the Slot WR read first; the Slot WR's route picks the outcome.
+function slot(route: RouteCall): Design {
+  return {
+    protection: { blockers: 5, lineCall: "man" },
+    routes: {
+      X: { route: "Post", depth: 10 },
+      Y: { route: "Hitch" },
+      H: route,
+      Z: { route: "Go" },
+      RB: { route: "Flat" },
+    },
+    readOrder: ["H", "X"],
+  };
+}
+const breakup = slot({ route: "Out", depth: 10 });
+const short = slot({ route: "Hitch" });
+const sack = slot({ route: "Comeback", depth: 10 });
+const interception = slot({ route: "Post", depth: 10 });
+const converted = slot({ route: "In", depth: 10 });
+
 describe("share result", () => {
   it("shows a conversion that beat the pros", async () => {
-    expect(await share("Out", "Comeback")).toMatchObject({
+    expect(await share(puzzleOne, breakup, converted)).toMatchObject({
       variant: "win",
-      number: 12,
+      number: 1,
       situation: "3rd & 10",
       headline: "CONVERTED",
       status: "Converted in 2",
-      line: "3rd & 10 · in 2 reps · +13 yards",
+      line: "3rd & 10 · in 2 reps · +20 yards",
       tiles: [
         { kind: "fail", label: "Incomplete" },
         { kind: "converted", label: "Converted" },
@@ -35,20 +60,22 @@ describe("share result", () => {
       tilesLabel:
         "Rep 1 incomplete, rep 2 converted, rep 3 not needed, rep 4 not needed",
       chip: "Beat the pros",
-      points: 78,
+      points: 85,
       pros: "Incomplete",
-      you: "+13 · 1st down",
+      you: "+20 · 1st down",
     });
   });
 
   it("writes the pasted text for a conversion", async () => {
-    expect((await share("Out", "Comeback")).text).toBe(
-      "Omaha #12 · 3rd & 10\n🟥🟩\nConverted in 2 · Beat the pros · 78 pts",
+    expect((await share(puzzleOne, breakup, converted)).text).toBe(
+      "Omaha #1 · 3rd & 10\n🟥🟩\nConverted in 2 · Beat the pros · 85 pts",
     );
   });
 
   it("shows four spent reps as out of reps", async () => {
-    expect(await share("Out", "Go", "In", "Post")).toMatchObject({
+    expect(
+      await share(puzzleOne, breakup, short, sack, interception),
+    ).toMatchObject({
       variant: "over",
       headline: "OUT OF REPS",
       status: "Out of reps",
@@ -68,35 +95,37 @@ describe("share result", () => {
   });
 
   it("writes the pasted text for out of reps", async () => {
-    expect((await share("Out", "Go", "In", "Post")).text).toBe(
-      "Omaha #12 · 3rd & 10\n🟥🟨🟥🟥\nOut of reps · 0 pts",
-    );
+    expect(
+      (await share(puzzleOne, breakup, short, sack, interception)).text,
+    ).toBe("Omaha #1 · 3rd & 10\n🟥🟨🟥🟥\nOut of reps · 0 pts");
   });
 
   it.each([
-    ["In", { kind: "fail", label: "Sacked" }],
-    ["Slant", { kind: "fail", label: "Sacked" }],
-    ["Hook", { kind: "fail", label: "Incomplete" }],
-    ["Out", { kind: "fail", label: "Incomplete" }],
-    ["Corner", { kind: "fail", label: "Incomplete" }],
-    ["Post", { kind: "fail", label: "Picked" }],
-    ["Drag", { kind: "fail", label: "Picked" }],
-    ["Go", { kind: "short", label: "Short", yards: "+7" }],
-    ["Comeback", { kind: "converted", label: "Converted" }],
-    ["Flat", { kind: "converted", label: "Converted" }],
-  ] satisfies [RouteName, object][])(
-    "labels a rep played with %s",
-    async (route, tile) => {
-      const result = await share(route);
-      expect(result.tiles[0]).toEqual(tile);
-    },
-  );
+    ["sack-free-rusher-man", { kind: "fail", label: "Sacked" }],
+    ["sack-beat-block", { kind: "fail", label: "Sacked" }],
+    ["throwaway", { kind: "fail", label: "Incomplete" }],
+    ["breakup-closed", { kind: "fail", label: "Incomplete" }],
+    ["breakup-forced-pressure", { kind: "fail", label: "Incomplete" }],
+    ["interception-closed", { kind: "fail", label: "Picked" }],
+    ["interception-forced-out-of-reads", { kind: "fail", label: "Picked" }],
+    ["short", { kind: "short", label: "Short", yards: "+5" }],
+    ["converted-cover-1", { kind: "converted", label: "Converted" }],
+    ["touchdown-first-down", { kind: "converted", label: "Converted" }],
+  ])("labels a rep played with v1's %s design", async (name, tile) => {
+    const { puzzle, design } = scenario(name);
+    const result = await share(puzzle, design);
+    expect(result.tiles[0]).toEqual(tile);
+  });
 
+  // The breakup-closed design is broken up on this puzzle too.
   it("shows a touchdown as a conversion", async () => {
-    expect(await share("Out", "Flat")).toMatchObject({
+    const { puzzle, design } = scenario("touchdown-first-down");
+    expect(
+      await share(puzzle, scenario("breakup-closed").design, design),
+    ).toMatchObject({
       headline: "CONVERTED",
       chip: "Beat the pros",
-      you: "+55 · 1st down",
+      you: "+25 · 1st down",
       tiles: [
         { kind: "fail", label: "Incomplete" },
         { kind: "converted", label: "Converted" },

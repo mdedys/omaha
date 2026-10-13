@@ -3,17 +3,17 @@ import type { Page } from "@playwright/test";
 import { runItBack, snapFirstRep } from "./page";
 
 const convertedText =
-  "Omaha #1 · 3rd & 10\n🟥🟩\nConverted in 2 · Beat the pros · 78 pts";
+  "Omaha #1 · 3rd & 10\n🟥🟩\nConverted in 2 · Beat the pros · 85 pts";
 
 async function convert(page: Page) {
   await snapFirstRep(page, "Out");
-  await runItBack(page, "Comeback");
+  await runItBack(page, "In");
 }
 
 async function runOutOfReps(page: Page) {
   await snapFirstRep(page, "Out");
-  await runItBack(page, "Go");
-  await runItBack(page, "In");
+  await runItBack(page, "Hitch");
+  await runItBack(page, "Comeback");
   await runItBack(page, "Post");
 }
 
@@ -48,13 +48,13 @@ test("the converted sheet's Share result opens Share for the puzzle", async ({
   await expect(page).toHaveURL("/puzzle/1/share");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("CONVERTED");
   await expect(
-    page.getByText("3rd & 10 · in 2 reps · +13 yards"),
+    page.getByText("3rd & 10 · in 2 reps · +20 yards"),
   ).toBeVisible();
   await expect(card(page).locator(".share-card-top")).toHaveText(
     "OMAHA #13rd & 10",
   );
   await expect(card(page).locator(".share-card-footer")).toHaveText(
-    "Beat the pros78 pts",
+    "Beat the pros85 pts",
   );
 });
 
@@ -126,7 +126,7 @@ test("score and the pros come from the result, other stats unavailable", async (
   await openShare(page);
   await expect(page.locator(".share-pros")).toHaveText("The prosIncomplete");
   await expect(page.locator(".share-stat")).toHaveText([
-    "78score",
+    "85score",
     "—day streak",
     "—beat the pros",
   ]);
@@ -278,9 +278,9 @@ test("the share card is the same in light and dark", async ({ page }) => {
 test("the link-preview card renders at 1200×630 from the reps", async ({
   page,
 }) => {
-  await page.goto("/e2e/link-preview.html?routes=Out,Comeback");
+  await page.goto("/e2e/link-preview.html?slot=Out,In");
   const preview = page.locator(".link-preview");
-  await expect(preview).toContainText("#12 · 3rd & 10 · Converted in 2");
+  await expect(preview).toContainText("#1 · 3rd & 10 · Converted in 2");
   expect(await preview.boundingBox()).toEqual({
     x: 0,
     y: 0,
@@ -293,6 +293,6 @@ test("the link-preview card renders at 1200×630 from the reps", async ({
     }),
   ).toBeVisible();
   await expect(preview.locator(".share-card-footer")).toHaveText(
-    "Beat the pros78 pts",
+    "Beat the pros85 pts",
   );
 });
