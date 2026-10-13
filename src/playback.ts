@@ -106,10 +106,13 @@ function coneAngle(rep: Rep, time: number) {
 export function playback(rep: Rep, time: number): Playback {
   const times = timeline(rep);
   const tick = tickAt(rep, time);
+  // Whole milliseconds, so float error in a tick's time can't leave the cone
+  // at a near-zero opacity once its fade has ended.
+  const sinceRelease = Math.round((time - times.release) * 1000) / 1000;
   const opacity =
     time < times.release
       ? clamp((time - times.snap) / coneFadeIn)
-      : clamp(1 - (time - times.release) / coneFadeOut);
+      : clamp(1 - sinceRelease / coneFadeOut);
   const ball =
     rep.ball && time >= times.release && time < times.revealStart
       ? {

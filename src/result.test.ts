@@ -4,12 +4,11 @@ import type {
   Design,
   ForcedBy,
   LineCall,
-  Rep,
-  RouteName,
+  RouteCall,
 } from "./engine/contract";
 import { loadPuzzle } from "./engine";
-import gunTrey from "./engine/stub/gun-trey.json";
-import { scenarios } from "./engine/stub/fixtures";
+import puzzleOne from "../public/puzzles/1.json";
+import { playback } from "./playback";
 import { liveCaption, liveLabel, resultSheet } from "./result";
 import type { Played } from "./result";
 
@@ -411,6 +410,16 @@ describe("result sheet", () => {
   );
 });
 
+// The QB reads the Slot WR's drag, moves on to the Left WR at 1.85s and
+// forces it to him under pressure.
+const readChange = slot({ route: "Drag" });
+// The TE's 5-yard out is the only read, and it's covered.
+const oneReadThrowaway: Design = {
+  ...breakup,
+  routes: { ...breakup.routes, Y: { route: "Out", depth: 5 } },
+  readOrder: ["Y"],
+};
+
 describe("live captions", () => {
   it.each([
     [5, "man", "Five in protection. Man up front."],
@@ -419,7 +428,7 @@ describe("live captions", () => {
   ] satisfies [Blockers, LineCall, string][])(
     "sets %i blockers with %s",
     async (blockers, lineCall, line) => {
-      const { puzzle, engine, played } = await play("Out");
+      const { puzzle, engine, played } = await play(puzzleOne, breakup);
       const design = {
         ...played[0].design,
         protection: { blockers, lineCall },
@@ -429,112 +438,103 @@ describe("live captions", () => {
           puzzle,
           engine,
           { ...played[0], design },
-          { phase: "set", read: "X" },
+          { phase: "set", read: "H" },
         ),
       ).toEqual({ word: "Set", line });
     },
   );
 
   it("locks the QB's eyes on his first read at the snap", async () => {
-    const { puzzle, engine, played } = await play("Out");
+    const { puzzle, engine, played } = await play(puzzleOne, breakup);
     expect(
-      liveCaption(puzzle, engine, played[0], { phase: "snap", read: "X" }),
-    ).toEqual({ word: "Snap", line: "Eyes locked on the Left WR." });
+      liveCaption(puzzle, engine, played[0], { phase: "snap", read: "H" }),
+    ).toEqual({ word: "Snap", line: "Eyes locked on the Slot WR." });
   });
 
   it("names the new read when the QB moves on", async () => {
-    const { puzzle, engine, played } = await play("Out");
-    const rep = {
-      ...played[0].rep,
-      reads: [
-        { letter: "X", fromTick: 0, toTick: 20 },
-        { letter: "Y", fromTick: 20, toTick: 40 },
-      ],
-    } satisfies Rep;
+    const { puzzle, engine, played } = await play(puzzleOne, readChange);
     expect(
-      liveCaption(
-        puzzle,
-        engine,
-        { ...played[0], rep },
-        { phase: "snap", read: "Y" },
-      ),
-    ).toEqual({ word: "Snap", line: "Nothing there. Eyes to the TE." });
+      liveCaption(puzzle, engine, played[0], playback(played[0].rep, 2.3)),
+    ).toEqual({ word: "Snap", line: "Nothing there. Eyes to the Left WR." });
   });
 
   it.each([
-    ["Out", "Let it rip to the Left WR."],
-    ["Hook", "Nobody open. Into the seats."],
-    ["Corner", "Heat's coming. He forces it to the Left WR."],
-    ["Drag", "Nothing clean. He forces it to the Left WR."],
-  ] satisfies [RouteName, string][])(
-    "calls the stub's %s throw",
-    async (route, line) => {
-      const { puzzle, engine, played } = await play(route);
-      expect(
-        liveCaption(puzzle, engine, played[0], { phase: "throw", read: "X" }),
-      ).toEqual({ word: "Throw", line });
-    },
-  );
+    ["breakup-closed", "Let it rip to the Left WR."],
+    ["throwaway", "Nobody open. Into the seats."],
+    ["breakup-forced-pressure", "Heat's coming. He forces it to the Left WR."],
+    [
+      "interception-forced-out-of-reads",
+      "Nothing clean. He forces it to the Left WR.",
+    ],
+  ])("calls the throw in v1's %s design", async (name, line) => {
+    const { puzzle, design } = scenario(name);
+    const { engine, played, puzzle: parsed } = await play(puzzle, design);
+    expect(
+      liveCaption(parsed, engine, played[0], { phase: "throw", read: "X" }),
+    ).toEqual({ word: "Throw", line });
+  });
 
   it.each([
-    ["In", "Sacked", "Nobody blocked the nickel."],
-    ["Slant", "Sacked", "The lineman beat his block."],
-    ["Hook", "Thrown away", "Every read was covered."],
-    ["Out", "Broken up", "Swatted. The corner closed on it."],
-    ["Corner", "Broken up", "Swatted. The corner was waiting."],
-    ["Post", "Picked off", "The safety jumped the throw."],
-    ["Drag", "Picked off", "The linebacker was sitting on it."],
-    ["Go", "Stopped short", "3 yards shy of the sticks."],
-    ["Comeback", "First down", "The Left WR moves the chains."],
-    ["Flat", "Touchdown", "The Left WR takes it to the house."],
-  ] satisfies [RouteName, string, string][])(
-    "calls the stub's %s outcome %s",
-    async (route, word, line) => {
-      const { puzzle, engine, played } = await play(route);
-      expect(
-        liveCaption(puzzle, engine, played[0], {
-          phase: "outcome",
-          read: "X",
-        }),
-      ).toEqual({ word, line });
-    },
-  );
+    ["sack-free-rusher-man", "Sacked", "Nobody blocked the linebacker."],
+    ["sack-beat-block", "Sacked", "The nickel beat his block."],
+    ["throwaway", "Thrown away", "Every read was covered."],
+    ["breakup-closed", "Broken up", "Swatted. The corner closed on it."],
+    [
+      "breakup-forced-pressure",
+      "Broken up",
+      "Swatted. The corner was waiting.",
+    ],
+    ["interception-closed", "Picked off", "The safety jumped the throw."],
+    [
+      "interception-forced-out-of-reads",
+      "Picked off",
+      "The corner was sitting on it.",
+    ],
+    ["short", "Stopped short", "5 yards shy of the sticks."],
+    ["converted-cover-1", "First down", "The TE moves the chains."],
+    ["touchdown-first-down", "Touchdown", "The Slot WR takes it to the house."],
+  ])("calls the outcome of v1's %s design %s", async (name, word, line) => {
+    const { puzzle, design } = scenario(name);
+    const { engine, played, puzzle: parsed } = await play(puzzle, design);
+    expect(
+      liveCaption(parsed, engine, played[0], {
+        phase: "outcome",
+        read: "X",
+      }),
+    ).toEqual({ word, line });
+  });
 
   it("keeps a touchdown's sheet headline at CONVERTED", async () => {
-    const { puzzle, engine, played } = await play("Flat");
+    const { puzzle, design } = scenario("touchdown-first-down");
+    const { engine, played, puzzle: parsed } = await play(puzzle, design);
     expect([
-      liveCaption(puzzle, engine, played[0], { phase: "outcome", read: "X" })
+      liveCaption(parsed, engine, played[0], { phase: "outcome", read: "H" })
         .word,
-      resultSheet(puzzle, engine, played).headline,
+      resultSheet(parsed, engine, played).headline,
     ]).toEqual(["Touchdown", "CONVERTED"]);
   });
 
   it("says a throwaway with one read covered that read", async () => {
-    const { puzzle, engine, played } = await play("Hook");
-    const design = { ...played[0].design, readOrder: ["X"] } satisfies Design;
+    const { puzzle, engine, played } = await play(puzzleOne, oneReadThrowaway);
     expect(
-      liveCaption(
-        puzzle,
-        engine,
-        { ...played[0], design },
-        { phase: "outcome", read: "X" },
-      ).line,
+      liveCaption(puzzle, engine, played[0], { phase: "outcome", read: "Y" })
+        .line,
     ).toBe("His only read was covered.");
   });
 });
 
 describe("live field label", () => {
   it("sums up a thrown rep", async () => {
-    const { puzzle, engine, played } = await play("Out");
+    const { puzzle, engine, played } = await play(puzzleOne, breakup);
     expect(liveLabel(puzzle, engine, played)).toBe(
-      "Live play, rep 1: Five in protection. Man up front. The quarterback looks to the Left WR. Let it rip to the Left WR. Broken up. Swatted. The corner closed on it. Then the result appears.",
+      "Live play, rep 1: Five in protection. Man up front. The quarterback looks to the Slot WR. Let it rip to the Slot WR. Broken up. Swatted. The corner closed on it. Then the result appears.",
     );
   });
 
   it("sums up a sack without a throw", async () => {
-    const { puzzle, engine, played } = await play("Out", "In");
+    const { puzzle, engine, played } = await play(puzzleOne, breakup, sack);
     expect(liveLabel(puzzle, engine, played)).toBe(
-      "Live play, rep 2: Five in protection. Man up front. The quarterback looks to the Left WR. Sacked. Nobody blocked the nickel. Then the result appears.",
+      "Live play, rep 2: Five in protection. Man up front. The quarterback looks to the Slot WR. Sacked. Nobody blocked the nickel. Then the result appears.",
     );
   });
 });

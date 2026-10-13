@@ -531,13 +531,26 @@ test.each([
 });
 
 async function field(props: Partial<Parameters<typeof Field>[0]>) {
-  const { puzzle, engine } = await loadPuzzle(gunTrey);
+  const { puzzle, engine } = await loadPuzzle(puzzleOne);
   return renderToStaticMarkup(
     createElement(Field, { puzzle, engine, ...props }),
   );
 }
 
+// Renders a v1 scenario's field with props for the rep it plays.
+async function liveField(
+  name: string,
+  props: (rep: Rep) => Partial<Parameters<typeof Field>[0]>,
+) {
+  const { puzzle, engine, rep } = await scenarioRep(name);
+  return renderToStaticMarkup(
+    createElement(Field, { puzzle, engine, ...props(rep) }),
+  );
+}
+
 describe("live play field", () => {
+  // The rub scenario reads the Slot WR, throws to him at 3.05s, lands the ball
+  // at 3.75s and starts its reveal at 4.35s.
   test.each([
     "data-zone",
     "data-defense-path",
@@ -545,12 +558,13 @@ describe("live play field", () => {
     "data-feedback-badge",
     "data-ball-path",
   ])("draws %s only once the reveal starts", async (attribute) => {
-    const rep = causeRep("breakup-closed");
-    const playing = await field({ live: playback(rep, 4.3) });
-    const revealing = await field({
+    const playing = await liveField("rub", (rep) => ({
+      live: playback(rep, 4.3),
+    }));
+    const revealing = await liveField("rub", (rep) => ({
       frame: { rep, playArt: rep.playArt },
       reveal: 0,
-    });
+    }));
     expect([
       playing.includes(attribute),
       revealing.includes(attribute),
@@ -558,9 +572,9 @@ describe("live play field", () => {
   });
 
   test("draws the players where the clock has them", async () => {
-    const html = await field({
-      live: playback(causeRep("breakup-closed"), 0.8 + 30 * 0.05),
-    });
+    const html = await liveField("rub", (rep) => ({
+      live: playback(rep, 0.8 + 5 * 0.05),
+    }));
     expect(attr(tag(html, 'data-player="QB"'), "transform")).toBe(
       "translate(201.5 442.8)",
     );
@@ -568,18 +582,20 @@ describe("live play field", () => {
 
   test("draws the football in flight", async () => {
     const football = tag(
-      await field({ live: playback(causeRep("breakup-closed"), 3.3) }),
+      await liveField("rub", (rep) => ({
+        live: playback(rep, 3.4),
+      })),
       'data-football="in-flight"',
     );
-    expect(Number(attr(football, "cx"))).toBeCloseTo(150.3254, 3);
-    expect(Number(attr(football, "cy"))).toBeCloseTo(342.5333, 3);
+    expect(Number(attr(football, "cx"))).toBeCloseTo(247.0774, 3);
+    expect(Number(attr(football, "cy"))).toBeCloseTo(359.6, 3);
   });
 
   test("draws the vision cone on the current read", async () => {
-    const html = await field({
-      live: playback(causeRep("breakup-closed"), 1.5),
-    });
-    expect(attr(tag(html, "data-vision-cone"), "data-vision-cone")).toBe("X");
+    const html = await liveField("rub", (rep) => ({
+      live: playback(rep, 1.5),
+    }));
+    expect(attr(tag(html, "data-vision-cone"), "data-vision-cone")).toBe("H");
   });
 
   test.each([
@@ -603,11 +619,10 @@ describe("live play field", () => {
   );
 
   test("fades a converted line in with the play art", async () => {
-    const rep = causeRep("converted");
-    const html = await field({
+    const html = await liveField("converted-cover-1", (rep) => ({
       frame: { rep, playArt: rep.playArt },
       reveal: 0.4,
-    });
+    }));
     expect({
       line: attr(tag(html, 'data-field-layer="line-to-gain"'), "stroke-width"),
       converted: [
@@ -619,11 +634,10 @@ describe("live play field", () => {
   });
 
   test("keeps an interception's football solid while the art fades", async () => {
-    const rep = causeRep("interception-closed");
-    const html = await field({
+    const html = await liveField("interception-closed", (rep) => ({
       frame: { rep, playArt: rep.playArt },
       reveal: 0.3,
-    });
+    }));
     expect([
       attr(tag(html, "data-ball-path"), "opacity"),
       attr(tag(html, "data-football"), "opacity"),

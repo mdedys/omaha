@@ -29,7 +29,7 @@ Preconditions:
 - **Add.** Run `click=button:"TE, Corner" click=button:"Right WR, Go" click=button:"Left WR, In" shot=three-reads`. Use the receiver and route names the screen shows. Only route runners with a route get an option, left to right by field position (a routed RB sits by its x); five options use a three-column phone grid. `aria.yml` shows the group `Read order` with those three buttons pressed and named `…, read 1`, `…, read 2`, `…, read 3`, the remaining options `[disabled]`, and the live text `Read order: TE, Right WR, Left WR`. The field `img` label names all three reads in order. Once Snap unlocks, the order hint reads `Pick in order · up to 3`.
 - **Drop.** Run `click=button:"TE, Corner, read 1" shot=dropped`. Right WR becomes read 1, Left WR read 2, and the quiet option is normal again.
 - **Snap.** With every route assigned and a read picked, run `click=button:Snap expect-role=complementary:"Live play"`, then `click=button:"Skip to result"` and `expect=` the result headline (see result.md).
-- **Desktop keys.** Run with `--viewport desktop`: digits `1`–`N` toggle the option at that place in the list, and `press=Enter` snaps only when unlocked. The hint line reads `1–N add or drop a read`, where N is the number of route runners.
+- **Desktop keys.** Run with `--viewport desktop`: digits `1`–`N` toggle the option at that place in the list, and `press=Enter` snaps only when unlocked. The hint line reads `1–N add or drop a read`, where N is the number of read options.
 
 ## Gotchas
 
