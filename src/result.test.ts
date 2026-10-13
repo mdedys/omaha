@@ -46,6 +46,11 @@ const sack = slot({ route: "Comeback", depth: 10 });
 const sackAgain = slot({ route: "Hook", depth: 10 });
 const interception = slot({ route: "Post", depth: 10 });
 const converted = slot({ route: "In", depth: 10 });
+const slotDesigns = { breakup, short, sack, interception, converted };
+
+function playSlot(...names: (keyof typeof slotDesigns)[]) {
+  return play(puzzleOne, ...names.map((name) => slotDesigns[name]));
+}
 
 describe("copy deck", () => {
   it.each([
@@ -304,13 +309,13 @@ describe("result sheet", () => {
   });
 
   it.each([
-    [["Out"], []],
+    [["breakup"], []],
     [
-      ["Out", "Go"],
+      ["breakup", "short"],
       ["DL1", "DL2", "DL3", "DL4", "LB1", "LB2", "LB3"],
     ],
     [
-      ["Out", "Go", "In"],
+      ["breakup", "short", "sack"],
       [
         "DL1",
         "DL2",
@@ -326,7 +331,7 @@ describe("result sheet", () => {
       ],
     ],
     [
-      ["Comeback"],
+      ["converted"],
       [
         "DL1",
         "DL2",
@@ -341,10 +346,10 @@ describe("result sheet", () => {
         "S1",
       ],
     ],
-  ] as const)(
+  ] satisfies [(keyof typeof slotDesigns)[], string[]][])(
     "reveals the play art for the failed reps so far after %j",
     async (reps, revealed) => {
-      const { puzzle, engine, played } = await play(...reps);
+      const { puzzle, engine, played } = await playSlot(...reps);
       expect(
         Object.keys(resultSheet(puzzle, engine, played).playArt.assignments),
       ).toEqual(revealed);
@@ -353,46 +358,46 @@ describe("result sheet", () => {
 
   it.each([
     [
-      ["Out"],
-      "Rep 1 final frame with the defense revealed: incomplete. The corner closed on the Left WR and swatted it.",
+      ["breakup"],
+      "Rep 1 final frame with the defense revealed: incomplete. The corner closed on the Slot WR and swatted it.",
     ],
     [
-      ["In"],
+      ["sack"],
       "Rep 1 final frame with the defense revealed: sacked. Nobody blocked the nickel.",
     ],
     [
-      ["Post"],
-      "Rep 1 final frame with the defense revealed: picked off. The safety jumped the throw to the Left WR.",
+      ["interception"],
+      "Rep 1 final frame with the defense revealed: picked off. The safety jumped the throw to the Slot WR.",
     ],
     [
-      ["Go"],
-      "Rep 1 final frame with the defense revealed: short. The corner stopped the Left WR 3 yards short.",
+      ["short"],
+      "Rep 1 final frame with the defense revealed: short. The corner stopped the Slot WR 3 yards short.",
     ],
-  ] as const)(
+  ] satisfies [(keyof typeof slotDesigns)[], string][])(
     "labels the field with the outcome after %j",
     async (reps, label) => {
-      const { puzzle, engine, played } = await play(...reps);
+      const { puzzle, engine, played } = await playSlot(...reps);
       expect(resultSheet(puzzle, engine, played).fieldLabel).toBe(label);
     },
   );
 
   it.each([
     [
-      ["Out", "Go", "In"],
+      ["breakup", "short", "sack"],
       "Rep 3 final frame with the defense revealed: sacked. Nobody blocked the nickel.",
     ],
     [
-      ["Out", "Comeback"],
-      "Rep 2 final frame against Cover 1 pressure: converted. The Left WR picked up 13 yards.",
+      ["breakup", "converted"],
+      "Rep 2 final frame against Cover 1 pressure: converted. The Slot WR picked up 20 yards.",
     ],
     [
-      ["Out", "Go", "In", "Post"],
-      "Rep 4 final frame against Cover 1 pressure: picked off. The safety jumped the throw to the Left WR.",
+      ["breakup", "short", "sack", "interception"],
+      "Rep 4 final frame against Cover 1 pressure: picked off. The safety jumped the throw to the Slot WR.",
     ],
-  ] as const)(
+  ] satisfies [(keyof typeof slotDesigns)[], string][])(
     "names the coverage in the field label only once the puzzle ends, after %j",
     async (reps, label) => {
-      const { puzzle, engine, played } = await play(...reps);
+      const { puzzle, engine, played } = await playSlot(...reps);
       expect(resultSheet(puzzle, engine, played).fieldLabel).toBe(label);
     },
   );

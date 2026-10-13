@@ -76,7 +76,7 @@ test("Snap shows the rep's result sheet", async ({ page }) => {
   ).toBeVisible();
   await expect(
     page.getByRole("img", {
-      name: "Rep 1 final frame with the defense revealed: incomplete. The corner closed on the Left WR and swatted it.",
+      name: "Rep 1 final frame with the defense revealed: incomplete. The corner closed on the Slot WR and swatted it.",
     }),
   ).toBeVisible();
 });
@@ -254,19 +254,16 @@ test("a thrown ball draws a dashed path from the throw to the catch", async ({
 }) => {
   await snapFirstRep(page, "Out");
   const path = page.locator("[data-ball-path]");
-  await expect(path).toHaveAttribute(
-    "d",
-    /^M201\.5 447\.06\d*L99\.150\d* 238$/,
-  );
+  await expect(path).toHaveAttribute("d", /^M201\.5 455\.6L383\.649\d* 238$/);
   await expect(path).toHaveAttribute("stroke-dasharray", "2 5");
 });
 
-for (const [leftRoute, footballs] of [
+for (const [slotRoute, footballs] of [
   ["Post", 1],
   ["Out", 0],
 ] as const) {
-  test(`Left WR ${leftRoute} draws ${footballs} football`, async ({ page }) => {
-    await snapFirstRep(page, leftRoute);
+  test(`Slot WR ${slotRoute} draws ${footballs} football`, async ({ page }) => {
+    await snapFirstRep(page, slotRoute);
     await expect(page.locator("[data-football]")).toHaveCount(footballs);
   });
 }
@@ -276,39 +273,56 @@ test("an interception draws the football where the ball ends", async ({
 }) => {
   await snapFirstRep(page, "Post");
   const football = page.locator("[data-football]");
-  await expect(football).toHaveAttribute("cx", /^99\.150\d*$/);
-  await expect(football).toHaveAttribute("cy", "238");
+  await expect(football).toHaveAttribute("cx", /^247\.211\d*$/);
+  await expect(football).toHaveAttribute("cy", "179.73440123022837");
 });
 
-test("a throwaway's ball path ends past the left sideline", async ({
+test("a throwaway's ball path ends past the right sideline", async ({
   page,
 }) => {
-  await snapFirstRep(page, "Hook");
+  await page.goto("/puzzle/1");
+  await page.getByRole("radio", { name: "7-man" }).click();
+  await page.getByRole("radio", { name: "Slide right" }).click();
+  await page.getByRole("button", { name: "Next: routes" }).click();
+  await page.getByRole("option", { name: "In", exact: true }).click();
+  for (const [receiver, route] of [
+    ["Right WR", "Go"],
+    ["Slot WR", "Hitch"],
+  ]) {
+    await page
+      .getByRole("button", { name: `${receiver}, no route`, exact: true })
+      .click();
+    await page.getByRole("option", { name: route, exact: true }).click();
+  }
+  await page.getByRole("button", { name: "Next: read" }).click();
+  await page.getByRole("button", { name: "Right WR, Go", exact: true }).click();
+  await page.getByRole("button", { name: "Snap" }).click();
+  await expect(sheet(page)).toContainText("so he threw it away");
   await expect(page.locator("[data-ball-path]")).toHaveAttribute(
     "d",
-    /L-3\.198\d* 455\.6$/,
+    /L415\.793\d* 455\.6$/,
   );
 });
 
-for (const [leftRoute, paths] of [
-  ["In", 0],
+for (const [slotRoute, paths] of [
+  ["Comeback", 0],
   ["Out", 1],
 ] as const) {
-  test(`Left WR ${leftRoute} draws ${paths} ball path`, async ({ page }) => {
-    await snapFirstRep(page, leftRoute);
+  test(`Slot WR ${slotRoute} draws ${paths} ball path`, async ({ page }) => {
+    await snapFirstRep(page, slotRoute);
     await expect(page.locator("[data-ball-path]")).toHaveCount(paths);
   });
 }
 
 test("a converted rep shows the coverage key pill", async ({ page }) => {
-  await snapFirstRep(page, "Comeback");
+  await snapFirstRep(page, "In");
   await expect(page.getByText("Defense · Cover 1 pressure")).toBeVisible();
 });
 
 test("the coverage key pill waits for the fourth rep", async ({ page }) => {
   await snapFirstRep(page, "Out");
-  await runItBack(page, "Go");
-  await runItBack(page, "In");
+  await runItBack(page, "Hitch");
+  await runItBack(page, "Comeback");
   await expect(sheet(page)).toContainText("1 rep left");
   await expect(page.getByText("Defense · Cover 1 pressure")).toHaveCount(0);
   await runItBack(page, "Post");
@@ -328,7 +342,7 @@ test("desktop stacks the coverage key under the Final pill", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1280, height: 800 });
-  await snapFirstRep(page, "Comeback");
+  await snapFirstRep(page, "In");
   const stage = await page.locator(".play-stage").boundingBox();
   const final = page.getByText("Final · defense revealed");
   const key = page.getByText("Defense · Cover 1 pressure");

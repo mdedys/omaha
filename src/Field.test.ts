@@ -2,8 +2,9 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, test } from "vitest";
 import type {
-  CauseCode,
   DefensePlayArt,
+  Engine,
+  Puzzle,
   Rep,
   Vec,
   ZoneId,
@@ -176,17 +177,46 @@ test("places every player at the rep's final tick", async () => {
   expect([...html.matchAll(/data-player=/g)]).toHaveLength(22);
 });
 
-function causeRep(code: CauseCode): Rep {
-  const scenario = scenarios.find((entry) => entry.rep.cause.code === code);
-  if (!scenario) throw new Error(`No stub scenario for ${code}`);
-  return structuredClone(scenario.rep);
+type Scenario = { puzzle: unknown; design: Design };
+const scenarios = import.meta.glob<Scenario>("./engine/v1/scenarios/*.json", {
+  eager: true,
+  import: "default",
+});
+
+// On the breakup-forced-pressure puzzle's Cover 0, six blockers sliding left
+// leave DL2 free to make the sack.
+const linemanSack: Design = {
+  protection: { blockers: 6, lineCall: "slide-left" },
+  routes: {
+    X: { route: "Go" },
+    Y: { route: "Hitch" },
+    Z: { route: "Go" },
+    H: { route: "Out", depth: 10 },
+  },
+  readOrder: ["X", "Z"],
+};
+
+type Played = { puzzle: Puzzle; engine: Engine; rep: Rep };
+
+async function scenarioRep(name: string, design?: Design): Promise<Played> {
+  const found = scenarios[`./engine/v1/scenarios/${name}.json`];
+  if (!found) throw new Error(`No v1 scenario named ${name}`);
+  const { puzzle, engine } = await loadPuzzle(found.puzzle);
+  const rep = engine.simulate(puzzle, design ?? found.design);
+  return { puzzle, engine, rep };
 }
 
-async function resultField(rep: Rep, playArt: DefensePlayArt = rep.playArt) {
-  const { puzzle, engine } = await loadPuzzle(gunTrey);
+function renderResult(
+  { puzzle, engine, rep }: Played,
+  playArt: DefensePlayArt = rep.playArt,
+) {
   return renderToStaticMarkup(
     createElement(Field, { puzzle, engine, frame: { rep, playArt } }),
   );
+}
+
+async function resultField(name: string, playArt?: DefensePlayArt) {
+  return renderResult(await scenarioRep(name), playArt);
 }
 
 function tag(html: string, attribute: string) {
@@ -218,11 +248,11 @@ describe("result play art", () => {
     [
       "the full art",
       undefined,
-      ["hook-R", "hook-L", "hook-M", "deep-middle", "NB"],
+      ["deep-middle", "hook-M", "S1", "S2", "LB2", "CB1", "CB2", "NB", "LB1"],
     ],
     ["hidden art", { zones: [], assignments: {} }, []],
   ])("draws only %s it is given", async (_, playArt, drawn) => {
-    const html = await resultField(causeRep("sack-free-rusher"), playArt);
+    const html = await resultField("sack-free-rusher-man", playArt);
     expect(
       [...html.matchAll(/data-(?:zone|defense-path)="([^"]+)"/g)].map(
         ([, id]) => id,
@@ -238,7 +268,7 @@ describe("result play art", () => {
   ] as const)(
     "fills a %s zone in its Madden colour at 30%% and strokes it at 85%%",
     async (zone: ZoneId, color) => {
-      const html = await resultField(causeRep("converted"), {
+      const html = await resultField("converted-cover-1", {
         zones: [
           {
             defenderId: "LB2",
@@ -265,25 +295,33 @@ describe("result play art", () => {
   );
 
   test("places a zone at its engine centre and radii", async () => {
-    const html = await resultField(causeRep("converted"));
-    const ellipse = tag(html, 'data-zone="hook-L"');
-    expect(Number(attr(ellipse, "cx"))).toBeCloseTo(150.3254, 4);
-    expect(Number(attr(ellipse, "cy"))).toBe(238);
-    expect(Number(attr(ellipse, "rx"))).toBeCloseTo(63.9683, 4);
-    expect(Number(attr(ellipse, "ry"))).toBe(51.2);
+    const html = await resultField("converted-cover-1");
+    const ellipse = tag(html, 'data-zone="deep-middle"');
+    expect(Number(attr(ellipse, "cx"))).toBe(201.5);
+    expect(Number(attr(ellipse, "cy"))).toBe(174);
+    expect(Number(attr(ellipse, "rx"))).toBeCloseTo(127.9365, 4);
+    expect(Number(attr(ellipse, "ry"))).toBe(102.4);
   });
 
   test.each([
-    ["interception-closed", "S1", "drop", "#3D7BFF", "1.8", 1],
-    ["interception-forced", "LB1", "drop", "#FFD84A", "1.8", 1],
-    ["breakup-closed", "CB1", "man", "#C4CFC8", "1.8", 2],
-    ["sack-beat-block", "DL1", "rush", "#C4CFC8", "1.8", 2],
-    ["sack-free-rusher", "NB", "blitz", "#E05A2B", "2.4", 2],
+    ["short", "S1", "drop", "#3D7BFF", "1.8", 1, undefined],
+    ["short", "LB1", "drop", "#FFD84A", "1.8", 1, undefined],
+    ["breakup-closed", "CB1", "man", "#C4CFC8", "1.8", 2, undefined],
+    [
+      "breakup-forced-pressure",
+      "DL2",
+      "rush",
+      "#C4CFC8",
+      "1.8",
+      2,
+      linemanSack,
+    ],
+    ["sack-free-rusher-man", "LB1", "blitz", "#E05A2B", "2.4", 2, undefined],
   ] as const)(
     "draws the %s defender %s's track as a %s line",
-    async (code, id, kind, stroke, width, subpaths) => {
+    async (name, id, kind, stroke, width, subpaths, design) => {
       const path = tag(
-        await resultField(causeRep(code)),
+        renderResult(await scenarioRep(name, design)),
         `data-defense-path="${id}"`,
       );
       expect({
@@ -297,26 +335,27 @@ describe("result play art", () => {
 
   test("starts a defender's line at its track's first point", async () => {
     const path = tag(
-      await resultField(causeRep("interception-closed")),
+      await resultField("sack-free-rusher-man"),
       'data-defense-path="S1"',
     );
-    expect(pathPoints(attr(path, "d"))[0][0]).toEqual({ x: 201.5, y: 174 });
+    expect(pathPoints(attr(path, "d"))[0][0]).toEqual({ x: 201.5, y: 199.6 });
   });
 
   test("ends a defender's line 10.5 short of its final spot", async () => {
     const path = tag(
-      await resultField(causeRep("interception-closed")),
+      await resultField("sack-free-rusher-man"),
       'data-defense-path="S1"',
     );
     const line = pathPoints(attr(path, "d"))[0];
-    expect(
-      distance(line[line.length - 1], { x: 99.15079365079364, y: 238 }),
-    ).toBeCloseTo(10.5, 6);
+    expect(distance(line[line.length - 1], { x: 201.5, y: 174 })).toBeCloseTo(
+      10.5,
+      6,
+    );
   });
 
   test("draws an open arrowhead with 5-unit arms at 38 degrees", async () => {
     const path = tag(
-      await resultField(causeRep("breakup-closed")),
+      await resultField("breakup-closed"),
       'data-defense-path="CB1"',
     );
     const [line, [left, tip, right]] = pathPoints(attr(path, "d"));
@@ -335,27 +374,36 @@ describe("result play art", () => {
   });
 
   test.each([
-    ["DL1", true],
-    ["NB", false],
+    ["DL2", "breakup-forced-pressure", linemanSack, ["DL2"]],
+    ["LB1", "sack-free-rusher-man", undefined, []],
   ] as const)(
-    "draws a moving lineman's rush only when he made the sack (sacker %s)",
-    async (decisive, drawn) => {
-      const rep = causeRep("sack-beat-block");
-      rep.cause.decisive = decisive;
-      const html = await resultField(rep);
-      expect(html.includes('data-defense-path="DL1"')).toBe(drawn);
+    "draws a rushing lineman's line only when he made the sack (sacker %s)",
+    async (decisive, name, design, drawn) => {
+      const played = await scenarioRep(name, design);
+      expect({
+        decisive: played.rep.cause.decisive,
+        linemen: [
+          ...renderResult(played).matchAll(/data-defense-path="(DL\d)"/g),
+        ].map(([, id]) => id),
+      }).toEqual({ decisive, linemen: drawn });
     },
   );
 
   test("puts a start dot only on defenders with a line", async () => {
-    const rep = causeRep("sack-free-rusher");
-    rep.tracks.DL1 = causeRep("sack-beat-block").tracks.DL1;
-    const html = await resultField(rep);
+    const html = await resultField("sack-free-rusher-man");
     expect(
       [
         ...html.matchAll(/data-start-dot="(\w+)" cx="([\d.]+)" cy="([\d.]+)"/g),
       ].map(([, id, x, y]) => [id, Number(x), Number(y)]),
-    ).toEqual([["NB", 303.8492063492064, 302]]);
+    ).toEqual([
+      ["S1", 201.5, 199.6],
+      ["S2", 150.3253968253968, 250.8],
+      ["LB2", 239.88095238095238, 308.4],
+      ["CB1", 57.571428571428555, 289.2],
+      ["CB2", 345.42857142857144, 289.2],
+      ["NB", 297.45238095238096, 314.8],
+      ["LB1", 207.8968253968254, 308.4],
+    ]);
   });
 });
 
@@ -370,9 +418,9 @@ describe("receiver feedback badges", () => {
   test.each([
     ["X", "covered", "M-2.6 -2.6L2.6 2.6M2.6 -2.6L-2.6 2.6"],
     ["Y", "contested", "M-3.6 0.6Q-1.8 -2.2 0 0.4T3.6 0"],
-    ["H", "open", "M-3.2 0.2L-1 2.5L3.3 -2.3"],
+    ["RB", "open", "M-3.2 0.2L-1 2.5L3.3 -2.3"],
   ])("draws %s's %s badge by its glyph", async (letter, badge, glyph) => {
-    const html = await resultField(causeRep("breakup-closed"));
+    const html = await resultField("sack-free-rusher-man");
     const group = new RegExp(
       `data-feedback-badge="${letter}" data-badge="([a-z]+)"[^>]*>.*?<path d="([^"]+)"`,
     ).exec(html);
@@ -380,10 +428,10 @@ describe("receiver feedback badges", () => {
   });
 
   test("offsets a badge up and right of its receiver", async () => {
-    const html = await resultField(causeRep("breakup-closed"));
+    const html = await resultField("sack-free-rusher-man");
     const at = translate(tag(html, 'data-feedback-badge="Y"'));
     expect(at.x).toBeCloseTo(259.0714 + 11, 4);
-    expect(at.y).toBeCloseTo(212.4 - 11, 4);
+    expect(at.y).toBeCloseTo(231.8304 - 11, 4);
   });
 
   test.each([
@@ -392,11 +440,12 @@ describe("receiver feedback badges", () => {
   ])(
     "flips a badge up-left when up-right would cover %s",
     async (_, spot, receiver) => {
-      const rep = causeRep("breakup-closed");
-      rep.tracks.Z = rep.tracks.Z.map(() => spot);
-      rep.tracks.CB2 = rep.tracks.CB2.map(() => ({ x: 0.86, y: 12.86 }));
+      const played = await scenarioRep("sack-free-rusher-man");
+      const { tracks } = played.rep;
+      tracks.Z = tracks.Z.map(() => spot);
+      tracks.CB2 = tracks.CB2.map(() => ({ x: 0.86, y: 12.86 }));
       const at = translate(
-        tag(await resultField(rep), 'data-feedback-badge="Z"'),
+        tag(renderResult(played), 'data-feedback-badge="Z"'),
       );
       expect(at.x).toBeCloseTo(receiver.x - 11, 4);
       expect(at.y).toBeCloseTo(receiver.y - 11, 4);
@@ -406,76 +455,76 @@ describe("receiver feedback badges", () => {
 
 describe("result ball", () => {
   test("draws a dashed path from the throw to the ball's end", async () => {
-    const path = tag(
-      await resultField(causeRep("breakup-closed")),
-      "data-ball-path",
-    );
+    const path = tag(await resultField("breakup-closed"), "data-ball-path");
     expect([attr(path, "d"), attr(path, "stroke-dasharray")]).toEqual([
-      "M201.5 447.06666666666666L99.15079365079364 238",
+      "M201.5 455.6L12.793650793650784 302",
       "2 5",
     ]);
   });
 
   test("ends a throwaway's path at its landing spot past the sideline", async () => {
-    const path = tag(
-      await resultField(causeRep("throwaway")),
-      "data-ball-path",
-    );
+    const path = tag(await resultField("throwaway"), "data-ball-path");
     const points = pathPoints(attr(path, "d"))[0];
-    expect(points[points.length - 1].x).toBeCloseTo(-3.1984, 4);
+    expect(points[points.length - 1].x).toBeCloseTo(415.7937, 4);
     expect(points[points.length - 1].y).toBeCloseTo(455.6, 4);
   });
 
   test.each([
-    ["sack-free-rusher", 0],
-    ["sack-beat-block", 0],
-    ["throwaway", 1],
-    ["breakup-closed", 1],
-    ["breakup-forced", 1],
-    ["interception-closed", 1],
-    ["interception-forced", 1],
-    ["short", 1],
-    ["converted", 1],
-    ["touchdown", 1],
-  ] as const)("draws %s with %i ball paths", async (code, count) => {
-    const html = await resultField(causeRep(code));
-    expect([...html.matchAll(/data-ball-path/g)]).toHaveLength(count);
-  });
+    ["sack-free-rusher", "sack-free-rusher-man", 0],
+    ["sack-beat-block", "sack-beat-block", 0],
+    ["throwaway", "throwaway", 1],
+    ["breakup-closed", "breakup-closed", 1],
+    ["breakup-forced", "breakup-forced-pressure", 1],
+    ["interception-closed", "interception-closed", 1],
+    ["interception-forced", "interception-forced-out-of-reads", 1],
+    ["short", "short", 1],
+    ["converted", "converted-cover-1", 1],
+    ["touchdown", "touchdown-first-down", 1],
+  ] as const)(
+    "draws %s (%s) with %i ball paths",
+    async (cause, name, count) => {
+      const played = await scenarioRep(name);
+      expect({
+        cause: played.rep.cause.code,
+        paths: [...renderResult(played).matchAll(/data-ball-path/g)].length,
+      }).toEqual({ cause, paths: count });
+    },
+  );
 
   test.each([
-    ["sack-free-rusher", 0],
-    ["throwaway", 0],
-    ["breakup-closed", 0],
-    ["breakup-forced", 0],
-    ["interception-closed", 1],
-    ["interception-forced", 1],
-    ["short", 0],
-    ["converted", 0],
-  ] as const)("draws %s with %i footballs", async (code, count) => {
-    const html = await resultField(causeRep(code));
-    expect([...html.matchAll(/data-football/g)]).toHaveLength(count);
+    ["sack-free-rusher", "sack-free-rusher-man", 0],
+    ["throwaway", "throwaway", 0],
+    ["breakup-closed", "breakup-closed", 0],
+    ["breakup-forced", "breakup-forced-pressure", 0],
+    ["interception-closed", "interception-closed", 1],
+    ["interception-forced", "interception-forced-out-of-reads", 1],
+    ["short", "short", 0],
+    ["converted", "converted-cover-1", 0],
+  ] as const)("draws %s (%s) with %i footballs", async (cause, name, count) => {
+    const played = await scenarioRep(name);
+    expect({
+      cause: played.rep.cause.code,
+      footballs: [...renderResult(played).matchAll(/data-football/g)].length,
+    }).toEqual({ cause, footballs: count });
   });
 
   test("draws an interception's football at the ball's end", async () => {
     const football = tag(
-      await resultField(causeRep("interception-closed")),
+      await resultField("interception-closed"),
       "data-football",
     );
     expect([attr(football, "cx"), attr(football, "cy")]).toEqual([
-      "99.15079365079364",
-      "238",
+      "51.17460317460316",
+      "143.60000000000022",
     ]);
   });
 });
 
 test.each([
-  ["converted", "3.5"],
-  ["short", "2"],
-  ["breakup-closed", "2"],
-] as const)("draws a %s rep's line to gain at %s", async (code, width) => {
-  const line = tag(
-    await resultField(causeRep(code)),
-    'data-field-layer="line-to-gain"',
-  );
+  ["converted", "3.5", "converted-cover-1"],
+  ["short", "2", "short"],
+  ["breakup-closed", "2", "breakup-closed"],
+] as const)("draws a %s rep's line to gain at %s", async (_, width, name) => {
+  const line = tag(await resultField(name), 'data-field-layer="line-to-gain"');
   expect(attr(line, "stroke-width")).toBe(width);
 });
