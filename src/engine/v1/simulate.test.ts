@@ -41,6 +41,7 @@ function puzzle(
     hash?: string;
     spot?: number;
     distance?: number;
+    goal?: "first-down" | "touchdown";
   } = {},
 ): Puzzle {
   const spot = options.spot ?? 45;
@@ -63,7 +64,8 @@ function puzzle(
       quarter: 4,
       clock: "1:12",
     },
-    goal: spot + distance === 100 ? "touchdown" : "first-down",
+    goal:
+      options.goal ?? (spot + distance === 100 ? "touchdown" : "first-down"),
     briefing: "",
     formation: {
       id: options.formation ?? "gun-trey",
@@ -1820,6 +1822,20 @@ describe("the ball carrier", () => {
       crossed: [X[36].y < 10, X[37].y >= 10],
     }).toEqual({ cuts: [[38, "inside"]], crossed: [true, true] });
   });
+  it("runs for the goal line from the catch on a touchdown goal", () => {
+    // Caught at tick 22 short of the line to gain, he turns inside on tick 23
+    // instead of running at the line first.
+    const { rep, log } = simulateWithLog(
+      puzzle([...lateSack, ["S1", -14, 21, "zone curl-flat-L"]], {
+        goal: "touchdown",
+      }),
+      design(5, "man", { X: { route: "Slant" } }),
+    );
+    expect({ first: cuts(log)[0], endTick: rep.endTick }).toEqual({
+      first: [23, "inside"],
+      endTick: 114,
+    });
+  });
   it("runs on for the goal line once past the line to gain", () => {
     const { rep } = openHitch();
     const { X } = rep.tracks;
@@ -2036,6 +2052,21 @@ describe("tackle and touchdown", () => {
       reached: [X[rep.endTick - 1].y < 15, X[rep.endTick].y >= 15],
       code: rep.cause.code,
     }).toEqual({ reached: [true, true], code: "touchdown" });
+  });
+  it("scores a tackle past the line to gain as short on a touchdown goal", () => {
+    const { rep } = simulateWithLog(
+      puzzle(lateSack, { goal: "touchdown" }),
+      design(5, "man", { X: hitch }),
+    );
+    expect({
+      yards: rep.outcome.yards,
+      verdict: rep.verdict,
+      cause: rep.cause,
+    }).toEqual({
+      yards: 25,
+      verdict: "short",
+      cause: { code: "short", decisive: "CB1", thrownTo: "X" },
+    });
   });
   it("checks the touchdown before the tackle", () => {
     // S1 is within the tackle radius on the tick Y reaches the goal line.

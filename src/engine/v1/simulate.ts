@@ -628,7 +628,9 @@ export function simulateWithLog(
           me,
           inside,
           defenders.map((id) => moverAt(id, prev)),
-          me.at.y >= lineToGain ? goalLine : lineToGain,
+          puzzle.goal === "touchdown" || me.at.y >= lineToGain
+            ? goalLine
+            : lineToGain,
         );
     if (heading !== carrier.heading) {
       log.push({ tick, kind: "cut", letter: carrier.letter, heading });
@@ -927,7 +929,7 @@ export function simulateWithLog(
         };
       case "tackle": {
         const yards = Math.trunc(ending.spot.y);
-        return yards >= lineToGain
+        return puzzle.goal === "first-down" && yards >= lineToGain
           ? {
               outcome: { kind: "completion", yards },
               verdict: "converted",

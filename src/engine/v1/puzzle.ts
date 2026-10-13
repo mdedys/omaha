@@ -61,8 +61,8 @@ export function parsePuzzle(json: unknown): Puzzle {
   ) {
     throw new EngineError("Invalid field situation");
   }
-  if ((spot + distance === FIELD_LENGTH_YARDS) !== (goal === "touchdown")) {
-    throw new EngineError("Goal must match goal-to-go situation");
+  if (spot + distance === FIELD_LENGTH_YARDS && goal !== "touchdown") {
+    throw new EngineError("A goal-to-go puzzle must have a touchdown goal");
   }
   const version = number(raw.engine);
   if (version !== 1) throw new EngineError("Unsupported v1 puzzle version");
