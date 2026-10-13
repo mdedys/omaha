@@ -34,5 +34,5 @@ Precondition: `doctor.sh` exits `0`.
 - Desktop duplicates mean drive.mjs's unqualified link click may be ambiguous. Use the keyboard recipe for desktop navigation; Playwright covers both pairs by scoped/indexed accessible queries.
 - Hero art is deliberately fixed and is not derived from the puzzle formation.
 - Goal copy may wrap beside the rep indicator; there is no character-limit contract.
-- Fixtures are synthetic and must not name real teams or players. The stub simulation is not yet a recalculated simulation for these fixtures.
+- Fixtures are synthetic and must not name real teams or players.
 - Stored progress, finished and first-visit states remain #57, not part of this delivery.

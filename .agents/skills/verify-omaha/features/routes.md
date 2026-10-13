@@ -39,4 +39,4 @@ Preconditions:
 - Routes are drawn from design state, not prototype paths. The break sits at y = 366 − depth × 12.8, so a 10-yard break is at field y=238. Judge it in the screenshot against the yard lines, not against the prototype.
 - The carousel holds only the selected receiver's menu and scrolls horizontally on phone. Cards past the fold need the carousel scrolled or the option clicked by name (Playwright scrolls it into view).
 - Neither slide arrow nor protection zigzag is drawn on Routes. Approved Man T marks and kept-in blocking artwork remain.
-- Unassigned receiver depth area says `Choose a route to set its depth.` No routes are auto-assigned or clearable. Complete valid runner assignments pass the stub's simulation design check when supplied a valid read order; Read editing is not built here.
+- Unassigned receiver depth area says `Choose a route to set its depth.` No routes are auto-assigned or clearable. Complete valid runner assignments pass the engine's simulation design check when supplied a valid read order; Read editing is not built here.

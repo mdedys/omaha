@@ -3,31 +3,39 @@ import type { Locator, Page } from "@playwright/test";
 
 const routes = [
   ["TE", "Hitch"],
-  ["Slot WR", "Out"],
   ["Right WR", "Go"],
   ["RB", "Flat"],
 ];
 
-async function snapFirstRep(page: Page, leftRoute: string) {
+// On puzzle 1, with the Slot WR read first, the Slot WR's route picks the
+// outcome: Out breaks up, Hitch is short, Comeback is sacked, Post is
+// intercepted and In converts.
+async function snapFirstRep(
+  page: Page,
+  slotRoute: string,
+  reads = [`Slot WR, ${slotRoute}`, "Left WR, Post"],
+) {
   await page.goto("/puzzle/1");
   await page.getByRole("button", { name: "Next: routes" }).click();
-  await page.getByRole("option", { name: leftRoute, exact: true }).click();
-  for (const [receiver, route] of routes) {
+  await page.getByRole("option", { name: "Post", exact: true }).click();
+  for (const [receiver, route] of [...routes, ["Slot WR", slotRoute]]) {
     await page
       .getByRole("button", { name: `${receiver}, no route`, exact: true })
       .click();
     await page.getByRole("option", { name: route, exact: true }).click();
   }
   await page.getByRole("button", { name: "Next: read" }).click();
-  await page.getByRole("button", { name: "TE, Hitch", exact: true }).click();
+  for (const read of reads) {
+    await page.getByRole("button", { name: read, exact: true }).click();
+  }
   await page.getByRole("button", { name: "Snap" }).click();
 }
 
-async function runItBack(page: Page, leftRoute: string) {
+async function runItBack(page: Page, slotRoute: string) {
   await page.getByRole("button", { name: "Run it back" }).click();
   await page.getByRole("button", { name: "Next: routes" }).click();
-  await page.getByRole("button", { name: /^Left WR,/ }).click();
-  await page.getByRole("option", { name: leftRoute, exact: true }).click();
+  await page.getByRole("button", { name: /^Slot WR,/ }).click();
+  await page.getByRole("option", { name: slotRoute, exact: true }).click();
   await page.getByRole("button", { name: "Next: read" }).click();
   await page.getByRole("button", { name: "Snap" }).click();
 }
@@ -50,11 +58,11 @@ test("Snap shows the rep's result sheet", async ({ page }) => {
   );
   await expect(result.getByRole("heading", { level: 1 })).toBeFocused();
   await expect(result).toContainText(
-    "The corner closed on the Left WR and swatted it. Get it there sooner.",
+    "The corner closed on the Slot WR and swatted it. Get it there sooner.",
   );
   await expect(result.locator(".result-stat")).toHaveText([
     "0yards gained",
-    "2.0sin the pocket",
+    "1.9sin the pocket",
     "WR1st read",
   ]);
   await expect(
@@ -81,7 +89,7 @@ test("the result field shows every player at the final tick", async ({
   );
   await expect(page.locator('[data-player="CB1"]')).toHaveAttribute(
     "transform",
-    /^translate\(99\.150\d* 238\)$/,
+    /^translate\(109\.818\d* 163\.327\d*\)$/,
   );
   await expect(page.locator("[data-player]")).toHaveCount(22);
   await expect(page.locator("[data-route]")).toHaveCount(0);
@@ -103,7 +111,7 @@ for (const theme of ["light", "dark"] as const) {
 }
 
 test("a short rep shows its yards on a gold tile", async ({ page }) => {
-  await snapFirstRep(page, "Go");
+  await snapFirstRep(page, "Hitch");
   await expect(sheet(page).getByRole("heading", { level: 1 })).toHaveText(
     "SHORT",
   );
@@ -117,7 +125,7 @@ test("Run it back opens Protect with the previous design", async ({ page }) => {
   await page.getByRole("radio", { name: "Slide left" }).click();
   await page.getByRole("button", { name: "Next: routes" }).click();
   await page.getByRole("option", { name: "Out", exact: true }).click();
-  for (const [receiver, route] of routes) {
+  for (const [receiver, route] of [...routes, ["Slot WR", "Out"]]) {
     await page
       .getByRole("button", { name: `${receiver}, no route`, exact: true })
       .click();
@@ -153,7 +161,7 @@ test("Run it back opens Protect with the previous design", async ({ page }) => {
 test("a read kept in to block leaves the carried-over order", async ({
   page,
 }) => {
-  await snapFirstRep(page, "Out");
+  await snapFirstRep(page, "Out", ["TE, Hitch"]);
   await page.getByRole("button", { name: "Run it back" }).click();
   await page.getByRole("radio", { name: "7-man" }).click();
   await page.getByRole("button", { name: "3 Read" }).click();
@@ -167,15 +175,15 @@ test("a read kept in to block leaves the carried-over order", async ({
 
 test("plays to a converted finish", async ({ page }) => {
   await snapFirstRep(page, "Out");
-  await runItBack(page, "Comeback");
+  await runItBack(page, "In");
   const result = sheet(page);
   await expect(result.getByRole("heading", { level: 1 })).toHaveText(
     "CONVERTED",
   );
   await expect(result).toHaveCSS("background-color", "rgb(36, 74, 62)");
   await expect(result.locator(".result-stat")).toHaveText([
-    "+13yards gained",
-    "78points",
+    "+20yards gained",
+    "85points",
     "—day streak",
   ]);
   await expect(
@@ -194,9 +202,9 @@ test("plays to a converted finish", async ({ page }) => {
 
 test("plays to an out-of-reps finish", async ({ page }) => {
   await snapFirstRep(page, "Out");
-  await runItBack(page, "Go");
+  await runItBack(page, "Hitch");
   await expect(sheet(page)).toContainText("2 reps left");
-  await runItBack(page, "In");
+  await runItBack(page, "Comeback");
   await expect(sheet(page)).toContainText("1 rep left");
   await runItBack(page, "Post");
   const result = sheet(page);
@@ -204,7 +212,7 @@ test("plays to an out-of-reps finish", async ({ page }) => {
     "OUT OF REPS",
   );
   await expect(result).toContainText(
-    "The safety jumped the throw to the Left WR. Four reps, no first down.",
+    "The safety jumped the throw to the Slot WR. Four reps, no first down.",
   );
   await expect(result).toHaveCSS("background-color", "rgb(24, 32, 28)");
   await expect(result.locator(".result-stat")).toHaveText([

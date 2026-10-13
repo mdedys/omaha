@@ -55,7 +55,6 @@ type Facts = {
 };
 // Each line is the cause, then the jab.
 type Line = (facts: Facts) => readonly [string, string];
-const counts = ["", "one", "two", "three"];
 const plural = (count: number, unit: string) =>
   `${count} ${unit}${count === 1 ? "" : "s"}`;
 
@@ -75,7 +74,7 @@ const lines: Record<
   throwaway: ({ reads }) => [
     reads === 1
       ? "Your only read was covered, so he threw it away."
-      : `All ${counts[reads]} reads were covered, so he threw it away.`,
+      : `${reads === 2 ? "Both" : "All three"} reads were covered, so he threw it away.`,
     "Give him someone to throw to.",
   ],
   "breakup-closed": ({ defender, receiver }) => [

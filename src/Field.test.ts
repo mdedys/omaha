@@ -4,9 +4,17 @@ import { describe, expect, test } from "vitest";
 import { loadPuzzle } from "./engine";
 import { Field, fieldPoint } from "./Field";
 import { createPuzzleSession } from "./PuzzleScreen";
+import type { Design } from "./engine/contract";
 import fixture from "../public/puzzles/2.json";
-import gunTrey from "./engine/stub/gun-trey.json";
-import { scenarios } from "./engine/stub/fixtures";
+import puzzleOne from "../public/puzzles/1.json";
+
+const routes: Design["routes"] = {
+  X: { route: "Post", depth: 10 },
+  Y: { route: "Hitch" },
+  H: { route: "Out", depth: 10 },
+  Z: { route: "Go" },
+  RB: { route: "Flat" },
+};
 
 describe("engine yard projection", () => {
   test.each([
@@ -74,13 +82,13 @@ test("renders flipped inside receiver at the engine location", async () => {
 });
 
 test("draws numbered read badges in read order", async () => {
-  const { puzzle, engine } = await loadPuzzle(gunTrey);
+  const { puzzle, engine } = await loadPuzzle(puzzleOne);
   const html = renderToStaticMarkup(
     createElement(Field, {
       puzzle,
       engine,
       protection: { blockers: 5, lineCall: "man" },
-      routes: scenarios[0].design.routes,
+      routes,
       reads: ["Y", "Z", "X"],
     }),
   );
@@ -95,13 +103,13 @@ test("draws numbered read badges in read order", async () => {
 });
 
 test("draws reads' routes at 2.4 and the rest at 2", async () => {
-  const { puzzle, engine } = await loadPuzzle(gunTrey);
+  const { puzzle, engine } = await loadPuzzle(puzzleOne);
   const html = renderToStaticMarkup(
     createElement(Field, {
       puzzle,
       engine,
       protection: { blockers: 5, lineCall: "man" },
-      routes: scenarios[0].design.routes,
+      routes,
       reads: ["H"],
     }),
   );
@@ -114,7 +122,7 @@ test("draws reads' routes at 2.4 and the rest at 2", async () => {
 });
 
 test("flips a read badge that would cross the right sideline", async () => {
-  const { puzzle, engine } = await loadPuzzle(gunTrey);
+  const { puzzle, engine } = await loadPuzzle(puzzleOne);
   const html = renderToStaticMarkup(
     createElement(Field, {
       puzzle,
@@ -126,7 +134,7 @@ test("flips a read badge that would cross the right sideline", async () => {
         }),
       },
       protection: { blockers: 5, lineCall: "man" },
-      routes: scenarios[0].design.routes,
+      routes,
       reads: ["Z", "X"],
     }),
   );
@@ -141,9 +149,17 @@ test("flips a read badge that would cross the right sideline", async () => {
 });
 
 test("places every player at the rep's final tick", async () => {
-  const { puzzle, engine } = await loadPuzzle(gunTrey);
+  const { puzzle, engine } = await loadPuzzle(puzzleOne);
   const html = renderToStaticMarkup(
-    createElement(Field, { puzzle, engine, frame: scenarios[0].rep }),
+    createElement(Field, {
+      puzzle,
+      engine,
+      frame: engine.simulate(puzzle, {
+        protection: { blockers: 5, lineCall: "man" },
+        routes,
+        readOrder: ["H", "X"],
+      }),
+    }),
   );
   expect(html).toContain('data-player="QB" transform="translate(201.5 455.6)"');
   expect(html).toContain('data-player="NB" transform="translate(201.5 455.6)"');

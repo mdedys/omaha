@@ -24,18 +24,17 @@ Preconditions:
 
 - `doctor.sh` exits `0`, and Read is reachable through Protect and Routes.
 
-- **Heading.** Run `expect-role=heading:"Who does the QB look to?" expect="Pick in order · up to 3"`.
-- **Locked Snap.** Arrive with the order empty. `aria.yml` shows the Snap button with `aria-disabled="true"` and the live text `No reads picked`; the order hint reads `Set every route first` while any route runner has no route, otherwise `Pick a read first`. Run `click=button:Snap shot=still-read`: the screen does not change.
-- **Add.** Run `click=button:"TE, Corner" click=button:"Right WR, Go" click=button:"Left WR, In" shot=three-reads`. Use the receiver and route names the screen shows. Only route runners with a route get an option, left to right by field position (a routed RB sits by its x); five options use a three-column phone grid. `aria.yml` shows the group `Read order` with those three buttons pressed and named `…, read 1`, `…, read 2`, `…, read 3`, the remaining option disabled, and the live text `Read order: TE, Right WR, Left WR`. The field `img` label names all three reads in order.
+- **Heading.** Run `expect-role=heading:"Who does the QB look to?"`.
+- **Locked Snap.** Arrive with the order empty. `aria.yml` shows `button "Snap" [disabled]` (its snapshot form of `aria-disabled="true"`) and the live text `No reads picked`; the order hint reads `Set every route first` while any route runner has no route, otherwise `Pick a read first`. On desktop, run `press=Enter shot=still-read expect-role=heading:"Who does the QB look to?"`: the screen stays on Read.
+- **Add.** Run `click=button:"TE, Corner" click=button:"Right WR, Go" click=button:"Left WR, In" shot=three-reads`. Use the receiver and route names the screen shows. Only route runners with a route get an option, left to right by field position (a routed RB sits by its x); five options use a three-column phone grid. `aria.yml` shows the group `Read order` with those three buttons pressed and named `…, read 1`, `…, read 2`, `…, read 3`, the remaining options `[disabled]`, and the live text `Read order: TE, Right WR, Left WR`. The field `img` label names all three reads in order. Once Snap unlocks, the order hint reads `Pick in order · up to 3`.
 - **Drop.** Run `click=button:"TE, Corner, read 1" shot=dropped`. Right WR becomes read 1, Left WR read 2, and the quiet option is normal again.
 - **Snap.** With every route assigned and a read picked, run `click=button:Snap` and `expect=` the result headline (see result.md).
-- **Desktop keys.** Run with `--viewport desktop`: digits `1`–`N` toggle the option at that place in the list, and `press=Enter` snaps only when unlocked. The hint line reads `1–N add or drop a read`, where N is the number of route runners.
+- **Desktop keys.** Run with `--viewport desktop`: digits `1`–`N` toggle the option at that place in the list, and `press=Enter` snaps only when unlocked. The hint line reads `1–N add or drop a read`, where N is the number of read options.
 
 ## Gotchas
 
 - Options are toggle buttons with `aria-pressed` in a group named `Read order`, not radios. An option's accessible name changes when it joins the order (`TE, Corner` becomes `TE, Corner, read 1`), so click a read by its current name.
-- The disabled Snap and quiet options use `aria-disabled`, not the `disabled` attribute, so Playwright still clicks them. Prove the lock by showing the screen didn't change, not by a click failure.
+- The disabled Snap and quiet options use `aria-disabled`, not the `disabled` attribute, so they stay focusable. Playwright treats them as not enabled, so `click=` on a locked Snap or a quiet option times out. Prove the lock from `aria.yml`, and on desktop with `press=Enter`.
 - The engine rejects an empty read order with `EngineError`; the screen should never let Snap reach it.
 - The `field/` prototypes still show the old radio Read panel, and the live-play prototypes throw on the first read, so they never show the QB's cone moving to the next read. Trust `design/06-read/spec.md`.
 - The desktop keys are `1`–`N` over the read options in list order, and `Enter` for Snap only when it is unlocked. A focused button keeps its own `Enter`.
-- Playwright treats `aria-disabled` controls as not enabled, so `click=` on a quiet option or a locked Snap may time out. Activate them with `press=Enter` after focusing, or prove the lock from `aria.yml`.

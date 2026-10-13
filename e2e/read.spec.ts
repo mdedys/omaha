@@ -246,11 +246,13 @@ test("a read kept in to block leaves the order", async ({ page }) => {
 });
 
 test("a failed simulation keeps Read open with an error", async ({ page }) => {
-  await page.route(/\/src\/engine\/stub\/index\.ts/, async (route) => {
+  // The screen only builds designs v1 accepts, and no puzzle 1 design hits
+  // v1's 20 s rep cap, so the served engine module throws that error itself.
+  await page.route(/\/src\/engine\/v1\/simulate\.ts/, async (route) => {
     const response = await route.fetch();
     const body = (await response.text()).replace(
       "function simulate(puzzle, design) {",
-      'function simulate(puzzle, design) {\n  throw new EngineError("Rep reached the time cap");',
+      'function simulate(puzzle, design) {\n  throw new EngineError("Rep reached the 20 s cap");',
     );
     await route.fulfill({ response, body });
   });
