@@ -86,13 +86,13 @@ describe("ball", () => {
 
   test("leaves the QB's hands only after the throw tick", () => {
     expect(
-      [tick(8), tick(8.5)].map((time) => playback(handRep(), time).ball),
+      [tick(40), tick(40.5)].map((time) => playback(readChange, time).ball),
     ).toEqual([
       null,
       {
-        from: { x: 0, y: -9 },
-        at: { x: expect.closeTo(2.5), y: expect.closeTo(-6.75) },
-        angle: expect.closeTo(-42.0013, 3),
+        from: { x: 0, y: -7 },
+        at: { x: expect.closeTo(-0.1529, 4), y: expect.closeTo(-6.3963, 4) },
+        angle: expect.closeTo(-104.2065, 3),
       },
     ]);
   });

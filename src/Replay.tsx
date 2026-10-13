@@ -70,7 +70,10 @@ export function Replay({
     endTick,
   );
   const marks = moments(puzzle, engine, played);
-  const moment = marks.find((mark) => mark.tick === tick);
+  const named = marks
+    .filter((mark) => mark.tick === tick)
+    .map(({ name }) => `, ${name.toLowerCase()}`)
+    .join("");
   const frame = playback(rep, timeline(rep).snap + tick * TICK_SECONDS);
 
   function seek(to: number) {
@@ -146,7 +149,7 @@ export function Replay({
           engine={engine}
           live={{ ...frame, cone: null }}
           ballPath
-          label={`Rep ${number} replay, ${clock.playing ? "playing" : `paused at ${tenths(tick * TICK_SECONDS)} seconds${moment ? `, ${moment.name.toLowerCase()}` : ""}`}: players and the ball only, no play art.`}
+          label={`Rep ${number} replay, ${clock.playing ? "playing" : `paused at ${tenths(tick * TICK_SECONDS)} seconds${named}`}: players and the ball only, no play art.`}
         />
         <span className="replay-pill">
           <Glyph playing={clock.playing} />
@@ -168,7 +171,7 @@ export function Replay({
             aria-valuemin={0}
             aria-valuemax={seconds(endTick)}
             aria-valuenow={seconds(tick)}
-            aria-valuetext={`${tenths(tick * TICK_SECONDS)} seconds${moment ? `, ${moment.name.toLowerCase()}` : ""}`}
+            aria-valuetext={`${tenths(tick * TICK_SECONDS)} seconds${named}`}
             onKeyDown={slide}
             onPointerDown={(event) => {
               event.currentTarget.setPointerCapture(event.pointerId);
@@ -287,7 +290,7 @@ export function Replay({
               <button
                 key={mark.name}
                 type="button"
-                aria-pressed={mark === moment}
+                aria-pressed={mark.tick === tick}
                 onClick={() => seek(mark.tick)}
               >
                 <span>{mark.name}</span>

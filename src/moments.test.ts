@@ -1,87 +1,114 @@
 import { describe, expect, test } from "vitest";
-import type { Design, Letter, Rep, RouteCall } from "./engine/contract";
+import type { Design, Letter, RouteCall } from "./engine/contract";
 import { loadPuzzle } from "./engine";
-import gunTrey from "./engine/stub/gun-trey.json";
-import { scenarios } from "./engine/stub/fixtures";
+import puzzleOne from "../public/puzzles/1.json";
+import blitz from "./engine/v1/scenarios/a-gap-blitz-man-protection.json";
 import { moments, tenths } from "./moments";
 
-// Plays the stub rep that Left WR's route picks, with the given first read
-// and that read's route.
-async function replayed(leftRoute: string, read: Letter, call?: RouteCall) {
-  const { puzzle, engine } = await loadPuzzle(gunTrey);
-  const scenario = scenarios.find(
-    (entry) => entry.design.routes.X?.route === leftRoute,
-  );
-  if (!scenario) throw new Error(`No stub scenario for ${leftRoute}`);
-  const design: Design = {
-    ...scenario.design,
-    routes: { ...scenario.design.routes, ...(call ? { [read]: call } : {}) },
-    readOrder: [read],
+const one = await loadPuzzle(puzzleOne);
+
+// Puzzle 1 under 5-man Man protection with the Slot WR on the given route,
+// read first and then the Left WR unless another read order is given.
+function slot(route: RouteCall, readOrder: Letter[] = ["H", "X"]): Design {
+  return {
+    protection: { blockers: 5, lineCall: "man" },
+    routes: {
+      X: { route: "Post", depth: 10 },
+      Y: { route: "Hitch" },
+      H: route,
+      Z: { route: "Go" },
+      RB: { route: "Flat" },
+    },
+    readOrder,
   };
-  const rep: Rep = engine.simulate(puzzle, design);
-  return { puzzle, engine, played: { design, rep } };
+}
+
+function replayed(design: Design, { puzzle, engine } = one) {
+  return moments(puzzle, engine, {
+    design,
+    rep: engine.simulate(puzzle, design),
+  });
 }
 
 describe("moments", () => {
-  test("mark the snap, the first read's break, the throw and the end", async () => {
-    const { puzzle, engine, played } = await replayed("Out", "X");
-    expect(moments(puzzle, engine, played)).toEqual([
+  // Thrown to the Slot WR and broken up.
+  test("mark the snap, the first read's break, the throw and the end", () => {
+    expect(replayed(slot({ route: "Out", depth: 10 }))).toEqual([
       { name: "Snap", tick: 0 },
-      { name: "Break", tick: 32 },
-      { name: "Throw", tick: 40 },
-      { name: "End", tick: 60 },
+      { name: "Break", tick: 36 },
+      { name: "Throw", tick: 38 },
+      { name: "End", tick: 56 },
     ]);
   });
 
-  test("leave out the throw on a sack", async () => {
-    const { puzzle, engine, played } = await replayed("Slant", "X");
-    expect(moments(puzzle, engine, played)).toEqual([
+  // The nickel is free and sacks the QB.
+  test("leave out the throw on a sack", () => {
+    expect(replayed(slot({ route: "Comeback", depth: 10 }))).toEqual([
       { name: "Snap", tick: 0 },
-      { name: "Break", tick: 19 },
-      { name: "End", tick: 40 },
+      { name: "Break", tick: 36 },
+      { name: "End", tick: 41 },
     ]);
   });
 
-  test("time the break from the first read, not the Left WR", async () => {
-    const { puzzle, engine, played } = await replayed("Out", "Y", {
-      route: "Hitch",
-    });
-    expect(moments(puzzle, engine, played)[1]).toEqual({
+  // The Hook comes back underneath its break on the tick he reaches it.
+  test("time a break the route turns back from", () => {
+    expect(
+      replayed(slot({ route: "Hook", depth: 10 })).find(
+        ({ name }) => name === "Break",
+      ),
+    ).toEqual({ name: "Break", tick: 36 });
+  });
+
+  test("time the break from the first read, not the Slot WR", () => {
+    expect(replayed(slot({ route: "Out", depth: 10 }, ["Y", "H"]))[1]).toEqual({
       name: "Break",
-      tick: 8,
+      tick: 6,
     });
   });
 
-  test("leave out the break when the first read's route has none", async () => {
-    const { puzzle, engine, played } = await replayed("Out", "Z");
-    expect(moments(puzzle, engine, played).map(({ name }) => name)).toEqual([
+  test("leave out the break when the first read's route has none", () => {
+    expect(replayed(slot({ route: "Seam" })).map(({ name }) => name)).toEqual([
       "Snap",
       "Throw",
       "End",
     ]);
   });
 
-  test("leave out the break when the rep ends before the read gets there", async () => {
-    const { puzzle, engine, played } = await replayed("Slant", "Y", {
-      route: "Hook",
-      depth: 15,
-    });
-    expect(moments(puzzle, engine, played).map(({ name }) => name)).toEqual([
-      "Snap",
-      "End",
+  // The sack comes before the Slot WR's 15-yard stem is run.
+  test("leave out the break when the rep ends before the read gets there", () => {
+    expect(
+      replayed(slot({ route: "Comeback", depth: 15 })).map(({ name }) => name),
+    ).toEqual(["Snap", "End"]);
+  });
+
+  // A 5-yard Out's throw point is its break.
+  test("list a break on the throw's tick before the throw", () => {
+    expect(replayed(slot({ route: "Out", depth: 5 }))).toEqual([
+      { name: "Snap", tick: 0 },
+      { name: "Break", tick: 20 },
+      { name: "Throw", tick: 20 },
+      { name: "End", tick: 34 },
     ]);
   });
 
-  test("order a break after the throw by time", async () => {
-    const { puzzle, engine, played } = await replayed("Out", "H", {
-      route: "Out",
-      depth: 10,
-    });
-    expect(moments(puzzle, engine, played)).toEqual([
+  // The A-gap blitz sacks the QB as the Left WR reaches his break.
+  test("list a break on the end's tick before the end", async () => {
+    const scenario = await loadPuzzle(blitz.puzzle);
+    const design: Design = {
+      protection: { blockers: 5, lineCall: "slide-left" },
+      routes: {
+        X: { route: "Comeback", depth: 10 },
+        Y: { route: "Hitch" },
+        H: { route: "Hitch" },
+        Z: { route: "Hitch" },
+        RB: { route: "Flat" },
+      },
+      readOrder: ["X"],
+    };
+    expect(replayed(design, scenario)).toEqual([
       { name: "Snap", tick: 0 },
-      { name: "Throw", tick: 40 },
-      { name: "Break", tick: 52 },
-      { name: "End", tick: 60 },
+      { name: "Break", tick: 33 },
+      { name: "End", tick: 33 },
     ]);
   });
 });

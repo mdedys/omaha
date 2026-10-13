@@ -1,45 +1,49 @@
 import { expect, test } from "@playwright/test";
 import type { Locator, Page } from "@playwright/test";
+import blitz from "../src/engine/v1/scenarios/a-gap-blitz-man-protection.json" with { type: "json" };
 import { rendered, screenMarkup } from "./page";
+
+type SlotRoute = "Out" | "Comeback";
 
 const routes = [
   ["TE", "Hitch"],
-  ["Slot WR", "Out"],
   ["Right WR", "Go"],
   ["RB", "Flat"],
-];
+] as const;
 
-// Under the stub, Left WR's route picks the outcome. With the Left WR as the
-// first read, a 5-yard Out breaks at 1.6s, throws at 2.0s and ends at 3.0s;
-// a Slant is a sack that breaks at 0.95s and ends at 2.0s.
-async function playRep(page: Page, leftRoute: "Out" | "Slant") {
+// Puzzle 1 under 5-man Man protection with the Slot WR read first, then the
+// Left WR on a Post. On a 10-yard Out the Slot WR breaks at 1.8s, is thrown to
+// at 1.9s and broken up at 2.8s; on a 10-yard Comeback he breaks at 1.8s and
+// the nickel sacks the QB at 2.05s. A 5-yard Out breaks and is thrown at 1.0s.
+async function playRep(page: Page, slotRoute: SlotRoute, yards = 10) {
   await page.getByRole("button", { name: "Next: routes" }).click();
-  await page.getByRole("button", { name: /^Left WR, / }).click();
-  await page.getByRole("option", { name: leftRoute, exact: true }).click();
-  if (leftRoute === "Out") {
-    await page.getByRole("radio", { name: "5 yds", exact: true }).click();
+  await page.getByRole("option", { name: "Post", exact: true }).click();
+  for (const [receiver, route] of [...routes, ["Slot WR", slotRoute]]) {
+    await page
+      .getByRole("button", { name: `${receiver}, no route`, exact: true })
+      .click();
+    await page.getByRole("option", { name: route, exact: true }).click();
   }
-  for (const [receiver, route] of routes) {
-    const runner = page.getByRole("button", { name: `${receiver}, no route` });
-    if (await runner.count()) {
-      await runner.click();
-      await page.getByRole("option", { name: route, exact: true }).click();
-    }
-  }
+  await page.getByRole("radio", { name: `${yards} yds`, exact: true }).click();
   await page.getByRole("button", { name: "Next: read" }).click();
-  const read = page.getByRole("button", { name: /^Left WR, / });
-  if ((await read.getAttribute("aria-pressed")) !== "true") await read.click();
+  for (const read of [`Slot WR, ${slotRoute}`, "Left WR, Post"]) {
+    await page.getByRole("button", { name: read, exact: true }).click();
+  }
   await page.getByRole("button", { name: "Snap" }).click();
   await page.getByRole("button", { name: "Skip to result" }).click();
 }
 
 // Opens Replay from Result with the page clock paused, so playback only
 // moves when a test runs the clock.
-async function openReplay(page: Page, leftRoute: "Out" | "Slant" = "Out") {
+async function openReplay(
+  page: Page,
+  slotRoute: SlotRoute = "Out",
+  yards = 10,
+) {
   await page.clock.install({ time: 0 });
   await page.goto("/puzzle/1");
   await page.clock.pauseAt(64_000);
-  await playRep(page, leftRoute);
+  await playRep(page, slotRoute, yards);
   await page.getByRole("button", { name: "Watch the replay again" }).click();
 }
 
@@ -117,7 +121,7 @@ test("Replay opens paused at 0.0s at 0.5×", async ({ page }) => {
   await openReplay(page);
   await run(page, 2000);
   await expect(slider(page)).toHaveAttribute("aria-valuenow", "0");
-  await expect(readout(page)).toHaveText("0.0s / 3.0s");
+  await expect(readout(page)).toHaveText("0.0s / 2.8s");
   await expect(playButton(page)).toHaveAttribute("aria-label", "Play");
   await expect(page.getByRole("radio", { name: "0.5×" })).toHaveAttribute(
     "aria-checked",
@@ -142,12 +146,12 @@ test("Play moves the readout and thumb with the clock", async ({ page }) => {
   await openReplay(page);
   await playButton(page).click();
   await run(page, 1016);
-  await expect(readout(page)).toHaveText("0.5s / 3.0s");
+  await expect(readout(page)).toHaveText("0.5s / 2.8s");
   const thumb = await page.locator(".replay-thumb").boundingBox();
   const track = await slider(page).boundingBox();
   expect(
     ((thumb?.x ?? 0) + 7 - (track?.x ?? 0)) / (track?.width ?? 1),
-  ).toBeCloseTo(0.5 / 3, 2);
+  ).toBeCloseTo(0.5 / 2.8, 2);
 });
 
 test("Play and Pause swap the button's label and icon", async ({ page }) => {
@@ -195,7 +199,12 @@ test("the pill names the rep being replayed", async ({ page }) => {
   await page.clock.pauseAt(64_000);
   await playRep(page, "Out");
   await page.getByRole("button", { name: "Run it back" }).click();
-  await playRep(page, "Slant");
+  await page.getByRole("button", { name: "Next: routes" }).click();
+  await page.getByRole("button", { name: /^Slot WR,/ }).click();
+  await page.getByRole("option", { name: "Comeback", exact: true }).click();
+  await page.getByRole("button", { name: "Next: read" }).click();
+  await page.getByRole("button", { name: "Snap" }).click();
+  await page.getByRole("button", { name: "Skip to result" }).click();
   await page.getByRole("button", { name: "Watch the replay again" }).click();
   await expect(page.locator(".replay-pill")).toHaveText("Rep 2 replay");
   await expect(
@@ -213,7 +222,7 @@ for (const [speed, ms, shown] of [
     await page.getByRole("radio", { name: speed }).click();
     await playButton(page).click();
     await run(page, ms);
-    await expect(readout(page)).toHaveText(`${shown} / 3.0s`);
+    await expect(readout(page)).toHaveText(`${shown} / 2.8s`);
   });
 }
 
@@ -223,9 +232,9 @@ test("playback stops at the end and shows Play", async ({ page }) => {
   await playButton(page).click();
   await run(page, 3500);
   await expect(playButton(page)).toHaveAttribute("aria-label", "Play");
-  await expect(slider(page)).toHaveAttribute("aria-valuenow", "3");
+  await expect(slider(page)).toHaveAttribute("aria-valuenow", "2.8");
   await run(page, 500);
-  await expect(slider(page)).toHaveAttribute("aria-valuenow", "3");
+  await expect(slider(page)).toHaveAttribute("aria-valuenow", "2.8");
 });
 
 test("Play at the end restarts from 0.0s", async ({ page }) => {
@@ -235,7 +244,7 @@ test("Play at the end restarts from 0.0s", async ({ page }) => {
   await playButton(page).click();
   await run(page, 516);
   await expect(playButton(page)).toHaveAttribute("aria-label", "Pause");
-  await expect(readout(page)).toHaveText("0.5s / 3.0s");
+  await expect(readout(page)).toHaveText("0.5s / 2.8s");
 });
 
 for (const [action, act] of [
@@ -269,26 +278,26 @@ for (const [action, act] of [
 test("the slider runs from tick 0 to the rep's end", async ({ page }) => {
   await openReplay(page);
   await expect(slider(page)).toHaveAttribute("aria-valuemin", "0");
-  await expect(slider(page)).toHaveAttribute("aria-valuemax", "3");
+  await expect(slider(page)).toHaveAttribute("aria-valuemax", "2.8");
   await slider(page).press("End");
-  await expect(slider(page)).toHaveAttribute("aria-valuenow", "3");
+  await expect(slider(page)).toHaveAttribute("aria-valuenow", "2.8");
   await slider(page).press("Home");
   await expect(slider(page)).toHaveAttribute("aria-valuenow", "0");
 });
 
 test("a sack's slider ends at the sack", async ({ page }) => {
-  await openReplay(page, "Slant");
-  await expect(slider(page)).toHaveAttribute("aria-valuemax", "2");
+  await openReplay(page, "Comeback");
+  await expect(slider(page)).toHaveAttribute("aria-valuemax", "2.05");
 });
 
 test("the frame buttons move exactly one tick", async ({ page }) => {
   await openReplay(page);
   await page.getByRole("button", { name: "Throw" }).click();
   await page.getByRole("button", { name: "Forward one frame" }).click();
-  await expect(slider(page)).toHaveAttribute("aria-valuenow", "2.05");
-  await page.getByRole("button", { name: "Back one frame" }).click();
-  await page.getByRole("button", { name: "Back one frame" }).click();
   await expect(slider(page)).toHaveAttribute("aria-valuenow", "1.95");
+  await page.getByRole("button", { name: "Back one frame" }).click();
+  await page.getByRole("button", { name: "Back one frame" }).click();
+  await expect(slider(page)).toHaveAttribute("aria-valuenow", "1.85");
 });
 
 test("a frame step moves every player one tick", async ({ page }) => {
@@ -308,7 +317,7 @@ test("the frame buttons stop at 0 and the end", async ({ page }) => {
   await expect(slider(page)).toHaveAttribute("aria-valuenow", "0");
   await page.getByRole("button", { name: "End" }).click();
   await page.getByRole("button", { name: "Forward one frame" }).click();
-  await expect(slider(page)).toHaveAttribute("aria-valuenow", "3");
+  await expect(slider(page)).toHaveAttribute("aria-valuenow", "2.8");
 });
 
 test("the slider's arrow keys move one tick", async ({ page }) => {
@@ -324,7 +333,7 @@ test("tapping the track moves there", async ({ page }) => {
   await openReplay(page);
   const box = await slider(page).boundingBox();
   await slider(page).click({ position: { x: (box?.width ?? 0) / 2, y: 7 } });
-  await expect(slider(page)).toHaveAttribute("aria-valuenow", "1.5");
+  await expect(slider(page)).toHaveAttribute("aria-valuenow", "1.4");
 });
 
 test("the jump-to row lists the snap, break, throw and end", async ({
@@ -333,22 +342,22 @@ test("the jump-to row lists the snap, break, throw and end", async ({
   await openReplay(page);
   await expect(moments(page)).toHaveText([
     "Snap0.0s",
-    "Break1.6s",
-    "Throw2.0s",
-    "End3.0s",
+    "Break1.8s",
+    "Throw1.9s",
+    "End2.8s",
   ]);
 });
 
 test("a sack's jump-to row has no Throw", async ({ page }) => {
-  await openReplay(page, "Slant");
-  await expect(moments(page)).toHaveText(["Snap0.0s", "Break1.0s", "End2.0s"]);
+  await openReplay(page, "Comeback");
+  await expect(moments(page)).toHaveText(["Snap0.0s", "Break1.8s", "End2.1s"]);
 });
 
 for (const [name, seconds, index] of [
   ["Snap", "0", 0],
-  ["Break", "1.6", 1],
-  ["Throw", "2", 2],
-  ["End", "3", 3],
+  ["Break", "1.8", 1],
+  ["Throw", "1.9", 2],
+  ["End", "2.8", 3],
 ] as const) {
   test(`${name} jumps to ${seconds}s and is selected`, async ({ page }) => {
     await openReplay(page);
@@ -381,8 +390,69 @@ test("the slider names the moment it rests on", async ({ page }) => {
   await page.getByRole("button", { name: "Throw" }).click();
   await expect(slider(page)).toHaveAttribute(
     "aria-valuetext",
-    "2.0 seconds, throw",
+    "1.9 seconds, throw",
   );
+});
+
+test("a throw on the break's tick selects both", async ({ page }) => {
+  await openReplay(page, "Out", 5);
+  await expect(moments(page)).toHaveText([
+    "Snap0.0s",
+    "Break1.0s",
+    "Throw1.0s",
+    "End1.7s",
+  ]);
+  await page.getByRole("button", { name: "Throw" }).click();
+  expect(await pressed(moments(page))).toEqual([
+    "false",
+    "true",
+    "true",
+    "false",
+  ]);
+});
+
+test("the slider names every moment it rests on", async ({ page }) => {
+  await openReplay(page, "Out", 5);
+  await page.getByRole("button", { name: "Throw" }).click();
+  await expect(slider(page)).toHaveAttribute(
+    "aria-valuetext",
+    "1.0 seconds, break, throw",
+  );
+});
+
+// The A-gap blitz puzzle under 5-man Slide left: the QB is sacked at 1.65s,
+// the tick the Left WR reaches his Comeback's break.
+test("an end on the break's tick selects both", async ({ page }) => {
+  await page.route("**/puzzles/1.json", (route) =>
+    route.fulfill({ json: blitz.puzzle }),
+  );
+  await page.goto("/puzzle/1");
+  await page.getByRole("radio", { name: "5-man" }).click();
+  await page.getByRole("radio", { name: "Slide left", exact: true }).click();
+  await page.getByRole("button", { name: "Next: routes" }).click();
+  await page.getByRole("option", { name: "Comeback", exact: true }).click();
+  await page.getByRole("radio", { name: "10 yds", exact: true }).click();
+  for (const [receiver, route] of [
+    ["TE", "Hitch"],
+    ["Slot WR", "Hitch"],
+    ["Right WR", "Hitch"],
+    ["RB", "Flat"],
+  ]) {
+    await page
+      .getByRole("button", { name: `${receiver}, no route`, exact: true })
+      .click();
+    await page.getByRole("option", { name: route, exact: true }).click();
+  }
+  await page.getByRole("button", { name: "Next: read" }).click();
+  await page
+    .getByRole("button", { name: "Left WR, Comeback", exact: true })
+    .click();
+  await page.getByRole("button", { name: "Snap" }).click();
+  await page.getByRole("button", { name: "Skip to result" }).click();
+  await page.getByRole("button", { name: "Watch the replay again" }).click();
+  await expect(moments(page)).toHaveText(["Snap0.0s", "Break1.7s", "End1.7s"]);
+  await page.getByRole("button", { name: "End" }).click();
+  expect(await pressed(moments(page))).toEqual(["false", "true", "true"]);
 });
 
 // Each segment's left and right edge as a share of the track.
@@ -405,20 +475,20 @@ test("the scrubber splits into phases at the break and the throw", async ({
   await openReplay(page);
   const width = (await slider(page).boundingBox())?.width ?? 0;
   expect(await segments(page)).toEqual([
-    [0, Math.round(width * (32 / 60) - 1)],
-    [Math.round(width * (32 / 60) + 1), Math.round(width * (40 / 60) - 1)],
-    [Math.round(width * (40 / 60) + 1), Math.round(width)],
+    [0, Math.round(width * (36 / 56) - 1)],
+    [Math.round(width * (36 / 56) + 1), Math.round(width * (38 / 56) - 1)],
+    [Math.round(width * (38 / 56) + 1), Math.round(width)],
   ]);
 });
 
 test("a sack's scrubber splits into two phases at the break", async ({
   page,
 }) => {
-  await openReplay(page, "Slant");
+  await openReplay(page, "Comeback");
   const width = (await slider(page).boundingBox())?.width ?? 0;
   expect(await segments(page)).toEqual([
-    [0, Math.round(width * (19 / 40) - 1)],
-    [Math.round(width * (19 / 40) + 1), Math.round(width)],
+    [0, Math.round(width * (36 / 41) - 1)],
+    [Math.round(width * (36 / 41) + 1), Math.round(width)],
   ]);
 });
 
@@ -431,7 +501,7 @@ test("at the throw the QB still holds the ball", async ({ page }) => {
   await expect(page.locator("[data-football]")).toHaveCount(1);
   await expect(page.locator("[data-ball-path]")).toHaveAttribute(
     "d",
-    /^M201\.5 447\.06\d*L196\.38\d* 436\.61\d*$/,
+    /^M201\.5 455\.6\d*L211\.619\d* 443\.511\d*$/,
   );
 });
 
@@ -441,11 +511,11 @@ test("at the end the ball rests at the catch with its whole path", async ({
   await openReplay(page);
   await page.getByRole("button", { name: "End" }).click();
   const football = page.locator('[data-football="in-flight"]');
-  await expect(football).toHaveAttribute("cx", /^99\.150\d*$/);
+  await expect(football).toHaveAttribute("cx", /^383\.649\d*$/);
   await expect(football).toHaveAttribute("cy", "238");
   await expect(page.locator("[data-ball-path]")).toHaveAttribute(
     "d",
-    /^M201\.5 447\.06\d*L99\.150\d* 238$/,
+    /^M201\.5 455\.6\d*L383\.649\d* 238$/,
   );
   await expect(page.locator("[data-ball-path]")).not.toHaveAttribute(
     "stroke-opacity",
@@ -454,7 +524,7 @@ test("at the end the ball rests at the catch with its whole path", async ({
 });
 
 test("a sack never shows the ball", async ({ page }) => {
-  await openReplay(page, "Slant");
+  await openReplay(page, "Comeback");
   for (const name of ["Snap", "Break", "End"]) {
     await page.getByRole("button", { name }).click();
     await expect(page.locator("[data-player]")).toHaveCount(22);
@@ -606,7 +676,7 @@ test.describe("desktop keyboard", () => {
   test("a focused button keeps Space and Enter", async ({ page }) => {
     await page.getByRole("button", { name: "End" }).focus();
     await page.keyboard.press(" ");
-    await expect(slider(page)).toHaveAttribute("aria-valuenow", "3");
+    await expect(slider(page)).toHaveAttribute("aria-valuenow", "2.8");
     await expect(playButton(page)).toHaveAttribute("aria-label", "Play");
     await page.getByRole("button", { name: "Snap" }).focus();
     await page.keyboard.press("Enter");
