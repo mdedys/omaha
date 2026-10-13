@@ -178,7 +178,6 @@ Settled with Mike before building:
 ## Open questions
 
 - **Break with no break to reach.** Go and Seam routes have no break, and the rep can end (a sack, or a short rep) before the first read reaches his break. The build leaves the Break moment out in both cases: no Break button, and no Break split on the scrubber. A sack with no Break shows Snap and End over one segment.
-- **Break after the throw.** When the first read breaks after the ball is out, the jump-to buttons and scrubber segments follow time order (Snap, Throw, Break, End).
 - **Break timing.** The receiver runs his route path at one speed until his first break, so the build takes the first tick at which his first track step, repeated, covers the path's length to the break point. A Hook or Comeback can turn back within that tick, so his track may never get as deep as the break point.
 
 ## Acceptance criteria
