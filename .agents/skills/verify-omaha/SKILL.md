@@ -83,7 +83,7 @@ Proof standards:
 - Capture the action and the result: a `shot=` before the interaction and after it, plus the `aria.yml`.
 - Verify side effects as well as pixels. When a feature persists (design state, rep history), add a `storage=` step for the key and a `goto=` reload in the same drive, and show that the state came back.
 - Cover what the spec says differs: phone and desktop (the layout switches at 900px), light and dark. One drive per combination the change touches.
-- No mocks. The fixture puzzle and stub simulation are the product's own data until the engine lands, so drive them as-is.
+- No mocks. The puzzles and the v1 engine's simulation are the product's own data and logic, so drive them as-is.
 - Determinism is a product rule. If a result screen differs between two identical drives, that is a finding, not flake.
 
 ## Cleanup

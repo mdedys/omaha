@@ -1,5 +1,5 @@
 import type { DefensePlayArt, Engine, Puzzle, Rep, Score } from "../contract";
-import { preSnap, protections, routeMenu } from "./formations";
+import { displayName, preSnap, protections, routeMenu } from "./formations";
 import { availableDepths, routePath } from "./routes";
 import { simulate } from "./simulate";
 
@@ -46,6 +46,7 @@ export const engine: Engine = {
   score,
   revealedPlayArt,
   preSnap,
+  displayName,
   routeMenu,
   availableDepths,
   protections,

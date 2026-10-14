@@ -17,7 +17,7 @@ Before calling work done, run `pnpm lint`, `pnpm fmt:check`, `pnpm build` and `p
 
 ## Where to look
 
-- **What to build next:** open [GitHub issues](https://github.com/mdedys/omaha/issues). The engine contract and stub come first; screens build against the stub while v1 is built.
+- **What to build next:** open [GitHub issues](https://github.com/mdedys/omaha/issues). Screens build against the v1 engine in `src/engine/v1/`.
 - **How a screen looks and feels:** the screen's folder under `design/` (`spec.md` plus prototype HTML), indexed in [design/README.md](design/README.md).
 - **Tokens, type, components, field art:** [design/DESIGN.md](design/DESIGN.md).
 - **Game logic** (rules, simulation, scoring, puzzle format): the game engine's `wayfinder:map` issue on GitHub, then the engine spec it produces.
@@ -41,7 +41,7 @@ The decisions table in `design/README.md` is settled for UX; raise a question in
 - **MVP is pass plays only.** The puzzle sets the formation and defense; the player never picks them.
 - **No real team logos, uniforms or player likenesses.**
 - **Phone-first.** Design for 390px wide and touch, then scale up to desktop. Support light and dark themes.
-- **The engine contract and stub come first; screens build against the stub while v1 is built.**
+- **Screens reach the engine only through its contract.** Front-end code imports `src/engine/contract.ts`, `error.ts` and `index.ts`, never an engine version's internals.
 
 ## Code conventions
 

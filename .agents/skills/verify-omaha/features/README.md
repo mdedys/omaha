@@ -33,9 +33,14 @@ Each feature file starts with an H1 and one paragraph on what the player sees. I
 | --------------------------- | ------------------------ | ----------------------------------------- |
 | [App shell](./app-shell.md) | Live                     | #60                                       |
 | [Landing](./landing.md)     | Live (not-started state) | #60; stored progress remains #57          |
-| [Protect](./protect.md)     | Not built                | #61 (play screen), #62 (controls)         |
-| [Routes](./routes.md)       | Not built                | #63                                       |
-| [Read and snap](./read.md)  | Not built                | #64                                       |
-| [Result](./result.md)       | Not built                | #64 (sheet), #65 (play art), #71 (reveal) |
+| [Protect](./protect.md)     | Live                     | #61 (play screen), #62 (controls)         |
+| [Routes](./routes.md)       | Live                     | #63                                       |
+| [Read and snap](./read.md)  | Live                     | #64                                       |
+| [Live play](./live-play.md) | Live                     | #66                                       |
+| [Result](./result.md)       | Live (sheet, play art)   | #64 (sheet), #65 (play art), #71 (reveal) |
+| [Replay](./replay.md)       | Live                     | #67                                       |
+| [Share](./share.md)         | Live                     | #68                                       |
+| [Tutorial](./tutorial.md)   | Live                     | #69                                       |
+| [Puzzles](./puzzles.md)     | Live                     | #70                                       |
 
-Issue numbers are GitHub issues on `mdedys/omaha`, all children of #58. Not mapped yet: Puzzles (#70), Tutorial (#69), Live play (#66), Replay (#67), Pros reveal (#72), Share (#68), stored progress (#57). Add a file for each when its issue starts.
+Issue numbers are GitHub issues on `mdedys/omaha`, all children of #58. Not mapped yet: Pros reveal (#72), stored progress (#57). Add a file for each when its issue starts.

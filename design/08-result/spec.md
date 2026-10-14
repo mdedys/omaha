@@ -72,7 +72,7 @@ These values follow DESIGN.md Layout › Desktop control variants: primary butto
 |---|---|
 | Top bar | 64 px, padding `0 28px`, gap 16 px, 1 px Sand Border bottom. Left: "OMAHA" 24 px 900, letter-spacing .02em. Centre: "3rd & 10" 20 px 900 uppercase, baseline-aligned 10 px from "own 45" 14 px 800 uppercase Sage Muted. Right (gap 14 px, 14 px 600 Sage Muted, tabular): "#148", "Down 4 · 1:12", and four 9 px rep pips (gap 5 px). The used pip is filled #5A6B62 and the rest Sand Border, `aria-label="Rep 1 used, 3 left"`. |
 | Body | Grid `minmax(0,1fr) 440px`. |
-| Field stage | Background #0C3322 (Turf stage), padding 24 px, field centred. Field `height: calc(100vh - 112px)`, `width: auto`, `max-width: 100%`, radius 10 px. No field shade and no situation pills on the field. One pill, "Final · defense revealed", at `top:36px; left:36px`: 30 px tall, padding `0 12px`, radius 15 px, 13 px 700. |
+| Field stage | Background #0C3322 (Turf stage), padding 24 px, field centred. Field `height: calc(100vh - 112px)`, `width: auto`, `max-width: 100%`, radius 10 px. No field shade and no situation pills on the field. One pill, "Final · defense revealed", at `top:36px; left:36px`: 30 px tall, padding `0 12px`, radius 15 px, 13 px 700. On converted and out-of-reps results the key pill sits directly below it, 8 px apart, at the same left edge and size. |
 | Panel (`<aside aria-label="Rep result">`) | 440 px, 1 px Sand Border on the left, padding 28 px, flex column, gap 26 px. Cream background with charcoal text, as the cream sheet. |
 | Panel header | Padding-top 12 px, gap 8 px. Outcome tile 52×52, radius 12 px, 24 px ✕. 14 px gap. `h1` 46 px 900. Result line 18 px 600 Sage Muted. |
 | Stat triplet | Rule padding `16px 0`, gap 12 px. Values 32 px 900 Charcoal. Labels 13 px 600 Sage Muted. Column gap 6 px. |
@@ -125,10 +125,10 @@ Coverage examples (all rep 1, Incomplete, same stats as the first row):
 - **Result line:** one sentence pair, cause first, jab second (DESIGN.md Voice). It is authored or generated per outcome cause, never per outcome kind alone. Inputs: outcome kind, yards and the distance to gain, the cause code, the decisive defender's role, the targeted receiver and route, any receiver who was open, and the rep count (for out of reps). On a rep where the coverage name is hidden, the line must not name the coverage. The lines above are examples, not final copy.
 - **Yards values:** signed, with `+` for gains and U+2212 `−` for losses. Zero is `0`. The sack's label is `yards`; every other label is `yards gained`.
 - **Time in the pocket:** seconds with one decimal and a trailing `s` ("2.3s"), from snap to throw, or to the sack.
-- **Read stat:** the read the ball went to [S]. The value is the receiver's short name [P]; the label is that read's place in the order, `1st read`, `2nd read` or `3rd read`. A throwaway shows `—` over `thrown away`. A sack shows the read the QB was on over `on 1st read` (`on 2nd read`, `on 3rd read`). The Fit Rule applies: the value must never wrap. The receiver and the place don't fit one value at 26 px in a phone stat column (about 108 px), so they split between value and label.
+- **Read stat:** the read the ball went to [S]. The value is the receiver's short name [P]; the label is that read's place in the order, `1st read`, `2nd read` or `3rd read`. A throwaway shows `—` over `thrown away`. A sack shows the read the QB was on over `on 1st read` (`on 2nd read`, `on 3rd read`). The Fit Rule applies: the value must never wrap. The receiver and the place don't fit one value at 26 px in a phone stat column (about 108 px), so they split between value and label. The short name is the text the field draws on that receiver (`WR`, `TE`, `RB`). The receiver's player colour tells the wide receivers apart: colored text fails AA on Cream, so the value shows the receiver's swatch (as on the read options, 14 px, ring colour) before the name, and the name keeps the stat value colour.
 - **Status text:** `N reps left` (N ≥ 2), `1 rep left`, `Converted in N` (N = the converting rep), `No reps left`.
 - **Converted stats:** yards gained [S], points [engine scoring], day streak [L].
-- **Out-of-reps stats:** points (`0`), best rep (the largest yards across reps, signed) [R], reps used (`4`).
+- **Out-of-reps stats:** points (`0`), best rep (the largest yards across reps, signed) [R], reps used (`4`). When no rep gained yards, best rep still shows the actual best value, signed: `0`, or for example `−3` when every rep lost yards. No dash.
 - **Short tile:** the rep's yards, signed ("+7").
 
 ## Components
@@ -183,8 +183,8 @@ Every rep's result draws the defense's play art from data (`DefensePlayArt`, see
 4. **Zones.** One ellipse per zone (`cx, cy, rx, ry` from data), filled with the zone colour at `fill-opacity .3` and stroked in the same colour at `stroke-opacity .85`, width 1.4. Zone colours: deep → Zone Deep #3D7BFF, flat → Zone Flat #7FD8FF, hook/curl → Zone Hook #FFD84A, curl-flat → Zone Curl-Flat #B57CFF. A zone shows the assigned area; the defender may finish outside it (Tampa 2 safety, Cover 4 safety).
 5. **Start dots.** A circle of r 3, no fill, stroke Start Dot #7E8B85 1.2, at the pre-snap spot of every defender that has a drawn path. Defenders without a path get no dot.
 6. **Zone drop lines.** A polyline from the pre-snap spot through any waypoints toward the defender's final spot, in that defender's zone colour, width 1.8, round caps and joins, no arrowhead.
-7. **Man and rush paths.** The same polyline in Defense Path #C4CFC8, width 1.8, round caps and joins, with an open arrowhead. A rush path is drawn only where the rush matters to the outcome, such as an edge rush or the sacker. Interior linemen engaged at the line get no path and no start dot (DESIGN.md Coverage palette).
-8. **Blitz paths.** The same polyline in Snap Orange #E05A2B, width 2.4, round caps and joins, with an open arrowhead.
+7. **Man and rush paths.** The same polyline in Defense Path #C4CFC8, width 1.8, round caps and joins, with an open arrowhead. A lineman's rush path is drawn only when he is the decisive defender on a sack (`cause.decisive`). Every other lineman rushing, edge rushers included, gets no path and no start dot.
+8. **Blitz paths.** Every rusher who isn't a lineman. The same polyline in Snap Orange #E05A2B, width 2.4, round caps and joins, with an open arrowhead.
 9. **Defenders** at final spots: r 7.5, fill #071710, Cream ring 2.2.
 10. **Linemen** at final spots: r 8, fill #A4AAAF, stroke #DADDE0 1.2.
 11. **Receivers, RB and QB** at final spots: r 8.5. Receivers are filled #0E2219 with a 2.2 ring in their player colour and a white 6.5 px 700 label at y +2.3. The QB is filled #F2F5F3 with a #0A1410 label.
@@ -326,7 +326,7 @@ None on this screen. The arrival animation belongs to 07-live-play. Returning fr
 | Rep number, outcomes of earlier reps, best rep | Rep history (design state store) |
 | Points | Engine scoring (base by reps plus a quality bonus; for example 75 + 2 = 77) |
 | Day streak | Local storage |
-| Result line | Authored or generated per outcome cause (owner open) |
+| Result line | The front end's copy deck, one line per cause code (and per `forcedBy` value on the two forced codes), filled from the rep's facts |
 | Key pill visibility | Derived: `outcome.kind === 'converted' \|\| repNumber === 4` |
 
 **Proposal for the engine session**, the play-art contract (field units):
@@ -357,12 +357,19 @@ The ball path uses `RepPlayback.ball` (`from`, `control`, `to`). On an intercept
 
 1. **Touchdown result** (README). It needs its own headline and bonus display.
 2. **How much a failed rep reveals** (README) beyond the play art already shown.
-3. **Result line ownership.** Are lines authored per cause in puzzle data, written by the engine, or written by the front end from cause codes?
-4. **Best rep when nothing gained.** What does the out-of-reps "best rep" stat show when no rep gained yards (`0`, a negative value, or a dash)?
-5. **Read stat short names.** The prototypes use `TE`, `Slot` and `Left WR`, while DESIGN.md's Fit Rule suggests `RWR` and `TE`, and the receiver letters (`X`, `Y`, `Z`, `H`) are shorter still but unfamiliar to most players. What is the canonical short label for each receiver?
-6. **Desktop converted and out-of-reps panels, and the desktop key pill position.** Not prototyped.
-7. **Rush-path selection.** DESIGN.md draws a rush path only where the rush matters (edge rush, sacker). Does the engine flag those rushers in `DefenderPath`, or does the front end infer them?
-8. **Back navigation.** What do the browser and OS back actions do on the Result screen?
+3. **Back navigation.** What do the browser and OS back actions do on the Result screen?
+
+Resolved (approved by Mike):
+
+- **Result line ownership.** The front end's copy deck writes the line from the cause code and the rep's facts. No line names the coverage.
+- **Best rep when nothing gained.** The actual best value, signed (`0`, or `−3` when every rep lost yards). No dash.
+- **Read stat short names.** The text the field draws on the receiver (`WR`, `TE`, `RB`), with the receiver's colour swatch before it to tell the wide receivers apart (Copy rules › Read stat).
+- **Desktop key pill position.** "Defense · {coverage}" sits directly below the "Final · defense revealed" pill at the stage's top left, with an 8 px gap, in the same desktop pill style (30 px tall, 13 px 700). It shows only on a converted rep or rep 4, as on phone.
+- **Rush-path selection.** The front end decides from the `Rep`, with no engine contract change. Every rusher who isn't a lineman (a blitz) gets the orange 2.4 px path. A lineman gets the grey rush path only when he is the decisive defender on a sack (`cause.decisive`). Other linemen engaged at the line get no path and no start dot, and an edge rush that didn't get the sack is not drawn.
+
+Resolved in the build (not separately reviewed):
+
+- **Desktop converted and out-of-reps panels.** The desktop panel takes the sheet's variant: Ink Green for converted and Charcoal for out of reps, with the cream-sheet desktop sizes and the variant's colours from Sheet variants.
 
 ## Acceptance criteria
 
@@ -372,7 +379,7 @@ The ball path uses `RepPlayback.ball` (`from`, `control`, `to`). On an intercept
 - [ ] Cream sheet stat values are Charcoal, ink-green ones Read Gold, charcoal ones Snap Orange.
 - [ ] The key pill "Defense · {coverage}" shows on converted and out-of-reps results only, never on an earlier failed or short rep.
 - [ ] A converted result draws the first-down line at 3.5 px; all others at 2 px.
-- [ ] The four `coverages/*.html` frames render from `DefensePlayArt` data alone: zone colours by type at 30% fill and 85% stroke, same-colour drop lines with no arrowhead, grey man and rush paths with arrowheads, 2.4 px orange blitz paths with arrowheads, r 3 grey start dots only for defenders with a path, every path trimmed 10.5 units, arrowheads 5 units at ±38°. Rush paths appear only for rushers that matter (edge rush, sacker).
+- [ ] The four `coverages/*.html` frames render from `DefensePlayArt` data alone: zone colours by type at 30% fill and 85% stroke, same-colour drop lines with no arrowhead, grey man and rush paths with arrowheads, 2.4 px orange blitz paths with arrowheads, r 3 grey start dots only for defenders with a path, every path trimmed 10.5 units, arrowheads 5 units at ±38°. A lineman's rush path appears only when he made the sack.
 - [ ] Sack shows no ball path. Interception shows the football at the end of the ball path. No other state draws the football.
 - [ ] Throwaway draws the ball path to just past the nearest sideline and shows `—` over `thrown away` in the read stat.
 - [ ] Every route-running receiver has a badge whose shape matches its status. Blocking receivers have none.

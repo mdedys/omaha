@@ -37,10 +37,10 @@ Root, header and field as on Protect: flex column, Cream `#F4EFE4` background, I
    - Top group, flex column, **gap 12px**:
      - Step bar with `margin-bottom: 2px`.
      - Question row: flex, `justify-content: space-between`, `align-items: baseline`, gap 12px. The heading (`h2`): margin 0, 16px, weight 600, Ink Green, sentence case. The order hint: 12px 600 Sage Muted, `white-space: nowrap`.
-     - Read options: grid `repeat(2, minmax(0,1fr))`, gap 8px. Options flow row by row: four runners fill a 2×2 grid.
+     - Read options: grid `repeat(2, minmax(0,1fr))`, gap 8px. Options flow row by row: four runners fill a 2×2 grid. With five options the grid is `repeat(3, minmax(0,1fr))` (three, then two), options stay 52px, and the order badge sits on the option's top-right corner (centred 3px inside it, 7px outside the border) so the name keeps its width. Options use padding `0 10px` and gap 8px in that grid.
    - Primary button at the bottom.
 
-The question row stays one 16px line (heading about 190px plus the hint about 125px, inside 358px), so the height budget is unchanged. At 390×844 the top group with two rows of options is about 179px, plus the 52px button, out of 277px available, which leaves about 46px. A third row (five route runners, which is what the default 5-man protection gives in this formation) needs 60px more and overflows by about 14px. This case is not designed yet; see Open questions.
+The question row stays one 16px line (heading about 190px plus the hint about 125px, inside 358px), so the height budget is unchanged. At 390×844 the top group with two rows of options is about 179px, plus the 52px button, out of 277px available, which leaves about 46px. Five route runners (the default 5-man protection in this formation) use the three-column grid, so they also take two rows and the height budget holds.
 
 ### Dark theme (`prototype-dark.html`, `prototype-desktop-dark.html`)
 
@@ -70,12 +70,12 @@ DESIGN.md "Layout › Desktop" and its desktop control variants apply. Same styl
 | Rep dots label | `Rep 1 of 4` | Rep index |
 | Step labels | `1 Protect`, `2 Routes`, `3 Read` | Static |
 | Heading | `Who does the QB look to?` | Static |
-| Order hint | `Pick in order · up to 3` | Static |
+| Order hint | `Pick in order · up to 3`; while Snap is disabled, `Set every route first` when any route runner has no route, otherwise `Pick a read first` | Design state |
 | Option names | `Left WR`, `TE`, `Slot WR`, `Right WR` (and `RB` when the RB runs a route) | Formation data |
 | Option route names | `In`, `Corner`, `Out`, `Go` (sentence case; route name only, no depth) | Design state |
 | Primary button | `Snap` (rendered uppercase), with a play icon before it | Static |
 | Desktop button hint | `Enter` (in a `kbd`) | Static |
-| Desktop hint line | `1`–`4` add or drop a read (each key in a `kbd`; en dash) | Static; the upper number is the number of route runners |
+| Desktop hint line | `1`–`4` add or drop a read (each key in a `kbd`; en dash) | The upper number is the number of read options (`1`–`3`, `1`–`5`; a single option shows `1`; no options, no line) |
 | Desktop puzzle number | `#148` | Puzzle data |
 | Order badges | `1`, `2`, `3` | Position in the read order |
 | Option group label | `Read order` | Static |
@@ -111,11 +111,12 @@ DESIGN.md "Layout › Desktop" and its desktop control variants apply. Same styl
 | **Full order** (prototyped) | Three reads. Each has a 2px border and its gold number in the panel, and a gold ring, gold number and 2.4px route on the field. Every other option is quiet. Snap enabled. |
 | **Partial order** | Not prototyped. One or two reads, shown as above. Options outside the order look normal and can be added. Snap enabled when every route runner has a route. |
 | **No reads** | Not prototyped. All options normal (1px Sand Border, no badge). No gold ring or badge on the field; every route at 2px. Snap disabled. |
-| **Snap disabled** | Not prototyped. Disabled primary button (above), `aria-disabled="true"`, stays focusable, does nothing when activated. Shown whenever the snap unlock rule is not met. |
-| **Route runner without a route** | Possible, because moving between steps is never gated. Not prototyped. No route is drawn for that receiver and Snap stays disabled. What its option shows in place of the route name, and whether it can join the order, are open. |
+| **Snap disabled** | Not prototyped. Disabled primary button (above), `aria-disabled="true"`, stays focusable, does nothing when activated. Shown whenever the snap unlock rule is not met. No extra line explains it: the order hint says what is missing (`Set every route first`, or `Pick a read first`). |
+| **Route runner without a route** | Possible, because moving between steps is never gated. Not prototyped. No route is drawn for that receiver, it has no read option and can't be in the order, and Snap stays disabled. A read whose receiver loses its route leaves the order, and the reads after it move up. |
 | **Snap enabled** | Snap Orange; hover/pressed Snap Orange Deep `#C94B20`. |
+| **Snap failed** | The simulation rejected the design (`EngineError`). Read stays open with the design kept, the rep is not spent, and the order hint is replaced by `Snap failed. Try again.` in Snap Orange Text (`role="alert"`). Leaving the step clears it. |
 | **Three route runners** (7-man) | Not prototyped. Two options in row 1, one in row 2 (left column). A full order uses every runner, so no option goes quiet. |
-| **Five route runners** (5-man, the default) | Not designed. With the prototype's grid it would be two, two, one, which overflows the phone panel by about 14px (Open questions). |
+| **Five route runners** (5-man, the default) | Not prototyped. Phone: three-column grid, three then two, 52px options, order badges on the top-right corner (Layout). Desktop: the same vertical list. |
 | **Carried-over design** (rep 2+) | The previous order is kept. A read whose receiver no longer runs a route (kept in to block on Protect) leaves the order, and the reads after it move up. If that empties the order, Snap is disabled until a read is picked. |
 | **Dark** | Per Layout › Dark theme. |
 
@@ -157,19 +158,25 @@ None on this screen. Badges and rings appear, move and renumber instantly. The l
 
 ## Open questions
 
-- **Five route runners on phone (not designed).** The default 5-man protection gives five route runners in this formation. The two-column grid then needs a third row and overflows by about 14px at 390×844. The layout for this case is an open design question.
-- **Option order.** The prototype lists runners left to right by field position (Left WR, TE, Slot WR, Right WR). Where the RB goes when it runs a route is not shown.
 - **Tapping a quiet option.** It does nothing now. Replacing read 3 instead would save a tap, but a read could vanish without the player meaning to drop it.
 - Whether a read can also be added by tapping a receiver on the field.
-- Whether the disabled Snap explains what is missing, for example unassigned routes (no copy is prototyped).
-- What a route runner without a route shows in its option, and whether it can join the order.
-- Desktop keyboard: the hint text when there are three or five route runners; what `Enter` does while Snap is disabled; how digits and `Enter` interact with focus on an option.
+
+Resolved (approved by Mike):
+
+- **Five route runners on phone.** A three-column grid (three, then two); the panel height is unchanged and options stay 52px. Three or four runners keep the two-column grid.
+- **Option order.** Route runners left to right by pre-snap field position. A routed RB goes wherever its x position puts it.
+- **Route runner without a route.** It has no read option and can't join the order. If a read's receiver loses its route, that read leaves the order and the reads after it move up.
+- **Disabled Snap explanation.** No new line. The order hint says what is missing: `Set every route first` when any route runner has no route, otherwise `Pick a read first`.
+
+Resolved in the build (not separately reviewed):
+
+- **Desktop keyboard.** The hint counts the read options (`1`–`3`, `1`–`5`). `Enter` does nothing while Snap is disabled. A focused option or button keeps its own `Enter` (it toggles or activates that control); digits work wherever focus is, except in a text field.
 
 ## Acceptance criteria
 
 - [ ] At 390×844 the layout matches `prototype.html`: 52px header, 390×479 field, panel padding 14/16/22, top-group gap 12px.
 - [ ] The question row reads `Who does the QB look to?` (16px, 600) with `Pick in order · up to 3` (12px, 600, Sage Muted) on the same line.
-- [ ] One read option per current route runner (kept-in blockers are excluded), in a two-column grid with 8px gaps, each 52px with a swatch in the player color, the name, and the route name from the design state.
+- [ ] One read option per current route runner with a route (kept-in blockers and routeless runners are excluded), left to right by field position, in a two-column grid with 8px gaps (three columns with five options), each 52px with a swatch in the player color, the name, and the route name from the design state.
 - [ ] Tapping an option outside the order adds it at the end: 2px Ink Green border and a 20px Read Gold badge with its number.
 - [ ] Tapping an option in the order drops it; later reads renumber at once in the panel and on the field.
 - [ ] With three reads, every other option is quiet (transparent, Sage Muted text, swatch at 45%, `aria-disabled="true"`) and tapping it changes nothing; dropping a read makes them normal again.

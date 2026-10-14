@@ -107,7 +107,7 @@ test("farther touchdown goal uses the goal line instead of sticks", async ({
     route.fulfill({
       json: {
         ...touchdown,
-        situation: { ...touchdown.situation, spot: 80, distance: 5 },
+        situation: { ...touchdown.situation, spot: 80, distance: 20 },
       },
     }),
   );
@@ -126,12 +126,10 @@ test("starts Protect with the fresh draft", async ({ page }) => {
     "aria-current",
     "step",
   );
+  await expect(page.getByRole("radio", { name: "5-man" })).toBeChecked();
   await expect(
-    page.getByText("Protection controls are not available yet."),
-  ).toBeVisible();
-  await expect(
-    page.getByText("Current draft: 5-man · man. No routes or reads set."),
-  ).toBeVisible();
+    page.getByRole("radio", { name: "Man", exact: true }),
+  ).toBeChecked();
   await expect(
     page.getByRole("group", { name: "Rep 1 of 4" }).locator("i"),
   ).toHaveCount(4);
@@ -155,11 +153,26 @@ for (const activation of ["click", "Enter", "Space"]) {
       }
       await expect(button).toHaveAttribute("aria-current", "step");
       await expect(
-        page.getByRole("heading", { name: step.slice(2), exact: true }),
+        page.getByRole("heading", {
+          name: step === "3 Read" ? "Who does the QB look to?" : step.slice(2),
+          exact: true,
+        }),
       ).toBeVisible();
-      await expect(
-        page.getByText("Current draft: 5-man · man. No routes or reads set."),
-      ).toBeVisible();
+      if (step === "1 Protect") {
+        await expect(page.getByRole("radio", { name: "5-man" })).toBeChecked();
+        await expect(
+          page.getByRole("radio", { name: "Man", exact: true }),
+        ).toBeChecked();
+      } else if (step === "2 Routes") {
+        await expect(
+          page.getByRole("listbox", { name: "Routes for Left WR" }),
+        ).toBeVisible();
+        await expect(
+          page.getByText("Choose a route to set its depth."),
+        ).toBeVisible();
+      } else {
+        await expect(page.getByText("Set every route first")).toBeVisible();
+      }
     }
   });
 }
@@ -183,7 +196,7 @@ test("browser back preserves a different origin", async ({ page }) => {
   await page.goBack();
   await expect(page).toHaveURL("/how-to-play");
   await expect(
-    page.getByRole("heading", { name: "How to play" }),
+    page.getByRole("heading", { name: "Read the situation" }),
   ).toBeVisible();
 });
 
@@ -191,7 +204,7 @@ test("reload restarts the in-memory session", async ({ page }) => {
   await openPuzzle(page);
   await page.getByRole("button", { name: "3 Read" }).click();
   await expect(
-    page.getByRole("heading", { name: "Read", exact: true }),
+    page.getByRole("heading", { name: "Who does the QB look to?" }),
   ).toBeVisible();
   await page.reload();
   await expect(page.getByRole("button", { name: "1 Protect" })).toHaveAttribute(
@@ -199,9 +212,10 @@ test("reload restarts the in-memory session", async ({ page }) => {
     "step",
   );
   await expect(page.getByRole("group", { name: "Rep 1 of 4" })).toBeVisible();
+  await expect(page.getByRole("radio", { name: "5-man" })).toBeChecked();
   await expect(
-    page.getByText("Current draft: 5-man · man. No routes or reads set."),
-  ).toBeVisible();
+    page.getByRole("radio", { name: "Man", exact: true }),
+  ).toBeChecked();
 });
 
 test("field stays identical through themes and viewport changes", async ({
@@ -209,7 +223,7 @@ test("field stays identical through themes and viewport changes", async ({
 }) => {
   await page.emulateMedia({ colorScheme: "light" });
   await openPuzzle(page);
-  const field = page.getByRole("img", { name: /^Field:/ });
+  const field = page.locator(".puzzle-field");
   const markup = await field.innerHTML();
   await page.emulateMedia({ colorScheme: "dark" });
   expect(await field.innerHTML()).toBe(markup);
@@ -218,6 +232,13 @@ test("field stays identical through themes and viewport changes", async ({
   await page.setViewportSize({ width: 1280, height: 800 });
   expect(await field.innerHTML()).toBe(markup);
   await page.getByRole("button", { name: "2 Routes" }).click();
+  await expect(field).toHaveAttribute("role", "group");
+  await expect(page.locator('[data-selection="X"]')).toHaveAttribute(
+    "stroke",
+    "#F4B13E",
+  );
+  await page.getByRole("button", { name: "1 Protect" }).click();
+  await expect(field).toHaveAttribute("role", "img");
   expect(await field.innerHTML()).toBe(markup);
   await page.reload();
   await expect(page.getByRole("heading", { name: "Protect" })).toBeVisible();
@@ -272,13 +293,11 @@ test("step controls have touch-sized keyboard focus affordances", async ({
   }
 });
 
-test("field accessible name describes only the pre-snap situation", async ({
-  page,
-}) => {
+test("field name includes protection but no assignments", async ({ page }) => {
   await openPuzzle(page);
   await expect(page.getByRole("img", { name: /^Field:/ })).toHaveAttribute(
     "aria-label",
-    "Field: 2nd and goal, opponent 6. Pre-snap offense and defense; blue line of scrimmage, yellow line to gain.",
+    "Field: 2nd and goal, opponent 6. Pre-snap offense and defense; blue line of scrimmage, yellow line to gain. 5-man protection. Line stays in. Line takes defensive linemen.",
   );
 });
 

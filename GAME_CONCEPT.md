@@ -92,7 +92,8 @@ Free. No ads, no paid tier, no paywalled puzzles.
   - Result screen with the real-call reveal and share card
   - Results API for the "% beat the pros" stat
   - Local streaks
-- **Post-MVP:** the Omaha audible (see Interactivity), run plays and QB sneaks, archive, practice mode, hard mode, leaderboards, art variants, native apps.
+  - A Puzzles list of the current season's puzzles, so earlier ones can be played
+- **Post-MVP:** the Omaha audible (see Interactivity), run plays and QB sneaks, practice mode, hard mode, leaderboards, art variants, native apps.
 - **Target ship date:** early November 2026, leaving roughly 9–10 regular-season weeks plus the full playoffs.
 
 **Risks:**
