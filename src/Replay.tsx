@@ -147,10 +147,10 @@ export function Replay({
         <Field
           puzzle={puzzle}
           engine={engine}
-          live={{ ...frame, cone: null }}
+          live={frame}
           ballPath
           bleed
-          label={`Rep ${number} replay, ${clock.playing ? "playing" : `paused at ${tenths(tick * TICK_SECONDS)} seconds${named}`}: players and the ball only, no play art.`}
+          label={`Rep ${number} replay, ${clock.playing ? "playing" : `paused at ${tenths(tick * TICK_SECONDS)} seconds${named}`}: players and the ball, no play art.`}
         />
         <span className="replay-pill">
           <Glyph playing={clock.playing} />
