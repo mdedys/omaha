@@ -1,14 +1,9 @@
 import { describe, expect, test } from "vitest";
 import type { Design, Letter, RouteCall } from "./engine/contract";
 import { loadPuzzle } from "./engine";
-import puzzleOneJson from "../public/puzzles/1.json";
-import tutorial from "./tutorial.json";
+import { puzzleOne } from "./pinnedPuzzleOne";
 import blitz from "./engine/v1/scenarios/a-gap-blitz-man-protection.json";
 import { moments, tenths } from "./moments";
-
-// Puzzle 1's situation against the tutorial's fixed defense, so these reps
-// don't change when puzzle 1's defense does.
-const puzzleOne = { ...puzzleOneJson, defense: tutorial.defense };
 
 const one = await loadPuzzle(puzzleOne);
 

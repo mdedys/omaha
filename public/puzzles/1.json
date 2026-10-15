@@ -19,15 +19,15 @@
     { "id": "DL1", "assignment": "rush L-C" },
     { "id": "DL2", "assignment": "rush L-A" },
     { "id": "DL3", "assignment": "rush R-A" },
-    { "id": "DL4", "look": { "on": "ball", "x": 3, "y": 1 }, "assignment": "zone hook-R" },
-    { "id": "LB1", "assignment": "zone hook-L" },
-    { "id": "LB2", "assignment": "zone hook-M" },
-    { "id": "LB3", "look": { "on": "ball", "x": 4 }, "assignment": "man RB" },
-    { "id": "CB1", "assignment": "man X" },
-    { "id": "CB2", "assignment": "man Z" },
-    { "id": "NB", "assignment": "rush R-D" },
-    { "id": "S1", "assignment": "zone deep-middle" }
+    { "id": "DL4", "assignment": "rush R-C" },
+    { "id": "LB1", "look": { "on": "ball", "x": -2.25, "y": 5 }, "assignment": "zone hook-L" },
+    { "id": "LB2", "look": { "on": "ball", "x": 2.25, "y": 5 }, "assignment": "zone hook-R" },
+    { "id": "CB1", "look": { "y": 3 }, "assignment": "zone deep-third-L" },
+    { "id": "CB2", "look": { "y": 3 }, "assignment": "zone deep-third-R" },
+    { "id": "NB", "assignment": "zone curl-flat-R" },
+    { "id": "S2", "look": { "on": "field", "x": -4, "y": 12 }, "assignment": "zone curl-flat-L" },
+    { "id": "S1", "look": { "on": "field", "x": 4, "y": 12 }, "assignment": "zone deep-middle" }
   ],
-  "coverageName": "Cover 1 pressure",
+  "coverageName": "Nickel Cover 3",
   "prosResult": "Incomplete"
 }

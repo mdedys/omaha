@@ -15,7 +15,7 @@ import { playback } from "./playback";
 import { createPuzzleSession } from "./PuzzleScreen";
 import type { Design } from "./engine/contract";
 import fixture from "../public/puzzles/2.json";
-import puzzleOne from "../public/puzzles/1.json";
+import { puzzleOne } from "./pinnedPuzzleOne";
 
 const routes: Design["routes"] = {
   X: { route: "Post", depth: 10 },

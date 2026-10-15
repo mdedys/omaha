@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import fixture from "../public/puzzles/1.json" with { type: "json" };
+import { pinnedPuzzleOne as fixture } from "./page";
 
 test("flipped first entry selects leftmost runner", async ({ page }) => {
   await page.route("**/puzzles/1.json", (route) =>
