@@ -19,6 +19,10 @@ _Avoid_: success condition, objective
 **Look**:
 The defense's pre-snap alignment, the only part of the defense the player sees. It may disguise the defensive call.
 
+**Look spot**:
+Where one defender lines up in the look. The engine derives it from his role and assignment and from where the offense lines up, so it follows the formation, hash and flip. A puzzle overrides it with a `look` only to disguise him or when his role and assignment give no default.
+_Avoid_: alignment coordinates
+
 **Defensive call**:
 The coverage and pressure the defense actually runs, hidden from the player: every defender's assignment, plus its coverage name.
 _Avoid_: "the defense" on its own

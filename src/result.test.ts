@@ -7,10 +7,15 @@ import type {
   RouteCall,
 } from "./engine/contract";
 import { loadPuzzle } from "./engine";
-import puzzleOne from "../public/puzzles/1.json";
+import puzzleOneJson from "../public/puzzles/1.json";
+import tutorial from "./tutorial.json";
 import { playback } from "./playback";
 import { liveCaption, liveLabel, resultSheet } from "./result";
 import type { Played } from "./result";
+
+// Puzzle 1's situation against the tutorial's fixed defense, so these reps
+// don't change when puzzle 1's defense does.
+const puzzleOne = { ...puzzleOneJson, defense: tutorial.defense };
 
 type Scenario = { puzzle: unknown; design: Design };
 const scenarios = import.meta.glob<Scenario>("./engine/v1/scenarios/*.json", {

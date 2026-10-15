@@ -50,7 +50,11 @@ function puzzle(
   const fill = allIds
     .filter((id) => !named.has(id))
     .slice(0, 11 - defense.length)
-    .map((id, i): Spot => [id, i * 2 - 6, 50, "zone deep-middle"]);
+    .map((id, i) => ({
+      id,
+      look: { on: "field", x: i * 2 - 6, y: 50 },
+      assignment: "zone deep-middle",
+    }));
   return parsePuzzle({
     engine: 1,
     number: 1,
@@ -71,11 +75,14 @@ function puzzle(
       id: options.formation ?? "gun-trey",
       flip: options.flip ?? false,
     },
-    defense: [...defense, ...fill].map(([id, x, y, assignment]) => ({
-      id,
-      at: [x, y],
-      assignment,
-    })),
+    defense: [
+      ...defense.map(([id, x, y, assignment]) => ({
+        id,
+        look: { on: "ball", x, y },
+        assignment,
+      })),
+      ...fill,
+    ],
     coverageName: "Test",
     prosResult: "Incomplete",
   });
@@ -132,7 +139,7 @@ function blocks(log: LogEvent[]) {
 }
 function gapRushers(gaps: string[]): Spot[] {
   const ids: DefenderId[] = ["LB1", "LB2", "LB3", "CB1", "CB2", "NB", "DB"];
-  return gaps.map((gap, i) => [ids[i], 0, 5, `rush ${gap}`]);
+  return gaps.map((gap, i) => [ids[i], i * 2 - 6, 5, `rush ${gap}`]);
 }
 
 describe("rep assembly", () => {
@@ -310,7 +317,7 @@ describe("protection by ownership", () => {
   const eight = ["L-A", "L-B", "L-C", "L-D", "R-A", "R-B", "R-C", "R-D"];
   it("slides left: C L-A, LG L-B, LT L-C, RG R-A, RT R-B, RB R-C", () => {
     const { log } = simulateWithLog(
-      puzzle(gapRushers(eight.slice(0, 7)).concat([["S1", 0, 5, "rush R-D"]])),
+      puzzle(gapRushers(eight.slice(0, 7)).concat([["S1", 8, 5, "rush R-D"]])),
       design(6, "slide-left"),
     );
     expect(blocks(log)).toEqual([
@@ -326,7 +333,7 @@ describe("protection by ownership", () => {
   });
   it("slides right: C R-A, RG R-B, RT R-C, LG L-A, LT L-B, RB L-C", () => {
     const { log } = simulateWithLog(
-      puzzle(gapRushers(eight.slice(0, 7)).concat([["S1", 0, 5, "rush R-D"]])),
+      puzzle(gapRushers(eight.slice(0, 7)).concat([["S1", 8, 5, "rush R-D"]])),
       design(6, "slide-right"),
     );
     expect(blocks(log)).toEqual([
@@ -1179,7 +1186,11 @@ describe("deep zones", () => {
     // CB2 drops from 50 yd; without the throw at tick 59, Z's Go would come
     // within 6 yd of his depth at tick 69.
     const { rep, log } = simulateWithLog(
-      puzzle([...lateSack, ["CB2", 10.5, 50, "zone deep-third-R"]]),
+      puzzle([
+        ...lateSack,
+        ["CB2", 10.5, 50, "zone deep-third-R"],
+        ["DB", -8, 50, "zone deep-middle"],
+      ]),
       design(
         6,
         "man",

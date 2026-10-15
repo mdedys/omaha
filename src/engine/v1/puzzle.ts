@@ -1,8 +1,30 @@
-import type { Assignment, Puzzle } from "../contract";
+import type { Assignment, Look, LookAnchor, Puzzle } from "../contract";
 import { EngineError } from "../error";
-import { defenderIds, formationIds, gapIds, letters } from "./formations";
+import {
+  defenderIds,
+  formationIds,
+  gapIds,
+  letters,
+  preSnap,
+} from "./formations";
+import { linemen } from "./protection";
 import { zoneIds } from "./zones";
-import { FIELD_LENGTH_YARDS, MAX_SPOT_YARDS, MIN_SPOT_YARDS } from "./tuning";
+import {
+  DEFENDER_SPACING_YARDS,
+  FIELD_HALF_WIDTH_YARDS,
+  FIELD_LENGTH_YARDS,
+  MAX_SPOT_YARDS,
+  MIN_SPOT_YARDS,
+} from "./tuning";
+import { distance } from "./vec";
+
+const lookAnchors: readonly LookAnchor[] = [
+  ...letters,
+  ...linemen,
+  "QB",
+  "ball",
+  "field",
+];
 
 function object(value: unknown): Record<string, unknown> {
   if (typeof value !== "object" || value === null || Array.isArray(value)) {
@@ -40,6 +62,33 @@ function assignment(value: unknown): Assignment {
   }
   throw new EngineError("Unknown defensive assignment");
 }
+function look(value: unknown): Look | undefined {
+  if (value === undefined) return undefined;
+  const raw = object(value);
+  return {
+    on: raw.on === undefined ? undefined : member(raw.on, lookAnchors),
+    x: raw.x === undefined ? undefined : number(raw.x),
+    y: raw.y === undefined ? undefined : number(raw.y),
+  };
+}
+// Each defender's resolved spot is on the field and at least the spacing from
+// every other defender's.
+function checkAlignment(puzzle: Puzzle) {
+  const spots = preSnap(puzzle);
+  const placed = puzzle.defense.map((defender) => spots[defender.id]);
+  if (placed.some((spot) => Math.abs(spot.x) > FIELD_HALF_WIDTH_YARDS)) {
+    throw new EngineError("A defender lines up past a sideline");
+  }
+  placed.forEach((spot, i) => {
+    if (
+      placed
+        .slice(i + 1)
+        .some((other) => distance(spot, other) < DEFENDER_SPACING_YARDS)
+    ) {
+      throw new EngineError("Two defenders line up within a yard");
+    }
+  });
+}
 export function parsePuzzle(json: unknown): Puzzle {
   const raw = object(json);
   const situation = object(raw.situation);
@@ -67,7 +116,7 @@ export function parsePuzzle(json: unknown): Puzzle {
   const version = number(raw.engine);
   if (version !== 1) throw new EngineError("Unsupported v1 puzzle version");
   const seen = new Set<string>();
-  return {
+  const puzzle: Puzzle = {
     engine: version,
     number: number(raw.number),
     date: text(raw.date),
@@ -85,19 +134,18 @@ export function parsePuzzle(json: unknown): Puzzle {
     formation: { id: member(formation.id, formationIds), flip: formation.flip },
     defense: raw.defense.map((value: unknown) => {
       const defender = object(value);
-      if (!Array.isArray(defender.at) || defender.at.length !== 2) {
-        throw new EngineError("Expected a defender coordinate pair");
-      }
       const id = member(defender.id, defenderIds);
       if (seen.has(id)) throw new EngineError("Duplicate defender id");
       seen.add(id);
       return {
         id,
-        at: { x: number(defender.at[0]), y: number(defender.at[1]) },
+        look: look(defender.look),
         assignment: assignment(defender.assignment),
       };
     }),
     coverageName: text(raw.coverageName),
     prosResult: text(raw.prosResult),
   };
+  checkAlignment(puzzle);
+  return puzzle;
 }

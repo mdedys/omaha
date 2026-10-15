@@ -51,6 +51,8 @@ export type FormationId =
   | "gun-empty"
   | "gun-doubles-12"
   | "ace";
+export type LookAnchor = OffenseId | "ball" | "field";
+export type Look = { on?: LookAnchor; x?: number; y?: number };
 export type Puzzle = {
   engine: number;
   number: number;
@@ -67,7 +69,7 @@ export type Puzzle = {
   goal: "first-down" | "touchdown";
   briefing: string;
   formation: { id: FormationId; flip: boolean };
-  defense: { id: DefenderId; at: Vec; assignment: Assignment }[];
+  defense: { id: DefenderId; look?: Look; assignment: Assignment }[];
   coverageName: string;
   prosResult: string;
 };

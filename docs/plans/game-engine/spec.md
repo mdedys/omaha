@@ -94,7 +94,7 @@ A rep is a time-stepped simulation. Each tick, every rule reads the previous tic
 
 ### Data Models & Schema
 
-A puzzle is one plain JSON file: situation, goal, formation and flip, eleven defenders each with a spot in yards from the ball and an assignment string, the coverage name, and the pros' result. Catalogs (seven flippable formations, three route menus, the zone catalog, eight gaps) live in the version folder, never in the puzzle. Full schema and validation rules: [contracts.md](contracts.md#puzzle).
+A puzzle is one plain JSON file: situation, goal, formation and flip, eleven defenders each with an assignment string and an optional look spot (the engine derives each defender's alignment from his role and assignment), the coverage name, and the pros' result. Catalogs (seven flippable formations, three route menus, the zone catalog, eight gaps) live in the version folder, never in the puzzle. Full schema and validation rules: [contracts.md](contracts.md#puzzle).
 
 ### API & Interface Contracts
 

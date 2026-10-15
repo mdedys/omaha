@@ -1,15 +1,21 @@
 import type {
+  Assignment,
   Blockers,
   DefenderId,
   FormationId,
   Gap,
   Letter,
+  Look,
+  LookAnchor,
   PlayerId,
   Puzzle,
   RouteName,
   Vec,
+  ZoneId,
 } from "../contract";
+import { EngineError } from "../error";
 import * as t from "./tuning";
+import { zoneCatalog } from "./zones";
 
 export const defenderIds: readonly DefenderId[] = [
   "DL1",
@@ -302,9 +308,125 @@ export function preSnap(puzzle: Puzzle): Record<PlayerId, Vec> {
     S2: unusedDefender,
   };
   for (const id of defenderIds) Reflect.deleteProperty(positions, id);
-  for (const defender of puzzle.defense)
-    positions[defender.id] = { x: ball + defender.at.x, y: defender.at.y };
+  const anchorX = (on: LookAnchor) =>
+    on === "ball" ? ball : on === "field" ? 0 : positions[on].x;
+  for (const defender of puzzle.defense) {
+    const fallback = defaultLook(puzzle, positions, defender);
+    const on = defender.look?.on ?? fallback?.on;
+    const x = defender.look?.x ?? fallback?.x;
+    const y = defender.look?.y ?? fallback?.y;
+    if (on === undefined || x === undefined || y === undefined) {
+      throw new EngineError("Expected a full look for " + defender.id);
+    }
+    positions[defender.id] = { x: anchorX(on) + x, y };
+  }
   return positions;
+}
+type AlignmentRole = "DL" | "LB" | "CB" | "NB" | "S";
+const alignmentRoles: Record<DefenderId, AlignmentRole> = {
+  DL1: "DL",
+  DL2: "DL",
+  DL3: "DL",
+  DL4: "DL",
+  LB1: "LB",
+  LB2: "LB",
+  LB3: "LB",
+  CB1: "CB",
+  CB2: "CB",
+  NB: "NB",
+  DB: "NB",
+  S1: "S",
+  S2: "S",
+};
+const roleDepths: Record<AlignmentRole, number> = {
+  DL: t.DL_DEPTH_YARDS,
+  LB: t.LB_DEPTH_YARDS,
+  CB: t.CB_DEPTH_YARDS,
+  NB: t.NB_DEPTH_YARDS,
+  S: t.S_DEPTH_YARDS,
+};
+// The zones a corner or nickel lines up over a receiver for, by the field side
+// each covers.
+const outsideZones: Partial<Record<ZoneId, -1 | 1>> = {
+  "deep-half-L": -1,
+  "deep-half-R": 1,
+  "deep-third-L": -1,
+  "deep-third-R": 1,
+  "deep-quarter-1": -1,
+  "deep-quarter-4": 1,
+  "curl-flat-L": -1,
+  "curl-flat-R": 1,
+  "flat-L": -1,
+  "flat-R": 1,
+};
+// The look a defender's role and assignment give him, or undefined when the
+// puzzle must name his full look.
+function defaultLook(
+  puzzle: Puzzle,
+  offense: Record<PlayerId, Vec>,
+  defender: { id: DefenderId; assignment: Assignment },
+): Required<Look> | undefined {
+  const role = alignmentRoles[defender.id];
+  const depth = roleDepths[role];
+  const ball = ballX(puzzle);
+  const { assignment } = defender;
+  if (assignment.kind === "rush") {
+    if (assignment.gap === undefined || role === "CB") return undefined;
+    const gap = gapPoints(puzzle)[assignment.gap];
+    return { on: "ball", x: gap.x - ball, y: depth };
+  }
+  if (assignment.kind === "man") {
+    const target = assignment.target;
+    const away = Math.sign(offense[target].x - ball);
+    const backfield =
+      target === "RB" && formations[puzzle.formation.id].rbInBackfield;
+    return {
+      on: target,
+      x: (backfield ? -away : away) * t.MAN_OUTSIDE_YARDS,
+      y: depth,
+    };
+  }
+  const zone = assignment.zone;
+  const landmark = zoneCatalog(puzzle)[zone].center.x;
+  const side = outsideZones[zone];
+  const overReceiver = (fromOutside: number): Required<Look> | undefined => {
+    if (side === undefined) return undefined;
+    const over = receiversOutsideIn(puzzle, offense, side)[fromOutside];
+    return over === undefined ? undefined : { on: over, x: 0, y: depth };
+  };
+  switch (role) {
+    case "DL":
+      return undefined;
+    case "LB":
+      return zone.startsWith("hook") || zone.startsWith("curl")
+        ? { on: "field", x: landmark, y: depth }
+        : undefined;
+    case "CB":
+      return overReceiver(0);
+    case "NB":
+      return zone.startsWith("deep") ? undefined : overReceiver(1);
+    case "S":
+      return zone.startsWith("deep")
+        ? { on: "field", x: landmark, y: t.DEEP_SAFETY_DEPTH_YARDS }
+        : undefined;
+  }
+}
+// The split receivers on one side of the ball, outermost first. A backfield
+// RB isn't split, so he is never counted.
+function receiversOutsideIn(
+  puzzle: Puzzle,
+  offense: Record<PlayerId, Vec>,
+  side: -1 | 1,
+): Letter[] {
+  const ball = ballX(puzzle);
+  const formation = formations[puzzle.formation.id];
+  return letters
+    .filter(
+      (letter) =>
+        formation.alignment[letter] !== "back" &&
+        Math.sign(offense[letter].x - ball) === side,
+    )
+    .sort((a, b) => side * (offense[b].x - offense[a].x));
 }
 export const gapIds: readonly Gap[] = [
   "L-A",

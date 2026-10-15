@@ -3,6 +3,7 @@ import type { Design, Engine, Rep } from "./contract";
 import { EngineError } from "./error";
 import { loadPuzzle } from "./index";
 import gunTrey from "../../public/puzzles/1.json";
+import goalLine from "../../public/puzzles/2.json";
 
 describe("loadPuzzle", () => {
   it.each([
@@ -29,7 +30,6 @@ describe("loadPuzzle", () => {
       defense: expect.arrayContaining([
         {
           id: "DL1",
-          at: { x: -3, y: 1 },
           assignment: { kind: "rush", gap: "L-C" },
         },
       ]),
@@ -60,6 +60,49 @@ describe("loadPuzzle", () => {
       verdict: expect.stringMatching(/^(converted|short|failed)$/),
     });
   });
+
+  it("lines puzzle 2's corners up 1 yd outside their wideouts on the right hash", async () => {
+    const { puzzle, engine } = await loadPuzzle(goalLine);
+    const spots = engine.preSnap(puzzle);
+    expect(puzzle.situation.hash).toBe("right");
+    expect({ CB1: spots.CB1, X: spots.X, CB2: spots.CB2, Z: spots.Z }).toEqual({
+      CB1: { x: -12.75, y: 7 },
+      X: { x: -11.75, y: -0.5 },
+      CB2: { x: 12.75, y: 7 },
+      Z: { x: 11.75, y: -0.5 },
+    });
+  });
+
+  it.each([
+    { name: "1", json: gunTrey, ball: 0 },
+    { name: "2", json: goalLine, ball: 4 },
+  ])(
+    "loads puzzle $name with its defense lined up from the ball",
+    async ({ json, ball }) => {
+      const { puzzle, engine } = await loadPuzzle(json);
+      const spots = engine.preSnap(puzzle);
+      expect(
+        Object.fromEntries(
+          puzzle.defense.map(({ id }) => [
+            id,
+            { x: spots[id].x - ball, y: spots[id].y },
+          ]),
+        ),
+      ).toEqual({
+        DL1: { x: -3.75, y: 1 },
+        DL2: { x: -0.75, y: 1 },
+        DL3: { x: 0.75, y: 1 },
+        DL4: { x: 3, y: 1 },
+        LB1: { x: -5, y: 5 },
+        LB2: { x: 0, y: 5 },
+        LB3: { x: 4, y: 5 },
+        CB1: { x: -12.75 - ball, y: 7 },
+        CB2: { x: 12.75 - ball, y: 7 },
+        NB: { x: 5.25, y: 5 },
+        S1: { x: 0 - ball, y: 12 },
+      });
+    },
+  );
 
   it.each([
     { id: "gun-trey", counts: [5, 6, 7] },

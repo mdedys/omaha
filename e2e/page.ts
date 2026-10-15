@@ -1,4 +1,14 @@
 import type { Page } from "@playwright/test";
+import puzzleOne from "../public/puzzles/1.json" with { type: "json" };
+import tutorial from "../src/tutorial.json" with { type: "json" };
+
+// Serves puzzle 1 against the tutorial's fixed defense, so the reps these
+// tests pin don't change when puzzle 1's defense does.
+export function pinPuzzleOne(page: Page) {
+  return page.route("**/puzzles/1.json", (route) =>
+    route.fulfill({ json: { ...puzzleOne, defense: tutorial.defense } }),
+  );
+}
 
 // Resolves after the tasks already queued, such as React's render of the
 // last animation frame. The page clock doesn't fake message channels.

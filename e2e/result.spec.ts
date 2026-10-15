@@ -1,6 +1,8 @@
 import { expect, test } from "@playwright/test";
 import type { Locator, Page } from "@playwright/test";
-import { routes, runItBack, snapFirstRep } from "./page";
+import { pinPuzzleOne, routes, runItBack, snapFirstRep } from "./page";
+
+test.beforeEach(({ page }) => pinPuzzleOne(page));
 
 function labels(locator: Locator) {
   return locator.evaluateAll((elements) =>
