@@ -2,7 +2,7 @@
 
 ## Purpose
 
-A video-style replay of the rep just played, so the player can study why it worked or failed. They can play, pause, scrub, step frame by frame, change speed and jump to key moments. The field shows players, defenders and the ball only: no route lines, zones or other play art.
+A video-style replay of the rep just played, so the player can study why it worked or failed. They can play, pause, scrub, step frame by frame, change speed and jump to key moments. The field shows players, defenders, the ball and the QB vision cone: no route lines, zones or other play art.
 
 ## Prototypes
 
@@ -99,12 +99,13 @@ Desktop: the same mapping (scrubber, time, speed control, transport buttons, `Ju
 - **Desktop hint line**: 12px 600 Sage Muted, centered; `kbd`s Paper White, 1px Sand Border, Ink Green, 700 11px, padding `3px 7px`, radius 5px.
 - **Field** (DESIGN.md "Field glyphs"), drawn from simulation positions at the current time, in paint order:
   1. Field base (line of scrimmage and first-down line at their pre-snap positions).
-  2. Defenders: r=7.5, `#071710`, Cream ring 2.2, no label.
-  3. Ball path (after the throw): quadratic path from the QB's release point to the ball's current position, no fill, stroke `#F2F5F3`, width 1.8, `stroke-dasharray: 2 5`, round caps, full opacity (DESIGN.md "Field glyphs › Ball": full opacity in the replay, 70% on result screens).
-  4. Football (after the throw): ellipse rx=4, ry=2.6, rotated along the flight direction (−42° in the prototype), fill `#8B5A2B`, stroke `#F2F5F3` 0.8.
-  5. Linemen.
-  6. Receivers and QB with ring colors and labels.
-  - **Not drawn:** routes, zones, protection zigzag, slide arrow, RB block line, read ring and badge, QB vision cone, receiver feedback badges, defense play art, field shade.
+  2. QB vision cone, while the quarterback is reading: the 07-live-play wedge, 176 units long and ±13° wide, path `M0 0 L176 -41 L176 41 Z`. Its origin is the QB's centre. It is filled with a horizontal linear gradient of Read Gold from 70% opacity at the QB to 0% at the far end, aimed at the current read, turning to the next read over 0.15 s along the shorter arc, and fading out within 0.3 s of the throw or sack. Hidden before the snap. Drawn above the field markings and below every player.
+  3. Defenders: r=7.5, `#071710`, Cream ring 2.2, no label.
+  4. Ball path (after the throw): quadratic path from the QB's release point to the ball's current position, no fill, stroke `#F2F5F3`, width 1.8, `stroke-dasharray: 2 5`, round caps, full opacity (DESIGN.md "Field glyphs › Ball": full opacity in the replay, 70% on result screens).
+  5. Football (after the throw): ellipse rx=4, ry=2.6, rotated along the flight direction (−42° in the prototype), fill `#8B5A2B`, stroke `#F2F5F3` 0.8.
+  6. Linemen.
+  7. Receivers and QB with ring colors and labels.
+  - **Not drawn:** routes, zones, protection zigzag, slide arrow, RB block line, read ring and badge, receiver feedback badges, defense play art, field shade.
 
 ## States
 
@@ -113,7 +114,7 @@ Desktop: the same mapping (scrubber, time, speed control, transport buttons, `Ju
 | **Paused at a moment** (prototyped) | Thumb at the moment's time; matching jump-to button selected (`aria-pressed="true"`); play button shows the play icon with `aria-label="Play"`; pill shows the pause glyph. |
 | **Paused between moments** | Not prototyped. No jump-to button is selected (`aria-pressed="false"` on all). |
 | **Playing** | Not prototyped. Field animates at the selected speed; time readout and thumb update; play button shows a two-bar pause icon and `aria-label="Pause"`. The pill shows the play glyph. |
-| **At the start** (0.0s) | Pre-snap alignment. No ball drawn (the QB holds it, as in the live play). |
+| **At the start** (0.0s) | Pre-snap alignment. No ball drawn (the QB holds it, as in the live play). No vision cone. |
 | **At the end** | Final positions; full ball path drawn if the ball was thrown. |
 | **No throw** (sack) | Not prototyped. No Throw moment: the scrubber has two phase segments split at Break, and the jump-to row has three buttons: Snap, Break, End. |
 | **Speed** | One of 0.25×, 0.5×, 1× selected. |
@@ -134,6 +135,7 @@ Desktop: the same mapping (scrubber, time, speed control, transport buttons, `Ju
 
 - Playback animates the simulation output: every player and the ball move along their simulated paths at the selected rate (0.25×, 0.5× or 1× real time).
 - The ball path grows from the release point as the ball travels.
+- The vision cone aims, turns and fades as in 07-live-play, on the tick being shown.
 - No other motion. Jump-to and frame steps change the frame instantly.
 
 ## Accessibility
@@ -184,7 +186,7 @@ Settled with Mike before building:
 
 - [ ] The replay opens only from the result screen's replay button and returns to the same result with "Back to the result".
 - [ ] Phone layout matches `prototype.html` at 390×844: 52px header with used-rep dots, 390×479 field with the `Rep N replay` pill at 12/12, panel padding 16/16/22 with four rows spaced `space-between`.
-- [ ] The field draws only the field base, defenders, linemen, receivers, QB and the ball (with its dashed path after the throw); no routes, zones, protection marks, read marks, vision cone or feedback badges.
+- [ ] The field draws the field base, the QB vision cone while the quarterback is reading, defenders, linemen, receivers, QB and the ball (with its dashed path after the throw); no routes, zones, protection marks, read marks or feedback badges.
 - [ ] The scrubber shows three phase segments split at the Break and Throw times with 2px gaps; the track is Ink Green left of the thumb and Sand Border to its right; the thumb is 14px.
 - [ ] The time readout shows the position and duration with one decimal, for example `2.3s / 3.4s`.
 - [ ] The speed control offers `0.25×`, `0.5×`, `1×`, and playback runs at that rate (1× = real time).

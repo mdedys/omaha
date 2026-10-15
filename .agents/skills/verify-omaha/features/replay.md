@@ -2,7 +2,7 @@
 
 **Status:** Live (#67). Result's replay square (`Watch the replay again`) opens Replay on the play screen at `/puzzle/:n`; "Back to the result" returns to Result. Replay drives the same playback clock as Live play (`src/playback.ts`), counted in ticks from the snap.
 
-Replay is a video-style replay of the rep just played. The field shows only the players and the ball (with its dashed path after the throw): no routes, zones, defense paths, badges or vision cone. A "Rep N replay" pill sits on the field. The `Playback` panel holds a scrubber in phase segments, the time readout, a 0.25×/0.5×/1× speed control, frame-step and play/pause buttons, a "Jump to a moment" row and "Back to the result". Spec: `design/09-replay/spec.md`, whose Decisions section settles the behaviour.
+Replay is a video-style replay of the rep just played. The field shows the players, the ball (with its dashed path after the throw) and the QB vision cone at the same tick as Live play: no routes, zones, defense paths or feedback badges. A "Rep N replay" pill sits on the field. The `Playback` panel holds a scrubber in phase segments, the time readout, a 0.25×/0.5×/1× speed control, frame-step and play/pause buttons, a "Jump to a moment" row and "Back to the result". Spec: `design/09-replay/spec.md`, whose Decisions section settles the behaviour.
 
 ## Sub-features
 

@@ -3,7 +3,7 @@ import type { Locator, Page } from "@playwright/test";
 import blitz from "../src/engine/v1/scenarios/a-gap-blitz-man-protection.json" with { type: "json" };
 import { rendered, screenMarkup } from "./page";
 
-type SlotRoute = "Out" | "Comeback";
+type SlotRoute = "Out" | "Comeback" | "Drag";
 
 const routes = [
   ["TE", "Hitch"],
@@ -14,7 +14,8 @@ const routes = [
 // Puzzle 1 under 5-man Man protection with the Slot WR read first, then the
 // Left WR on a Post. On a 10-yard Out the Slot WR breaks at 1.8s, is thrown to
 // at 1.9s and broken up at 2.8s; on a 10-yard Comeback he breaks at 1.8s and
-// the nickel sacks the QB at 2.05s. A 5-yard Out breaks and is thrown at 1.0s.
+// the nickel sacks the QB at 2.05s. A Slot WR Drag moves the read to the Left
+// WR at 1.05s. A 5-yard Out breaks and is thrown at 1.0s. Drag has no depth.
 async function playRep(page: Page, slotRoute: SlotRoute, yards = 10) {
   await page.getByRole("button", { name: "Next: routes" }).click();
   await page.getByRole("option", { name: "Post", exact: true }).click();
@@ -24,7 +25,11 @@ async function playRep(page: Page, slotRoute: SlotRoute, yards = 10) {
       .click();
     await page.getByRole("option", { name: route, exact: true }).click();
   }
-  await page.getByRole("radio", { name: `${yards} yds`, exact: true }).click();
+  if (slotRoute !== "Drag") {
+    await page
+      .getByRole("radio", { name: `${yards} yds`, exact: true })
+      .click();
+  }
   await page.getByRole("button", { name: "Next: read" }).click();
   for (const read of [`Slot WR, ${slotRoute}`, "Left WR, Post"]) {
     await page.getByRole("button", { name: read, exact: true }).click();
@@ -89,6 +94,23 @@ function transforms(page: Page) {
         player.getAttribute("transform"),
       ]),
     );
+}
+
+function cone(page: Page) {
+  return page.locator("[data-vision-cone]");
+}
+
+async function aim(page: Page) {
+  const transform = (await cone(page).getAttribute("transform")) ?? "";
+  return Number(/rotate\((-?[\d.]+)\)/.exec(transform)?.[1]);
+}
+
+async function scrubTo(page: Page, seconds: number) {
+  const end = Number(await slider(page).getAttribute("aria-valuemax"));
+  const box = await slider(page).boundingBox();
+  await slider(page).click({
+    position: { x: ((box?.width ?? 0) * seconds) / end, y: 7 },
+  });
 }
 
 test("the replay square opens Replay for the rep", async ({ page }) => {
@@ -558,7 +580,6 @@ const art = [
   "[data-defense-path]",
   "[data-start-dot]",
   "[data-feedback-badge]",
-  "[data-vision-cone]",
   "[data-read-ring]",
   "[data-protection]",
 ];
@@ -574,9 +595,133 @@ for (const name of ["Break", "End"]) {
         page.locator(selector).count(),
       ),
     );
-    expect(counts).toEqual([0, 0, 0, 0, 0, 0, 0, 0, 22]);
+    expect(counts).toEqual([0, 0, 0, 0, 0, 0, 0, 22]);
   });
 }
+
+test("the cone stays hidden until after the snap", async ({ page }) => {
+  await openReplay(page);
+  await expect(cone(page)).toHaveCount(0);
+  await page.getByRole("button", { name: "Forward one frame" }).click();
+  await expect(slider(page)).toHaveAttribute("aria-valuenow", "0.05");
+  await expect(cone(page)).toHaveAttribute("data-vision-cone", "H");
+  expect(Number(await cone(page).getAttribute("opacity"))).toBeCloseTo(0.5);
+  expect(await aim(page)).toBeCloseTo(-26.36, 1);
+});
+
+test("the cone is gone 0.3s after the throw", async ({ page }) => {
+  await openReplay(page);
+  await page.getByRole("button", { name: "Throw" }).click();
+  for (let step = 0; step < 5; step += 1) {
+    await page.getByRole("button", { name: "Forward one frame" }).click();
+  }
+  await expect(slider(page)).toHaveAttribute("aria-valuenow", "2.15");
+  await expect(cone(page)).toHaveAttribute("data-vision-cone", "H");
+  expect(Number(await cone(page).getAttribute("opacity"))).toBeCloseTo(
+    0.1667,
+    3,
+  );
+  expect(await aim(page)).toBeCloseTo(-63.31, 1);
+  await page.getByRole("button", { name: "Forward one frame" }).click();
+  await expect(slider(page)).toHaveAttribute("aria-valuenow", "2.2");
+  await expect(cone(page)).toHaveCount(0);
+});
+
+test("at Break the cone aims at the Slot WR", async ({ page }) => {
+  await openReplay(page);
+  await page.getByRole("button", { name: "Break" }).click();
+  const wedge = cone(page);
+  await expect(wedge).toHaveAttribute("data-vision-cone", "H");
+  await expect(wedge).toHaveAttribute("opacity", "1");
+  expect(await aim(page)).toBeCloseTo(-64.19, 1);
+  await expect(wedge.locator("path")).toHaveAttribute(
+    "d",
+    "M0 0L176 -41L176 41Z",
+  );
+  const stops = wedge.locator("stop");
+  await expect(stops.nth(0)).toHaveAttribute("stop-color", "#F4B13E");
+  await expect(stops.nth(0)).toHaveAttribute("stop-opacity", ".7");
+  await expect(stops.nth(1)).toHaveAttribute("stop-color", "#F4B13E");
+  await expect(stops.nth(1)).toHaveAttribute("stop-opacity", "0");
+  expect(
+    await page.evaluate(() => {
+      const drawn = document.querySelector("[data-vision-cone]");
+      const player = document.querySelector("[data-player]");
+      if (
+        !drawn ||
+        !player ||
+        (drawn.compareDocumentPosition(player) &
+          Node.DOCUMENT_POSITION_FOLLOWING) ===
+          0
+      ) {
+        return "over the players";
+      }
+      return "under the players";
+    }),
+  ).toBe("under the players");
+});
+
+test("at End the cone is gone", async ({ page }) => {
+  await openReplay(page);
+  await page.getByRole("button", { name: "Throw" }).click();
+  await expect(cone(page)).toHaveAttribute("data-vision-cone", "H");
+  await expect(cone(page)).toHaveAttribute("opacity", "1");
+  await page.getByRole("button", { name: "End" }).click();
+  await expect(cone(page)).toHaveCount(0);
+});
+
+test("scrubbing past the read change turns the cone to the Left WR", async ({
+  page,
+}) => {
+  await openReplay(page, "Drag");
+  await scrubTo(page, 1);
+  await expect(slider(page)).toHaveAttribute("aria-valuenow", "1");
+  await expect(cone(page)).toHaveAttribute("data-vision-cone", "H");
+  expect(await aim(page)).toBeCloseTo(-57.89, 1);
+  await scrubTo(page, 1.2);
+  await expect(slider(page)).toHaveAttribute("aria-valuenow", "1.2");
+  await expect(cone(page)).toHaveAttribute("data-vision-cone", "X");
+  expect(await aim(page)).toBeCloseTo(-129.4, 1);
+});
+
+test("a frame step carries the cone through its 0.15s turn", async ({
+  page,
+}) => {
+  await openReplay(page, "Drag");
+  await scrubTo(page, 1.05);
+  await expect(slider(page)).toHaveAttribute("aria-valuenow", "1.05");
+  await expect(cone(page)).toHaveAttribute("data-vision-cone", "X");
+  expect(await aim(page)).toBeCloseTo(-59.4, 1);
+  await page.getByRole("button", { name: "Forward one frame" }).click();
+  await expect(slider(page)).toHaveAttribute("aria-valuenow", "1.1");
+  expect(await aim(page)).toBeCloseTo(-120.81, 1);
+  await page.getByRole("button", { name: "Forward one frame" }).click();
+  await page.getByRole("button", { name: "Forward one frame" }).click();
+  await expect(slider(page)).toHaveAttribute("aria-valuenow", "1.2");
+  expect(await aim(page)).toBeCloseTo(-129.4, 1);
+});
+
+test("playback shows the cone for the displayed tick", async ({ page }) => {
+  await openReplay(page);
+  await page.getByRole("radio", { name: "1×" }).click();
+  await playButton(page).click();
+  await run(page, 2016);
+  await expect(readout(page)).toHaveText("2.0s / 2.8s");
+  await expect(cone(page)).toHaveAttribute("data-vision-cone", "H");
+  expect(await aim(page)).toBeCloseTo(-63.31, 1);
+  const opacity = Number(await cone(page).getAttribute("opacity"));
+  expect(opacity).toBeGreaterThan(0.5);
+  expect(opacity).toBeLessThan(1);
+});
+
+test("at a sack the cone is still on the Slot WR", async ({ page }) => {
+  await openReplay(page, "Comeback");
+  await page.getByRole("button", { name: "End" }).click();
+  await expect(slider(page)).toHaveAttribute("aria-valuenow", "2.05");
+  await expect(cone(page)).toHaveAttribute("data-vision-cone", "H");
+  await expect(cone(page)).toHaveAttribute("opacity", "1");
+  expect(await aim(page)).toBeCloseTo(-60.84, 1);
+});
 
 test("every Playback button is at least 44×44", async ({ page }) => {
   await openReplay(page);

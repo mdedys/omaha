@@ -444,7 +444,7 @@ Ink-green card: "OMAHA #N", down and distance in gold, one tile per rep (orange 
 - **Do** keep the field full width on phones and the result framing identical between the live play's last frame and the result screen.
 
 ### Don't:
-- **Don't** draw routes or zones during the live play or the replay; players and the ball only.
+- **Don't** draw routes or zones during the live play or the replay; show players, the ball and the QB vision cone.
 - **Don't** use green for a failed rep. Don't use gold on cream for anything but the read and a short rep; on ink-green surfaces it is the accent.
 - **Don't** put more than one orange button on a screen.
 - **Don't** use real team names, logos, uniforms or player names anywhere, including art and copy.
