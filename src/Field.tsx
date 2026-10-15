@@ -637,6 +637,7 @@ export const Field = memo(function Field({
   live,
   ballPath,
   pan,
+  bleed,
   label,
   children,
 }: {
@@ -656,6 +657,9 @@ export const Field = memo(function Field({
   ballPath?: boolean;
   // Phone camera from the live framing (0) to the result framing (1).
   pan?: number;
+  // Draws turf past the viewBox, so a stage taller than the field shows more
+  // field instead of a gap.
+  bleed?: boolean;
   label?: string;
   // Markings drawn over the turf and lines, under the routes and players.
   children?: ReactNode;
@@ -690,7 +694,11 @@ export const Field = memo(function Field({
   const qb = live?.players.find(([id]) => id === "QB")?.[1];
   const converted = frame?.rep.verdict === "converted";
   const extent =
-    pan === undefined ? { top: 0, bottom: 495 } : { top: -180, bottom: 872 };
+    pan !== undefined
+      ? { top: -180, bottom: 872 }
+      : bleed
+        ? { top: -1000, bottom: 1495 }
+        : { top: 0, bottom: 495 };
   return (
     <svg
       className="puzzle-field"

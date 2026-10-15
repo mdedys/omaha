@@ -49,7 +49,7 @@ DESIGN.md "Layout › Desktop" and its desktop control variants (58px button, 4p
   - Situation: `3rd & 10` 20px 900 uppercase, then `own 45` 14px 800 uppercase Sage Muted, baseline-aligned, gap 10px.
   - Meta (14px 600 Sage Muted, tabular numerals, gap 14px): puzzle number `#148`, `Down 4 · 1:12`, rep pips (9×9px, radius 5px, gap 5px; current: transparent with 2px Ink Green border; future: Sand Border).
 - **Body**: grid `minmax(0,1fr) 440px`.
-  - **Stage**: background Turf Stage `#0C3322`, padding 24px, field centered. Field height `calc(100vh - 112px)`, width auto, `max-width: 100%`, radius 10px.
+  - **Stage**: background Turf Stage `#0C3322`, padding `0 24px`, field centered. Field height `calc(100vh - 64px)`, width auto, `max-width: 100%`, square corners. The field continues past its viewBox as in 04-protect.
   - **Panel** (`aside aria-label="Design the play"`): 1px Sand Border on the left, padding 28px, flex column, gap 22px:
     1. Step bar, desktop variant: gap 10px; bars 4px, radius 2px; labels 12px 800 uppercase, `letter-spacing .03em`, column gap 8px. Done bar Ink Green at 45% opacity; current bar Ink Green, current label Ink Green; inactive bar Sand Border, label Sage Muted.
     2. Receiver label row: flex `space-between`, centered. Left: selected receiver name, 13px 800 uppercase, `letter-spacing .04em`. Right: helper in 13px 700 Sage Muted, sentence case, no letter-spacing.

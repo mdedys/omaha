@@ -225,6 +225,7 @@ function PlayScreen({
                     ? undefined
                     : motionEase(reveal)
                 }
+                bleed
                 label={sheet.fieldLabel}
               />
               <div
@@ -255,6 +256,7 @@ function PlayScreen({
                 engine={engine}
                 live={live}
                 pan={desktop ? undefined : 0}
+                bleed
                 label={liveLabel(puzzle, engine, session.played)}
               />
               {pills}
@@ -265,6 +267,7 @@ function PlayScreen({
               engine={engine}
               protection={session.draft.protection}
               routes={session.draft.routes}
+              bleed
               selected={session.step === "Routes" ? selected : undefined}
               onSelect={
                 session.step === "Routes"

@@ -53,7 +53,7 @@ Desktop: the same mapping for the 60px options (Dark Surface fill, 1px Dark Bord
 DESIGN.md "Layout › Desktop" and its desktop control variants apply. Same stylesheet as 05-routes desktop, plus the desktop read option.
 
 - **Top bar** 64px: as in 05-routes desktop (`OMAHA`, situation, meta with `#148`, `Down 4 · 1:12`, rep pips with `aria-label="Rep 1 of 4"`).
-- **Stage**: Turf Stage `#0C3322`, padding 24px, field `calc(100vh - 112px)` tall, radius 10px. Same field layers as phone.
+- **Stage**: Turf Stage `#0C3322`, padding `0 24px`, field `calc(100vh - 64px)` tall, square corners, continuing past its viewBox as in 04-protect. Same field layers as phone.
 - **Panel** (`aside aria-label="Design the play"`): 1px Sand Border left, padding 28px, flex column, gap 22px:
   1. Step bar, desktop variant (4px bars, gap 10px, labels `letter-spacing .03em`): Protect and Routes done (Ink Green at 45% opacity), Read current.
   2. Question row as on phone: heading (`h2`) margin 0, 20px, weight 700, sentence case; order hint 13px 600 Sage Muted.
