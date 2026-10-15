@@ -8,7 +8,7 @@ Protect is step 1 of the play design. The player picks how many blockers stay in
 
 - `protect-defaults` means a new puzzle opens on `5-man` and `Man`.
 - `protect-blockers` means the offered counts exactly match `protections(puzzle)`, each equally wide: Gun Empty offers only 5, split TE formations 5/6, attached TE formations 5/6/7. Blocking RB/TE marks appear at their actual pre-snap positions.
-- `protect-line-call` means slides draw a directional line arrow and the blocking RB takes the opposite edge; Man draws upside-down T marks without arrows. In 7-man, Y follows the line's artwork. No zigzag is drawn.
+- `protect-line-call` means slides draw a directional line arrow and the blocking RB takes the opposite edge; Man draws upside-down T marks without arrows. In 7-man, Y gets the line's Man mark; on slides the line's single arrow covers him and he has no mark of his own. No zigzag is drawn.
 - `protect-next` means "Next: routes" always opens Routes, and the step bar opens any step without gating.
 - `protect-keyboard` means checked-only radio Tab stops and local wrapping arrow navigation. At ≥900px offered numeric keys and ←/M/→ select; Enter advances unless a native button/link has focus. Focus order includes Protect, Routes and Read before the groups and Next.
 - `protect-carry-over` means Run it back reopens Protect with the previous rep's blockers and line call. #64 delivers it, and the puzzle session is in memory, so a reload restarts at rep 1.
@@ -29,7 +29,7 @@ Preconditions:
 
 - **Defaults.** Enter from Landing. `aria.yml` shows `radiogroup "Blockers"` with `5-man` checked and `radiogroup "Line call"` with `Man` checked.
 - **6-man, slide left.** Run `click=radio:6-man click=radio:"Slide left" expect="Line + RB stay in" expect="RB takes the right edge" shot=six-slide-left`. The field accessible name describes 6-man protection and the opposite edge. Then select Slide right and Man; inspect directional arrows / opposite edge / upside-down T marks.
-- **7-man.** Run `click=radio:7-man click=radio:Man shot=seven-man`. Y uses the line's upside-down T artwork; repeat with both slides to inspect its directional arrow.
+- **7-man.** Run `click=radio:7-man click=radio:Man shot=seven-man`. Y uses the line's upside-down T artwork; repeat with both slides to inspect that only the single arrow, between the inside edges of the tackles, is drawn, with no separate Y arrow.
 - **Keyboard (desktop).** With no button focused, `press=6 press=ArrowLeft` matches clicks; `press=Enter` opens Routes. If a radio has focus, arrows instead move/select within that group. If a step button has focus, Enter activates that step. Also inspect 899/900px boundary and unavailable numeric counts via browser tests.
 - **Next.** Run `click=button:"Next: routes" expect-role=heading:Routes`; the Routes placeholder visibly reports the retained draft. Return via `click=button:"1 Protect"` and inspect checked choices.
 - **Focus.** Tab order: Protect, Routes, Read, checked Blockers, checked Line call, Next. Arrow navigation wraps inside each group, including at desktop sizes.
