@@ -75,10 +75,10 @@ Control accessible names: “Blockers”, “Line call”; options “5-man”, 
 ## Field artwork
 
 - Preserve the puzzle field, line of scrimmage, line to gain and all 22 player glyphs. Protection is painted before player glyphs. No protection zigzag.
-- **Slide:** Lineman-stroke `#DADDE0`, 2px horizontal arrow below the line; endpoints derived from the actual outside tackles, direction matching Slide left/right.
+- **Slide:** Lineman-stroke `#DADDE0`, 2px horizontal arrow below the line, spanning the inside edges of the tackles; endpoints derived from the actual tackles, direction matching Slide left/right.
 - **RB on slides:** In 6- and 7-man, Receiver RB `#5BDB8C`, 2px line from the actual RB position to the edge opposite the slide, ending with a 12-unit perpendicular T cap. Edge location is just outside the actual opposite tackle, not a fixed prototype coordinate. In 5-man the RB block mark is absent.
-- **Man:** No arrows. Each offensive lineman has an upside-down T mark (`⊥`) immediately in front of the player: stem extending upfield with the horizontal bar nearest the player. The blocking RB gets the same mark in RB green. This communicates inside-out man responsibilities without inventing a specific defensive assignment.
-- **TE in 7-man:** Y follows the offensive-lineman drawing rule, in lineman stroke: a directional slide arrow in slide calls and an upside-down T in Man. Keep the TE player glyph and its purple ring. Its artwork follows its actual engine position, including flipped formations. In 5-/6-man no TE block mark is shown.
+- **Man:** No arrows. Each offensive lineman has an upside-down T mark (`⊥`) immediately behind the player: a short stem touching the player's circle and extending toward the backfield, with the horizontal bar farthest from the player, clear of the defensive line. The blocking RB gets the same-sized mark in RB green, turned to face upfield (`T`): a short stem touching his circle and extending upfield, with the horizontal bar farthest from him. This communicates inside-out man responsibilities without inventing a specific defensive assignment.
+- **TE in 7-man:** In slide calls Y has no mark of his own: the line's single slide arrow stands for him too. In Man he gets the line's upside-down T behind him, in lineman stroke. Keep the TE player glyph and its purple ring. Its artwork follows its actual engine position, including flipped formations. In 5-/6-man no TE block mark is shown.
 - Protect shows protection only, not routes drawn in another step. Routes and reads remain in the shared draft unchanged when protection changes; their pruning belongs to the Routes/Read pieces.
 
 ## Interactions and accessibility
