@@ -346,7 +346,7 @@ Madden zone colors, because players already know them:
 - Controls inside the panel: 8px between options, 12–16px between groups, the primary button pinned at the bottom.
 
 **Desktop (≥900px):** every screen has a desktop prototype.
-- 64px top bar (wordmark, situation, meta), then a two-column grid: field stage `minmax(0,1fr)` on #0C3322 with the field at `calc(100vh - 112px)` tall, and a 440px paper panel with 28px padding and a 1px Sand Border on its left. Landing widens the panel to 520px; Puzzles is a single centered column, max 760px.
+- 64px top bar (wordmark, situation, meta), then a two-column grid: field stage `minmax(0,1fr)` on #0C3322 with the play screens' field at the stage's full height (`calc(100vh - 64px)`, turf continuing past the viewBox) and the Landing and Tutorial fields at `calc(100vh - 112px)`, and a 440px paper panel with 28px padding and a 1px Sand Border on its left. Landing widens the panel to 520px; Puzzles is a single centered column, max 760px.
 - Desktop control variants: primary button 58px tall with a 10px radius and 19px label; secondary square 58px, 10px radius, 2px border; outcome tile 52px with a 12px radius; step bars 4px with done bars at 45% opacity; route cards in a 4-column grid with a 10px radius, 2px border, a small key tag in the top-left corner and a filled Ink Green label band when selected; field pills 30px with 13px text; rep boxes 34px; result line 18px 600 Sage Muted.
 - Desktop result screens show the field without the shade and add a "Final · defense revealed" pill. Live play on desktop keeps the standard field framing (no camera pan) and swaps the panel from captions to the result at the reveal.
 - Keyboard hints (`kbd`) sit in the primary button and under it.

@@ -618,6 +618,17 @@ describe("live play field", () => {
     },
   );
 
+  test.each(["M0 -18H403", "M0 814H403"])(
+    "continues the yard lines past a bleeding field's viewBox with %s",
+    async (line) => {
+      const html = await field({ bleed: true });
+      expect([
+        html.includes(`d="${line}"`),
+        attr(tag(html, 'class="puzzle-field"'), "viewBox"),
+      ]).toEqual([true, "0 0 403 495"]);
+    },
+  );
+
   test("fades a converted line in with the play art", async () => {
     const html = await liveField("converted-cover-1", (rep) => ({
       frame: { rep, playArt: rep.playArt },

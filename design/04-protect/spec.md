@@ -43,7 +43,7 @@ DESIGN.md owns tokens, typography and field geometry. These prototypes illustrat
 ### Desktop (900px and wider)
 
 - Top bar 64px, padding 0 28px, 1px border. OMAHA wordmark 24px 900; situation 20px 900 with 14px 800 spot; meta 14px 600 with puzzle number, score/clock and 9px rep dots.
-- Body grid `minmax(0,1fr) 440px`; turf stage `#0C3322`, padding 24px, centered field, radius 10px, sized to available height and width. Stadium decoration remains anchored to field geometry.
+- Body grid `minmax(0,1fr) 440px`; turf stage `#0C3322`, padding `0 24px`, centered field with square corners, sized to the stage's full height (`calc(100vh - 64px)`) unless width limits it. Turf, yard lines, end zones and stadium continue past the field's viewBox, so a taller stage shows more field and never a gap above or below it. Stadium decoration remains anchored to field geometry.
 - Named aside “Design the play”: 1px left border, padding 28px, 22px group gaps. Desktop step bars 4px; all step buttons at least 44px tall.
 - Group labels 13px 800 uppercase with .04em tracking; helpers 13px 700 sentence case. Option height 42px with extended hit areas.
 - Bottom action 58px, 10px radius, 19px 900, Enter badge. Muted 12px 600 shortcut hint below. Show only offered numeric keys, then `← M →` line call.
@@ -75,10 +75,10 @@ Control accessible names: “Blockers”, “Line call”; options “5-man”, 
 ## Field artwork
 
 - Preserve the puzzle field, line of scrimmage, line to gain and all 22 player glyphs. Protection is painted before player glyphs. No protection zigzag.
-- **Slide:** Lineman-stroke `#DADDE0`, 2px horizontal arrow below the line; endpoints derived from the actual outside tackles, direction matching Slide left/right.
+- **Slide:** Lineman-stroke `#DADDE0`, 2px horizontal arrow below the line, spanning the inside edges of the tackles; endpoints derived from the actual tackles, direction matching Slide left/right.
 - **RB on slides:** In 6- and 7-man, Receiver RB `#5BDB8C`, 2px line from the actual RB position to the edge opposite the slide, ending with a 12-unit perpendicular T cap. Edge location is just outside the actual opposite tackle, not a fixed prototype coordinate. In 5-man the RB block mark is absent.
-- **Man:** No arrows. Each offensive lineman has an upside-down T mark (`⊥`) immediately in front of the player: stem extending upfield with the horizontal bar nearest the player. The blocking RB gets the same mark in RB green. This communicates inside-out man responsibilities without inventing a specific defensive assignment.
-- **TE in 7-man:** Y follows the offensive-lineman drawing rule, in lineman stroke: a directional slide arrow in slide calls and an upside-down T in Man. Keep the TE player glyph and its purple ring. Its artwork follows its actual engine position, including flipped formations. In 5-/6-man no TE block mark is shown.
+- **Man:** No arrows. Each offensive lineman has an upside-down T mark (`⊥`) immediately behind the player: a short stem touching the player's circle and extending toward the backfield, with the horizontal bar farthest from the player, clear of the defensive line. The blocking RB gets the same-sized mark in RB green, turned to face upfield (`T`): a short stem touching his circle and extending upfield, with the horizontal bar farthest from him. This communicates inside-out man responsibilities without inventing a specific defensive assignment.
+- **TE in 7-man:** In slide calls Y has no mark of his own: the line's single slide arrow stands for him too. In Man he gets the line's upside-down T behind him, in lineman stroke. Keep the TE player glyph and its purple ring. Its artwork follows its actual engine position, including flipped formations. In 5-/6-man no TE block mark is shown.
 - Protect shows protection only, not routes drawn in another step. Routes and reads remain in the shared draft unchanged when protection changes; their pruning belongs to the Routes/Read pieces.
 
 ## Interactions and accessibility

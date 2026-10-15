@@ -149,6 +149,7 @@ export function Replay({
           engine={engine}
           live={frame}
           ballPath
+          bleed
           label={`Rep ${number} replay, ${clock.playing ? "playing" : `paused at ${tenths(tick * TICK_SECONDS)} seconds${named}`}: players and the ball, no play art.`}
         />
         <span className="replay-pill">

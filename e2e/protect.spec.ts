@@ -295,15 +295,15 @@ test("Man adds block marks only for players staying in", async ({ page }) => {
   await openProtect(page);
   const art = page.locator('[data-field-layer="protection"]');
   await expect(art.locator("path")).toHaveCount(5);
-  // v1 C is (0, -0.5) yards: SVG (201.5, 372.4). The Man
-  // stem is 30 units upfield and its 12-unit bar is 12 units upfield.
+  // v1 C is (0, -0.5) yards: SVG (201.5, 372.4). The Man stem runs 9 units
+  // back from the edge of the 8-unit glyph, ending in a 12-unit bar.
   await expect(page.locator('[data-player="C"]')).toHaveAttribute(
     "transform",
     "translate(201.5 372.4)",
   );
   await expect(art.locator('[data-protection="C"]')).toHaveAttribute(
     "d",
-    "M201.5 342.4V360.4M195.5 360.4H207.5",
+    "M201.5 380.4V389.4M195.5 389.4H207.5",
   );
   await page.getByRole("radio", { name: "7-man" }).click();
   await expect(art.locator("path")).toHaveCount(7);
@@ -337,9 +337,9 @@ test("Man marks follow the flipped formation on the right hash", async ({
   // Project independently at 403/31.5 units per yard, y=366-12.8*yards.
   const art = page.locator('[data-field-layer="protection"]');
   for (const mark of [
-    { id: "C", x: 252.67460317460316, y: 372.4 },
-    { id: "Y", x: 195.1031746031746, y: 372.4 },
-    { id: "RB", x: 271.86507936507934, y: 430 },
+    { id: "C", x: 252.67460317460316, y: 372.4, stem: 8, bar: 17 },
+    { id: "Y", x: 195.1031746031746, y: 372.4, stem: 8.5, bar: 17.5 },
+    { id: "RB", x: 271.86507936507934, y: 430, stem: -8.5, bar: -17.5 },
   ]) {
     const coordinates = await art
       .locator(`[data-protection="${mark.id}"]`)
@@ -352,10 +352,10 @@ test("Man marks follow the flipped formation on the right hash", async ({
     if (!coordinates) throw new Error(`Missing ${mark.id} Man mark`);
     expect(coordinates).toHaveLength(6);
     expect(coordinates[0]).toBeCloseTo(mark.x, 8);
-    expect(coordinates[1]).toBeCloseTo(mark.y - 30, 8);
-    expect(coordinates[2]).toBeCloseTo(mark.y - 12, 8);
+    expect(coordinates[1]).toBeCloseTo(mark.y + mark.stem, 8);
+    expect(coordinates[2]).toBeCloseTo(mark.y + mark.bar, 8);
     expect(coordinates[3]).toBeCloseTo(mark.x - 6, 8);
-    expect(coordinates[4]).toBeCloseTo(mark.y - 12, 8);
+    expect(coordinates[4]).toBeCloseTo(mark.y + mark.bar, 8);
     expect(coordinates[5]).toBeCloseTo(mark.x + 6, 8);
   }
 });
@@ -368,11 +368,11 @@ for (const call of ["Slide left", "Slide right"]) {
     await page.getByRole("radio", { name: "7-man" }).click();
     await page.getByRole("radio", { name: call }).click();
     const art = page.locator('[data-field-layer="protection"]');
-    await expect(art.locator("path")).toHaveCount(3);
+    await expect(art.locator("path")).toHaveCount(2);
+    await expect(art.locator('[data-protection="Y"]')).toHaveCount(0);
     const diagram = await art.evaluate((element) => {
       const slide = element.querySelector('[data-protection="slide"]');
       const rb = element.querySelector('[data-protection="RB"]');
-      const te = element.querySelector('[data-protection="Y"]');
       return {
         slide: slide
           ?.getAttribute("d")
@@ -382,23 +382,17 @@ for (const call of ["Slide left", "Slide right"]) {
           ?.getAttribute("d")
           ?.match(/-?\d+(?:\.\d+)?/g)
           ?.map(Number),
-        te: te
-          ?.getAttribute("d")
-          ?.match(/-?\d+(?:\.\d+)?/g)
-          ?.map(Number),
       };
     });
-    if (!diagram.slide || !diagram.rb || !diagram.te) {
+    if (!diagram.slide || !diagram.rb) {
       throw new Error("Missing visible protection artwork");
     }
     if (call === "Slide left") {
       expect(diagram.slide[2]).toBeLessThan(diagram.slide[0]);
       expect(diagram.rb[2]).toBeGreaterThan(diagram.rb[0]);
-      expect(diagram.te[2]).toBeLessThan(diagram.te[0]);
     } else {
       expect(diagram.slide[2]).toBeGreaterThan(diagram.slide[0]);
       expect(diagram.rb[2]).toBeLessThan(diagram.rb[0]);
-      expect(diagram.te[2]).toBeGreaterThan(diagram.te[0]);
     }
     await page.getByRole("radio", { name: "5-man" }).click();
     await expect(art.locator("path")).toHaveCount(1);

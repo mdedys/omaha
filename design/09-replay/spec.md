@@ -43,7 +43,7 @@ Root: flex column, Cream `#F4EFE4`, Ink Green `#244A3E` text, `overflow: hidden`
 DESIGN.md "Layout › Desktop" and its desktop control variants (58px button, 30px field pill) apply.
 
 - **Top bar** 64px: as in 05-routes desktop (`OMAHA`, situation, meta with `#148`, `Down 4 · 1:12`, pips). Pips: `aria-label="Rep 1 used, 3 left"`, used pip filled Sage Muted.
-- **Stage**: `#0C3322`, padding 24px, field `calc(100vh - 112px)` tall, radius 10px. Replay pill at `top: 36px; left: 36px`: 30px tall, padding `0 12px`, radius 15px, `rgba(6,13,10,.82)`, Cream 13px 700, gap 7px, same pause glyph.
+- **Stage**: `#0C3322`, padding `0 24px`, field `calc(100vh - 64px)` tall, square corners, continuing past its viewBox as in 04-protect. Replay pill at `top: 36px; left: 36px`: 30px tall, padding `0 12px`, radius 15px, `rgba(6,13,10,.82)`, Cream 13px 700, gap 7px, same pause glyph.
 - **Panel** (`aside aria-label="Playback"`): 1px Sand Border left, padding 28px, flex column, gap 22px:
   1. Scrubber group (column, gap 12px): track (14px), then the time and speed row.
   2. Transport row: centered, gap 24px.

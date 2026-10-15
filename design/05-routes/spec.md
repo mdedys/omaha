@@ -49,7 +49,7 @@ DESIGN.md "Layout › Desktop" and its desktop control variants (58px button, 4p
   - Situation: `3rd & 10` 20px 900 uppercase, then `own 45` 14px 800 uppercase Sage Muted, baseline-aligned, gap 10px.
   - Meta (14px 600 Sage Muted, tabular numerals, gap 14px): puzzle number `#148`, `Down 4 · 1:12`, rep pips (9×9px, radius 5px, gap 5px; current: transparent with 2px Ink Green border; future: Sand Border).
 - **Body**: grid `minmax(0,1fr) 440px`.
-  - **Stage**: background Turf Stage `#0C3322`, padding 24px, field centered. Field height `calc(100vh - 112px)`, width auto, `max-width: 100%`, radius 10px.
+  - **Stage**: background Turf Stage `#0C3322`, padding `0 24px`, field centered. Field height `calc(100vh - 64px)`, width auto, `max-width: 100%`, square corners. The field continues past its viewBox as in 04-protect.
   - **Panel** (`aside aria-label="Design the play"`): 1px Sand Border on the left, padding 28px, flex column, gap 22px:
     1. Step bar, desktop variant: gap 10px; bars 4px, radius 2px; labels 12px 800 uppercase, `letter-spacing .03em`, column gap 8px. Done bar Ink Green at 45% opacity; current bar Ink Green, current label Ink Green; inactive bar Sand Border, label Sage Muted.
     2. Receiver label row: flex `space-between`, centered. Left: selected receiver name, 13px 800 uppercase, `letter-spacing .04em`. Right: helper in 13px 700 Sage Muted, sentence case, no letter-spacing.
@@ -160,7 +160,7 @@ Receiver names used across the design steps: `Left WR`, `TE`, `Slot WR`, `Right 
 | **Depth partly unavailable** | Not prototyped. Corner, Post and Comeback dim 5 yds; near the goal line, any depth whose break lands past the end-line margin is dimmed too. |
 | **Initial selection** | Leftmost eligible receiver on first entry. Preserve selection across navigation and later reps; replace a now-blocking selection with the leftmost eligible receiver. |
 | **Unassigned route runner** | No route line is drawn for it. |
-| **Kept-in receiver** (RB in 6-man; RB and TE in 7-man) | Drawn normally, with its block line. It cannot be selected: tapping it does nothing. |
+| **Kept-in receiver** (RB in 6-man; RB and TE in 7-man) | Drawn normally, with its block line (a TE on a slide has none, since the slide arrow isn't drawn here). It cannot be selected: tapping it does nothing. |
 | **5-man** | RB and TE run routes; both can be selected; no RB block line. |
 | **Next: read** | Always enabled, whether or not every route runner has a route. Snap Orange; hover Snap Orange Deep. |
 | **Carried-over design** (rep 2+) | All previous routes and depths shown. |
@@ -225,7 +225,7 @@ Read rings and numbered badges remain outside this screen.
 
 - [ ] Phone layout matches `prototype.html` at 390×844: 52px header, 390×479 field, panel padding 14/16/22, gap 16px, step bar margin-bottom 2px.
 - [ ] Tapping a route-runner receiver moves the gold ring (r=14, `#F4B13E`, 1.6) to it and draws its route at 2.4px; all other assigned routes render at 45% opacity.
-- [ ] Kept-in receivers (per blocker count) cannot be selected and keep their block line.
+- [ ] Kept-in receivers (per blocker count) cannot be selected and keep their block line, except a TE on a slide, who has none.
 - [ ] The phone carousel shows 92×88 cards with the mini diagram in the selected receiver's colors; the selected card has a 2px Ink Green border; the strip scrolls horizontally, snaps to cards, bleeds to both screen edges and centers the selected card when the receiver changes.
 - [ ] The cards are exactly the selected receiver's `routeMenu` (WR 11, Inside 12, RB 6) in route-tree order, with Go named Seam on Inside and RB menus, using the diagram paths in this spec; left-side receivers get mirrored diagrams and RB cards start from the backfield.
 - [ ] Picking a card assigns the route and sets its depth by the rules in Interactions; picking a depth moves the break to y = 366 − depth × 12.8 on the field.

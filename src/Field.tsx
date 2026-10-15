@@ -73,7 +73,10 @@ function ProtectionArt({
   const y = points[2].y + 27;
   const slides = protection.lineCall !== "man";
   const direction = protection.lineCall === "slide-left" ? -1 : 1;
-  const end = direction === -1 ? left : right;
+  const leftInside = points[0].x + playerRadius("LT");
+  const rightInside = points[4].x - playerRadius("RT");
+  const [start, end] =
+    direction === -1 ? [rightInside, leftInside] : [leftInside, rightInside];
   const blocking: PlayerId[] = [...line];
   if (protection.blockers === 7) blocking.push("Y");
   if (protection.blockers > 5) blocking.push("RB");
@@ -88,7 +91,7 @@ function ProtectionArt({
       {slides && showSlide ? (
         <path
           data-protection="slide"
-          d={`M${direction === -1 ? right : left} ${y}H${end}M${end - direction * 6} ${y - 6}L${end} ${y}L${end - direction * 6} ${y + 6}`}
+          d={`M${start} ${y}H${end}M${end - direction * 6} ${y - 6}L${end} ${y}L${end - direction * 6} ${y + 6}`}
           stroke="#DADDE0"
         />
       ) : null}
@@ -97,11 +100,14 @@ function ProtectionArt({
         const { x, y: playerY } = fieldPoint(at);
         const color = id === "RB" ? "#5BDB8C" : "#DADDE0";
         if (!slides) {
+          const toward = id === "RB" ? -1 : 1;
+          const stem = playerY + toward * playerRadius(id);
+          const bar = stem + toward * 9;
           return (
             <path
               key={id}
               data-protection={id}
-              d={`M${x} ${playerY - 30}V${playerY - 12}M${x - 6} ${playerY - 12}H${x + 6}`}
+              d={`M${x} ${stem}V${bar}M${x - 6} ${bar}H${x + 6}`}
               stroke={color}
             />
           );
@@ -119,16 +125,6 @@ function ProtectionArt({
               key={id}
               data-protection="RB"
               d={`M${x} ${playerY}L${edgeX} ${edgeY}M${edgeX - capX} ${edgeY - capY}L${edgeX + capX} ${edgeY + capY}`}
-              stroke={color}
-            />
-          );
-        }
-        if (id === "Y") {
-          return (
-            <path
-              key={id}
-              data-protection="Y"
-              d={`M${x - direction * 10} ${playerY + 27}H${x + direction * 10}M${x + direction * 4} ${playerY + 21}L${x + direction * 10} ${playerY + 27}L${x + direction * 4} ${playerY + 33}`}
               stroke={color}
             />
           );
@@ -641,6 +637,7 @@ export const Field = memo(function Field({
   live,
   ballPath,
   pan,
+  bleed,
   label,
   children,
 }: {
@@ -660,6 +657,9 @@ export const Field = memo(function Field({
   ballPath?: boolean;
   // Phone camera from the live framing (0) to the result framing (1).
   pan?: number;
+  // Draws turf past the viewBox, so a stage taller than the field shows more
+  // field instead of a gap.
+  bleed?: boolean;
   label?: string;
   // Markings drawn over the turf and lines, under the routes and players.
   children?: ReactNode;
@@ -694,7 +694,11 @@ export const Field = memo(function Field({
   const qb = live?.players.find(([id]) => id === "QB")?.[1];
   const converted = frame?.rep.verdict === "converted";
   const extent =
-    pan === undefined ? { top: 0, bottom: 495 } : { top: -180, bottom: 872 };
+    pan !== undefined
+      ? { top: -180, bottom: 872 }
+      : bleed
+        ? { top: -1000, bottom: 1495 }
+        : { top: 0, bottom: 495 };
   return (
     <svg
       className="puzzle-field"
