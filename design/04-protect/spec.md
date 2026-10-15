@@ -43,7 +43,7 @@ DESIGN.md owns tokens, typography and field geometry. These prototypes illustrat
 ### Desktop (900px and wider)
 
 - Top bar 64px, padding 0 28px, 1px border. OMAHA wordmark 24px 900; situation 20px 900 with 14px 800 spot; meta 14px 600 with puzzle number, score/clock and 9px rep dots.
-- Body grid `minmax(0,1fr) 440px`; turf stage `#0C3322`, padding 24px, centered field, radius 10px, sized to available height and width. Stadium decoration remains anchored to field geometry.
+- Body grid `minmax(0,1fr) 440px`; turf stage `#0C3322`, padding `0 24px`, centered field with square corners, sized to the stage's full height (`calc(100vh - 64px)`) unless width limits it. Turf, yard lines, end zones and stadium continue past the field's viewBox, so a taller stage shows more field and never a gap above or below it. Stadium decoration remains anchored to field geometry.
 - Named aside “Design the play”: 1px left border, padding 28px, 22px group gaps. Desktop step bars 4px; all step buttons at least 44px tall.
 - Group labels 13px 800 uppercase with .04em tracking; helpers 13px 700 sentence case. Option height 42px with extended hit areas.
 - Bottom action 58px, 10px radius, 19px 900, Enter badge. Muted 12px 600 shortcut hint below. Show only offered numeric keys, then `← M →` line call.

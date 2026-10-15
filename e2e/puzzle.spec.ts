@@ -74,9 +74,6 @@ for (const goal of [
     await expect(
       page.locator('[data-field-layer="line-to-gain"]'),
     ).toHaveAttribute("d", goal.line);
-    await expect(page.locator('[data-field-layer="stadium"]')).toHaveCount(
-      goal.stadium,
-    );
     if (goal.stadium) {
       await expect(
         page.locator('[data-field-layer="end-line"]'),
@@ -93,9 +90,15 @@ for (const goal of [
         "4.8",
       );
     } else {
-      await expect(page.locator('[data-field-layer="end-zone"]')).toHaveCount(
-        0,
-      );
+      const stage = await page.locator(".play-stage").boundingBox();
+      for (const layer of ["stadium", "end-zone"]) {
+        const box = await page
+          .locator(`[data-field-layer="${layer}"]`)
+          .boundingBox();
+        expect((box?.y ?? 0) + (box?.height ?? 0)).toBeLessThanOrEqual(
+          stage?.y ?? 0,
+        );
+      }
     }
   });
 }
@@ -301,12 +304,40 @@ test("field name includes protection but no assignments", async ({ page }) => {
   );
 });
 
+test("the desktop field fills the stage from top to bottom", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await openPuzzle(page);
+  const stage = await page.locator(".play-stage").boundingBox();
+  const field = await page.getByRole("img", { name: /^Field:/ }).boundingBox();
+  expect([field?.y, field?.height]).toEqual([stage?.y, stage?.height]);
+});
+
+test("a tall desktop window shows more turf, not a gap", async ({ page }) => {
+  await page.setViewportSize({ width: 900, height: 1200 });
+  await openPuzzle(page, 1);
+  const stage = await page.locator(".play-stage").boundingBox();
+  if (!stage) throw new Error("The stage is not on screen");
+  const x = stage.x + stage.width / 2;
+  const edges = [stage.y + 2, stage.y + stage.height - 2];
+  expect(
+    await page.evaluate(
+      ({ x, edges }) =>
+        edges.map(
+          (y) => !!document.elementFromPoint(x, y)?.closest(".puzzle-field"),
+        ),
+      { x, edges },
+    ),
+  ).toEqual([true, true]);
+});
+
 test("stadium decoration spans the desktop stage", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 800 });
   await openPuzzle(page);
   const stage = await page.locator(".play-stage").boundingBox();
   const field = await page.getByRole("img", { name: /^Field:/ }).boundingBox();
-  expect(field?.height).toBe(688);
+  expect(field?.height).toBe(736);
   for (const layer of ["path", "wall", "crowd"]) {
     const box = await page
       .locator(`[data-field-layer="${layer}"]`)

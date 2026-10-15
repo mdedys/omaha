@@ -432,7 +432,7 @@
     grid-template-columns: minmax(0, 1fr) 440px;
   }
   .play-stage {
-    padding: 24px;
+    padding: 0 24px;
     min-width: 0;
   }
   .puzzle-field {
@@ -440,6 +440,10 @@
     width: auto;
     max-width: 100%;
     border-radius: 10px;
+  }
+  .play-stage .puzzle-field {
+    height: min(calc(100svh - 64px), calc((100vw - 488px) * 495 / 403));
+    border-radius: 0;
   }
   .play-panel {
     padding: 28px;
