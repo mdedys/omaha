@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest";
 import type { Design, Letter, RouteCall } from "./engine/contract";
 import { loadPuzzle } from "./engine";
-import puzzleOne from "../public/puzzles/1.json";
+import { puzzleOne } from "./pinnedPuzzleOne";
 import blitz from "./engine/v1/scenarios/a-gap-blitz-man-protection.json";
 import { moments, tenths } from "./moments";
 

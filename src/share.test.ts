@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Design, RouteCall } from "./engine/contract";
 import { loadPuzzle } from "./engine";
-import puzzleOne from "../public/puzzles/1.json";
+import { puzzleOne } from "./pinnedPuzzleOne";
 import { countdown, nextPuzzleAt, shareResult } from "./share";
 
 type Scenario = { puzzle: unknown; design: Design };

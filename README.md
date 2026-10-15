@@ -69,7 +69,8 @@ job via `pnpm test`.
 
 v1's `parsePuzzle(json)` validates
 every required field, the formation and defensive assignment catalogs, the
-eleven-player roster, a distance of at least one yard, field limits and the
+eleven-player roster, each defender's `look`, defenders inside the sidelines
+and at least a yard apart, a distance of at least one yard, field limits and the
 goal-to-go equivalence: a touchdown goal requires `spot + distance === 100`,
 and that sum requires a touchdown goal.
 
@@ -80,7 +81,9 @@ are placed from the ball, and detached slots interpolate to their side's numbers
 On the middle hash, flipping mirrors receiver positions and route paths exactly.
 On a side hash, keeping the numbers fixed means outside receivers cannot also
 be reflected exactly about the ball. Linemen and gap names always refer to the
-side as drawn. Defenders use the ball plus their authored `at`, without flipping.
+side as drawn. Defenders line up against the offense: each defender's spot is
+derived from his role and assignment and from where the offense lines up, and
+a puzzle's optional `look` overrides it field by field, without flipping.
 
 Gun Empty's split-out RB uses the Inside menu (Seam and Wheel included); Ace's
 second attached TE H also uses Inside. These are formation-authored menus, not

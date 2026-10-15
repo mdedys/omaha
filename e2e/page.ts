@@ -1,4 +1,21 @@
 import type { Page } from "@playwright/test";
+import puzzleOne from "../public/puzzles/1.json" with { type: "json" };
+import tutorial from "../src/tutorial.json" with { type: "json" };
+
+// Puzzle 1's situation against the tutorial's fixed defense, so tests that pin
+// reps, coverage names or flipped formations don't change when puzzle 1's
+// defense does.
+export const pinnedPuzzleOne = {
+  ...puzzleOne,
+  defense: tutorial.defense,
+  coverageName: tutorial.coverageName,
+};
+
+export function pinPuzzleOne(page: Page) {
+  return page.route("**/puzzles/1.json", (route) =>
+    route.fulfill({ json: pinnedPuzzleOne }),
+  );
+}
 
 // Resolves after the tasks already queued, such as React's render of the
 // last animation frame. The page clock doesn't fake message channels.

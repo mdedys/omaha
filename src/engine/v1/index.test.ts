@@ -4,10 +4,12 @@ import type {
   Design,
   Engine,
   FormationId,
+  Letter,
   LineCall,
   Puzzle,
   Rep,
   RouteCall,
+  Vec,
 } from "../contract";
 import { EngineError } from "../error";
 import { loadPuzzle } from "../index";
@@ -56,6 +58,11 @@ const receiverAlignments: Record<
   ace: { Y: { x: 4.5, y: -0.5 }, H: { x: -4.5, y: -0.5 }, RB: { x: 0, y: -7 } },
 };
 
+type RawDefender = {
+  id: string;
+  look?: { on?: string; x?: number; y?: number };
+  assignment: string;
+};
 function rawPuzzle() {
   return {
     engine: 1,
@@ -85,7 +92,11 @@ function rawPuzzle() {
       "CB2",
       "S1",
       "S2",
-    ].map((id, i) => ({ id, at: [i - 5, 7], assignment: "rush" })),
+    ].map((id, i): RawDefender => ({
+      id,
+      look: { on: "ball", x: i - 5, y: 7 },
+      assignment: "rush",
+    })),
     coverageName: "Cover 1",
     prosResult: "Incomplete",
   };
@@ -166,7 +177,7 @@ describe("v1 puzzle boundary", () => {
       expect(parsed.formation).toEqual({ id, flip });
       expect(parsed.defense[0]).toEqual({
         id: "DL1",
-        at: { x: -5, y: 7 },
+        look: { on: "ball", x: -5, y: 7 },
         assignment: { kind: "rush" },
       });
     }
@@ -192,9 +203,10 @@ describe("v1 puzzle boundary", () => {
     "formation.id",
     "formation.flip",
     "defense.0.id",
-    "defense.0.at",
-    "defense.0.at.0",
-    "defense.0.at.1",
+    "defense.0.look",
+    "defense.0.look.on",
+    "defense.0.look.x",
+    "defense.0.look.y",
     "defense.0.assignment",
   ];
   it.each(fields)("rejects absent or mistyped %s", (path) => {
@@ -236,7 +248,11 @@ describe("v1 puzzle boundary", () => {
         raw.defense.pop();
         break;
       case "twelve":
-        raw.defense.push({ id: "NB", at: [0, 0], assignment: "rush" });
+        raw.defense.push({
+          id: "NB",
+          look: { on: "ball", x: 0, y: 0 },
+          assignment: "rush",
+        });
         break;
       case "duplicate":
         raw.defense[1].id = "DL1";
@@ -289,6 +305,54 @@ describe("v1 puzzle boundary", () => {
       { kind: "rush" },
     ]);
   });
+  it.each(["zone hook-R", "rush"])(
+    "rejects a DL on %s without on, x and y in his look",
+    (call) => {
+      const full = { on: "ball", x: -5, y: 1 };
+      for (const look of [
+        undefined,
+        { x: -5, y: 1 },
+        { on: "ball", y: 1 },
+        { on: "ball", x: -5 },
+      ]) {
+        const raw = rawPuzzle();
+        raw.defense[0] = { id: "DL1", look, assignment: call };
+        expect(() => parsePuzzle(raw)).toThrow(EngineError);
+      }
+      const raw = rawPuzzle();
+      raw.defense[0] = { id: "DL1", look: full, assignment: call };
+      expect(parsePuzzle(raw).defense[0].look).toEqual(full);
+    },
+  );
+  it.each([
+    ["right", { on: "Z", x: 4 }, { on: "Z", x: 4.5 }],
+    ["left", { on: "field", x: -15.75 }, { on: "field", x: -16 }],
+  ] as const)(
+    "on the %s hash, accepts a corner at look %o on the sideline but not %o past it",
+    (hash, onLine, past) => {
+      const raw = rawPuzzle();
+      raw.situation.hash = hash;
+      raw.defense[7] = { id: "CB1", look: onLine, assignment: "man Z" };
+      expect(parsePuzzle(raw).defense[7].look).toEqual(onLine);
+      raw.defense[7] = { id: "CB1", look: past, assignment: "man Z" };
+      expect(() => parsePuzzle(raw)).toThrow(EngineError);
+    },
+  );
+  it.each([
+    [{ y: 8 }, { y: 7.99 }],
+    [{ x: 2 }, { x: 1.99 }],
+    [{ y: 8 }, undefined],
+  ] as const)(
+    "accepts a second man on H at look %o, 1 yd from the first, but not at %o",
+    (apart, close) => {
+      const raw = rawPuzzle();
+      raw.defense[7] = { id: "CB1", look: undefined, assignment: "man H" };
+      raw.defense[8] = { id: "CB2", look: apart, assignment: "man H" };
+      expect(parsePuzzle(raw).defense[8].look).toEqual(apart);
+      raw.defense[8] = { id: "CB2", look: close, assignment: "man H" };
+      expect(() => parsePuzzle(raw)).toThrow(EngineError);
+    },
+  );
   it.each([-5, 0, 0.5])("rejects distance %s below one yard", (distance) => {
     const raw = rawPuzzle();
     raw.situation.distance = distance;
@@ -505,6 +569,243 @@ function expectedPath(x: number, y: number, call: RouteCall) {
       };
   }
 }
+describe("default alignment", () => {
+  const cases = formationIds.flatMap((id) =>
+    (["left", "middle", "right"] as const).flatMap((hash) =>
+      [false, true].map((flip) => ({
+        id,
+        hash,
+        flip,
+        ball: hash === "left" ? -4 : hash === "right" ? 4 : 0,
+      })),
+    ),
+  );
+  type Case = (typeof cases)[number];
+  const middleTrey: Case = {
+    id: "gun-trey",
+    hash: "middle",
+    flip: false,
+    ball: 0,
+  };
+  function lineUp(c: Case, defense: Puzzle["defense"]) {
+    const p = puzzle();
+    p.formation = { id: c.id, flip: c.flip };
+    p.situation.hash = c.hash;
+    p.defense = defense;
+    return engine.preSnap(p);
+  }
+  // Each letter's side of the ball, unflipped; a backfield RB is "back".
+  const sides: Record<FormationId, Record<Letter, -1 | 1 | "back">> = {
+    "gun-trey": { X: -1, Y: 1, Z: 1, H: 1, RB: "back" },
+    "gun-doubles": { X: -1, Y: 1, Z: 1, H: -1, RB: "back" },
+    "gun-trips": { X: -1, Y: 1, Z: 1, H: 1, RB: "back" },
+    "gun-spread": { X: -1, Y: -1, Z: 1, H: 1, RB: "back" },
+    "gun-empty": { X: -1, Y: 1, Z: 1, H: 1, RB: -1 },
+    "gun-doubles-12": { X: -1, Y: 1, Z: 1, H: -1, RB: "back" },
+    ace: { X: -1, Y: 1, Z: 1, H: -1, RB: "back" },
+  };
+  // 1 yd outside the receiver, or 1 yd toward the ball from a backfield RB.
+  function manX(c: Case, spots: Record<string, Vec>, letter: Letter) {
+    const side = sides[c.id][letter];
+    if (side !== "back") return spots[letter].x + side * (c.flip ? -1 : 1);
+    if (c.id === "ace") return c.ball;
+    return c.ball + (c.flip ? 0.5 : -0.5);
+  }
+  it.each([
+    ["L-A", -0.75],
+    ["L-B", -2.25],
+    ["L-C", -3.75],
+    ["L-D", -5.25],
+    ["R-A", 0.75],
+    ["R-B", 2.25],
+    ["R-C", 3.75],
+    ["R-D", 5.25],
+  ] as const)(
+    "lines a DL rushing %s up on the gap point 1 yd off the ball",
+    (gap, offset) => {
+      for (const c of cases) {
+        const spots = lineUp(c, [
+          { id: "DL1", assignment: { kind: "rush", gap } },
+        ]);
+        expect(spots.DL1).toEqual({ x: c.ball + offset, y: 1 });
+      }
+    },
+  );
+  it.each([
+    ["LB1", 5],
+    ["NB", 5],
+    ["DB", 5],
+    ["S1", 10],
+  ] as const)("lines %s up over his rush gap %s yd deep", (id, depth) => {
+    for (const c of cases) {
+      const spots = lineUp(c, [
+        { id, assignment: { kind: "rush", gap: "R-B" } },
+      ]);
+      expect(spots[id]).toEqual({ x: c.ball + 2.25, y: depth });
+    }
+  });
+  it.each([
+    ["CB1", 7],
+    ["NB", 5],
+    ["DB", 5],
+    ["LB1", 5],
+    ["S1", 10],
+    ["DL1", 1],
+  ] as const)(
+    "lines %s up in man 1 yd outside his receiver, %s yd deep",
+    (id, depth) => {
+      for (const c of cases) {
+        for (const letter of letters) {
+          const spots = lineUp(c, [
+            { id, assignment: { kind: "man", target: letter } },
+          ]);
+          expect(spots[id]).toEqual({ x: manX(c, spots, letter), y: depth });
+        }
+      }
+    },
+  );
+  it.each([
+    ["deep-half-L", -11.75],
+    ["deep-third-L", -11.75],
+    ["deep-quarter-1", -11.75],
+    ["curl-flat-L", -11.75],
+    ["flat-L", -11.75],
+    ["deep-half-R", 11.75],
+    ["deep-third-R", 11.75],
+    ["deep-quarter-4", 11.75],
+    ["curl-flat-R", 11.75],
+    ["flat-R", 11.75],
+  ] as const)(
+    "lines a corner in %s up over the wideout at x %s, 7 yd deep",
+    (zone, x) => {
+      for (const c of cases) {
+        const spots = lineUp(c, [
+          { id: "CB1", assignment: { kind: "zone", zone } },
+        ]);
+        expect(spots.CB1).toEqual({ x, y: 7 });
+      }
+    },
+  );
+  // The receiver next inside the outermost one on each side, unflipped.
+  const secondFromOutside: Record<
+    FormationId,
+    { L: Letter | null; R: Letter | null }
+  > = {
+    "gun-trey": { L: null, R: "H" },
+    "gun-doubles": { L: "H", R: "Y" },
+    "gun-trips": { L: null, R: "H" },
+    "gun-spread": { L: "Y", R: "H" },
+    "gun-empty": { L: "RB", R: "H" },
+    "gun-doubles-12": { L: "H", R: "Y" },
+    ace: { L: "H", R: "Y" },
+  };
+  it.each([
+    ["NB", "curl-flat-L"],
+    ["NB", "flat-R"],
+    ["DB", "curl-flat-R"],
+    ["DB", "flat-L"],
+  ] as const)(
+    "lines %s in %s up over the next receiver inside, 5 yd deep",
+    (id, zone) => {
+      for (const c of cases) {
+        const fieldSide = zone.endsWith("L") ? "L" : "R";
+        const formationSide = c.flip
+          ? fieldSide === "L"
+            ? "R"
+            : "L"
+          : fieldSide;
+        const letter = secondFromOutside[c.id][formationSide];
+        const defense: Puzzle["defense"] = [
+          { id, assignment: { kind: "zone", zone } },
+        ];
+        if (letter === null) {
+          expect(() => lineUp(c, defense)).toThrow(EngineError);
+          continue;
+        }
+        const spots = lineUp(c, defense);
+        expect(spots[id]).toEqual({ x: spots[letter].x, y: 5 });
+      }
+    },
+  );
+  it.each([
+    ["hook-L", { left: -9, middle: -5, right: -1 }],
+    ["hook-M", { left: -4, middle: 0, right: 4 }],
+    ["hook-R", { left: 1, middle: 5, right: 9 }],
+    ["curl-flat-L", { left: -12, middle: -10, right: -8 }],
+    ["curl-flat-R", { left: 8, middle: 10, right: 12 }],
+  ] as const)("lines an LB in %s up at its landmark, 5 yd deep", (zone, x) => {
+    for (const c of cases) {
+      const spots = lineUp(c, [
+        { id: "LB1", assignment: { kind: "zone", zone } },
+      ]);
+      expect(spots.LB1).toEqual({ x: x[c.hash], y: 5 });
+    }
+  });
+  it.each([
+    ["deep-middle", 0],
+    ["deep-half-L", -7.875],
+    ["deep-half-R", 7.875],
+    ["deep-third-L", -10.5],
+    ["deep-third-M", 0],
+    ["deep-third-R", 10.5],
+    ["deep-quarter-1", -11.8125],
+    ["deep-quarter-2", -3.9375],
+    ["deep-quarter-3", 3.9375],
+    ["deep-quarter-4", 11.8125],
+  ] as const)(
+    "lines a safety in %s up at its landmark x %s, 12 yd deep",
+    (zone, x) => {
+      for (const c of cases) {
+        const spots = lineUp(c, [
+          { id: "S1", assignment: { kind: "zone", zone } },
+        ]);
+        expect(spots.S1).toEqual({ x, y: 12 });
+      }
+    },
+  );
+  it.each([
+    ["DL1", { kind: "zone", zone: "hook-R" }],
+    ["DL1", { kind: "rush" }],
+    ["S1", { kind: "rush" }],
+    ["CB1", { kind: "rush", gap: "R-A" }],
+    ["CB1", { kind: "zone", zone: "hook-M" }],
+    ["NB", { kind: "zone", zone: "deep-third-M" }],
+    ["LB1", { kind: "zone", zone: "flat-R" }],
+    ["S1", { kind: "zone", zone: "hook-L" }],
+  ] as const)("gives %s on %o no default spot", (id, assignment) => {
+    const defense: Puzzle["defense"] = [{ id, assignment }];
+    expect(() => lineUp(middleTrey, defense)).toThrow(EngineError);
+    defense[0].look = { on: "ball", x: 2, y: 3 };
+    expect(lineUp(middleTrey, defense)[id]).toEqual({ x: 2, y: 3 });
+  });
+  it("lines man H up 1 yd outside H, 1 yd deep, with a look of y 1", () => {
+    for (const c of cases) {
+      const spots = lineUp(c, [
+        { id: "NB", look: { y: 1 }, assignment: { kind: "man", target: "H" } },
+      ]);
+      expect(spots.NB).toEqual({ x: manX(c, spots, "H"), y: 1 });
+    }
+  });
+  it.each([
+    [{ y: 1 }, { x: 9.125, y: 1 }],
+    [{ x: -2 }, { x: 6.125, y: 5 }],
+    [{ on: "Y" }, { x: 5.5, y: 5 }],
+    [
+      { on: "ball", x: 3 },
+      { x: 3, y: 5 },
+    ],
+    [
+      { on: "field", x: -1, y: 2 },
+      { x: -1, y: 2 },
+    ],
+  ] as const)("overrides only the fields %o names", (look, spot) => {
+    const spots = lineUp(middleTrey, [
+      { id: "NB", look, assignment: { kind: "man", target: "H" } },
+    ]);
+    expect(spots.NB).toEqual(spot);
+  });
+});
+
 describe("route paths", () => {
   it.each(formationIds)(
     "draws %s route-table paths in both orientations",

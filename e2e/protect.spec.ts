@@ -1,7 +1,8 @@
 import { expect, test } from "@playwright/test";
 import type { Page } from "@playwright/test";
 import type { FormationId } from "../src/engine/contract";
-import fixture from "../public/puzzles/1.json" with { type: "json" };
+import puzzleTwo from "../public/puzzles/2.json" with { type: "json" };
+import { pinnedPuzzleOne as fixture } from "./page";
 
 async function openProtect(page: Page) {
   await page.goto("/puzzle/1");
@@ -326,6 +327,7 @@ test("Man marks follow the flipped formation on the right hash", async ({
     route.fulfill({
       json: {
         ...fixture,
+        defense: puzzleTwo.defense,
         situation: { ...fixture.situation, hash: "right" },
         formation: { id: "gun-trey", flip: true },
       },

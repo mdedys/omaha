@@ -1,6 +1,8 @@
 import { expect, test } from "@playwright/test";
 import type { Page } from "@playwright/test";
-import { runItBack, snapFirstRep } from "./page";
+import { pinPuzzleOne, runItBack, snapFirstRep } from "./page";
+
+test.beforeEach(({ page }) => pinPuzzleOne(page));
 
 const convertedText =
   "Omaha #1 · 3rd & 10\n🟥🟩\nConverted in 2 · Beat the pros · 85 pts";

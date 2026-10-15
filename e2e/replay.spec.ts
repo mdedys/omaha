@@ -1,7 +1,9 @@
 import { expect, test } from "@playwright/test";
 import type { Locator, Page } from "@playwright/test";
 import blitz from "../src/engine/v1/scenarios/a-gap-blitz-man-protection.json" with { type: "json" };
-import { rendered, screenMarkup } from "./page";
+import { pinPuzzleOne, rendered, screenMarkup } from "./page";
+
+test.beforeEach(({ page }) => pinPuzzleOne(page));
 
 type SlotRoute = "Out" | "Comeback";
 

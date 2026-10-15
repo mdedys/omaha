@@ -3,6 +3,7 @@ import type { Design, Engine, Rep } from "./contract";
 import { EngineError } from "./error";
 import { loadPuzzle } from "./index";
 import gunTrey from "../../public/puzzles/1.json";
+import { puzzleOne } from "../pinnedPuzzleOne";
 
 describe("loadPuzzle", () => {
   it.each([
@@ -29,7 +30,6 @@ describe("loadPuzzle", () => {
       defense: expect.arrayContaining([
         {
           id: "DL1",
-          at: { x: -3, y: 1 },
           assignment: { kind: "rush", gap: "L-C" },
         },
       ]),
@@ -72,7 +72,7 @@ describe("loadPuzzle", () => {
   ])("loads $id with its offered blocker counts", async ({ id, counts }) => {
     for (const flip of [false, true]) {
       const { puzzle, engine } = await loadPuzzle({
-        ...gunTrey,
+        ...puzzleOne,
         formation: { id, flip },
       });
       expect(engine.protections(puzzle)).toEqual(counts);

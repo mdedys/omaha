@@ -188,7 +188,10 @@ The event log (internal, for tests and a dev overlay), any pros output, and any 
   "goal": "first-down",
   "briefing": "Sunday night. Down 4 with 1:12 to go…",
   "formation": { "id": "gun-trey", "flip": false },
-  "defense": [ { "id": "CB1", "at": [-14, 7], "assignment": "man X" } ],
+  "defense": [ { "id": "CB1", "assignment": "man X" },
+               { "id": "NB", "look": { "y": 1 }, "assignment": "man H" },
+               { "id": "DL4", "look": { "on": "ball", "x": 3, "y": 1 },
+                 "assignment": "zone hook-R" } ],
   "coverageName": "Cover 1",
   "prosResult": "Incomplete"
 }
@@ -198,11 +201,12 @@ The event log (internal, for tests and a dev overlay), any pros output, and any 
 - `number`: the displayed "Puzzle #N". `date`: reference only; nothing reads it.
 - `spot`: the line of scrimmage in yards from the offense's own goal line, from its own 10 to the opponent's 1 (10–99), so a sack can never be a safety. `hash`: `left`, `middle` or `right`. `scoreDiff`: offense minus defense. Timeouts live only in the briefing.
 - `goal`: `first-down` or `touchdown`.
-- `defense`: eleven defenders. `at` is `[x, y]` in yards from the ball, authored against the formation as flipped; nothing mirrors it.
+- `defense`: eleven defenders. Each lines up at the default look spot his role and assignment give him, derived from where the offense lines up (rules › Defense › Alignment).
+- `look` (optional): `{ "on"?, "x"?, "y"? }` overrides the default spot. `on` is the anchor: a letter, a lineman, `QB`, `ball` or `field` (the field's middle). `x` is yards from the anchor's pre-snap x in field direction (positive = the offense's right), authored against the formation as flipped; nothing mirrors it. `y` is yards off the ball. A field left out keeps the default, so a partial look such as `{ "y": 1 }` still follows the formation, hash and flip. A defender with no default (a DL in a zone, a gapless `rush`, any pair the table lacks) names all three.
 - `assignment`: `man <letter>`, `zone <zone id>`, `rush` or `rush <gap>`, where a gap is `L-A` … `L-D` or `R-A` … `R-D`.
 - `coverageName` and `prosResult`: labels the engine never reads. The pros' result is always a failure to convert, by rule.
 
-`Puzzle` in `contract.ts` is the validated, parsed form of this file, with assignments parsed into tagged objects.
+`Puzzle` in `contract.ts` is the validated, parsed form of this file, with assignments parsed into tagged objects and each `look` kept as authored; `preSnap` resolves the spots.
 
 ### Validation
 
@@ -211,4 +215,6 @@ The event log (internal, for tests and a dev overlay), any pros output, and any 
 - every field above is present with its type, and `formation.id` is in the version's catalog;
 - there are exactly 11 defenders with unique ids from the roster above;
 - every assignment string parses, every `man` target is an eligible receiver in the formation, and every zone and gap is in the catalog;
+- every `look` field present has its type and `on` is a letter, a lineman, `QB`, `ball` or `field`, and every defender with no default spot has a `look` naming `on`, `x` and `y`;
+- every defender's resolved look spot is inside the sidelines, and no two are less than 1 yd apart (the engine never nudges them);
 - `spot` is from 10 to 99, `spot + distance ≤ 100`, the puzzle is goal-to-go exactly when the sum is 100, and a goal-to-go puzzle's goal is `touchdown`.

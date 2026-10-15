@@ -21,57 +21,57 @@
     "defense": [
       {
         "id": "DL1",
-        "at": [-3.6, 1],
+        "look": { "on": "ball", "x": -3.6, "y": 1 },
         "assignment": "rush"
       },
       {
         "id": "DL2",
-        "at": [-1, 1],
+        "look": { "on": "ball", "x": -1, "y": 1 },
         "assignment": "rush"
       },
       {
         "id": "DL3",
-        "at": [1.2, 1],
+        "look": { "on": "ball", "x": 1.2, "y": 1 },
         "assignment": "rush"
       },
       {
         "id": "DL4",
-        "at": [3.9, 1],
+        "look": { "on": "ball", "x": 3.9, "y": 1 },
         "assignment": "rush"
       },
       {
         "id": "LB1",
-        "at": [0, 1],
+        "look": { "on": "ball", "x": 0, "y": 1 },
         "assignment": "rush"
       },
       {
         "id": "CB1",
-        "at": [-10.25, 1],
+        "look": { "on": "ball", "x": -10.25, "y": 1 },
         "assignment": "man X"
       },
       {
         "id": "CB2",
-        "at": [11.75, 1],
+        "look": { "on": "ball", "x": 11.75, "y": 1 },
         "assignment": "man Z"
       },
       {
         "id": "NB",
-        "at": [8.125, 3],
+        "look": { "on": "ball", "x": 8.125, "y": 3 },
         "assignment": "man H"
       },
       {
         "id": "LB2",
-        "at": [4.5, 4.5],
+        "look": { "on": "ball", "x": 4.5, "y": 4.5 },
         "assignment": "man Y"
       },
       {
         "id": "LB3",
-        "at": [-1.5, 4.5],
+        "look": { "on": "ball", "x": -1.5, "y": 4.5 },
         "assignment": "man RB"
       },
       {
         "id": "S2",
-        "at": [4.5, 10],
+        "look": { "on": "ball", "x": 4.5, "y": 10 },
         "assignment": "man Y"
       }
     ],

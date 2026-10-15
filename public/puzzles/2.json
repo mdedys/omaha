@@ -16,17 +16,17 @@
   "briefing": "Friday night. Down 5 with 28 seconds left. Six yards from the end zone. Find the window before the defense shuts it. Your clipboard, your problem.",
   "formation": { "id": "gun-trey", "flip": false },
   "defense": [
-    { "id": "DL1", "at": [-3, 1], "assignment": "rush L-C" },
-    { "id": "DL2", "at": [-1, 1], "assignment": "rush L-A" },
-    { "id": "DL3", "at": [1, 1], "assignment": "rush R-A" },
-    { "id": "DL4", "at": [3, 1], "assignment": "zone hook-R" },
-    { "id": "LB1", "at": [-4, 5], "assignment": "zone hook-L" },
-    { "id": "LB2", "at": [0, 5], "assignment": "zone hook-M" },
-    { "id": "LB3", "at": [4, 5], "assignment": "man RB" },
-    { "id": "CB1", "at": [-12, 7], "assignment": "man X" },
-    { "id": "CB2", "at": [12, 7], "assignment": "man Z" },
-    { "id": "NB", "at": [8, 5], "assignment": "rush R-D" },
-    { "id": "S1", "at": [0, 15], "assignment": "zone deep-middle" }
+    { "id": "DL1", "assignment": "rush L-C" },
+    { "id": "DL2", "assignment": "rush L-A" },
+    { "id": "DL3", "assignment": "rush R-A" },
+    { "id": "DL4", "assignment": "rush R-C" },
+    { "id": "LB2", "assignment": "man Y" },
+    { "id": "LB3", "assignment": "man RB" },
+    { "id": "CB1", "look": { "y": 1 }, "assignment": "man X" },
+    { "id": "CB2", "look": { "y": 1 }, "assignment": "man Z" },
+    { "id": "NB", "look": { "on": "H", "x": 0, "y": 1 }, "assignment": "rush R-D" },
+    { "id": "S2", "assignment": "man H" },
+    { "id": "S1", "assignment": "zone deep-middle" }
   ],
   "coverageName": "Cover 1 pressure",
   "prosResult": "Incomplete"
