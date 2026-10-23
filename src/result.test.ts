@@ -7,7 +7,7 @@ import type {
   RouteCall,
 } from "./engine/contract";
 import { loadPuzzle } from "./engine";
-import puzzleOne from "../public/puzzles/1.json";
+import { puzzleOne } from "./pinnedPuzzleOne";
 import { playback } from "./playback";
 import { liveCaption, liveLabel, resultSheet } from "./result";
 import type { Played } from "./result";

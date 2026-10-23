@@ -23,6 +23,19 @@ export const RB_OFFSET_YARDS = 1.5;
 export const ACE_RB_DEPTH_YARDS = 7;
 // Range: free; source: prototype.
 export const GAP_D_OUTSIDE_YARDS = 0.75;
+// Default look depths off the ball by role, the man defender's split outside
+// his receiver, and a deep-zone safety's depth, yards; range: free; source:
+// free, from the default look-spot table.
+export const DL_DEPTH_YARDS = 1;
+export const LB_DEPTH_YARDS = 5;
+export const CB_DEPTH_YARDS = 7;
+export const NB_DEPTH_YARDS = 5;
+export const S_DEPTH_YARDS = 10;
+export const MAN_OUTSIDE_YARDS = 1;
+export const DEEP_SAFETY_DEPTH_YARDS = 12;
+// The closest two defenders may line up, yards; range: fixed; source: free,
+// from the puzzle validation rules.
+export const DEFENDER_SPACING_YARDS = 1;
 // Range: free; source: prototype.
 export const RB_RELEASE_OUTSIDE_YARDS = 1;
 // Route geometry, yards; range: fixed route-tree distances; source: prototype.

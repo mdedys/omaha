@@ -1,6 +1,8 @@
 import { expect, test } from "@playwright/test";
 import type { Browser, Page } from "@playwright/test";
-import { rendered, screenMarkup } from "./page";
+import { pinPuzzleOne, rendered, screenMarkup } from "./page";
+
+test.beforeEach(({ page }) => pinPuzzleOne(page));
 
 type Play = {
   routes: (readonly [receiver: string, route: string, yards?: number])[];

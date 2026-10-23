@@ -24,6 +24,7 @@ Every rule v1 runs, with the [Legibility prototype](https://github.com/mdedys/om
 - Seven flippable catalog formations: Gun Trey, Gun Doubles, Gun Trips, Gun Spread, Gun Empty, Gun Doubles 12, Ace. A puzzle sets only formation, flip, hash and yard line. A real alignment the catalog lacks becomes a new catalog entry.
 - Each entry gives each letter a display name ("Left WR"), a route menu (defaulting by letter: X and Z → WR, Y and H → Inside, RB → RB, with overrides such as Ace's H → Inside), and two flags: **RB in backfield** and **Y attached**.
 - Shotgun QB at 5 yd, or under center. Outside receivers line up on the numbers; detached inside receivers spread evenly between the end of the line and the outside receiver on their side. Exact spots are *tuned*.
+- The defense lines up against the offense: each defender's look spot is derived from where the offense lines up for the formation, hash and flip (see Defense › Alignment), so a puzzle needs no hand-adjusted coordinates.
 
 ## Routes
 
@@ -91,6 +92,27 @@ Each menu lists its routes in route-tree order, as `design/05-routes` › Route 
 - **Man:** the target is the receiver's position plus the pre-snap inside/outside offset and depth cushion. The cushion shrinks to the trail distance (*tuned*) as the receiver eats it up, and never regrows. A sitting receiver is closed to trail distance. When the receiver's heading turns 45° or more between snapshots, the defender holds his old heading for the reaction delay, then resumes. Two defenders may both man one receiver.
 - **Rub:** a man defender whose chase step would pass within the contact radius (*tuned*, about 0.75 yd) of a different route runner steers around him, outside the radius, at half speed for the rub time (*tuned*, 0.6 s), then rejoins his chase. Zone and carry defenders are never rubbed.
 - **Breaking on the ball** is checked once, at the throw plus the reaction delay: defenders within the ball-break radius (*tuned*) of the catch point head for it. Everyone else keeps his assignment.
+
+### Alignment
+
+Each defender's **look spot** (his pre-snap spot) comes from his role and assignment. y is yards off the ball; x is worked out from where the offense lines up for the formation, hash and flip.
+
+| Role | Assignment | Default look spot |
+|---|---|---|
+| DL | `rush <gap>` | on the gap point, y 1 |
+| LB, NB, DB, S | `rush <gap>` | over the gap point, at his role depth |
+| any | `man <letter>` | on that receiver, 1 yd outside, at his role depth (inside, i.e. toward the ball, for a backfield RB) |
+| CB | `zone`: an outside deep zone (half L/R, third L/R, quarter 1/4), `curl-flat` or `flat` | over the outermost receiver on that side, y 7 |
+| NB, DB | `zone`: `curl-flat` or `flat` | over the next receiver inside the outermost on that side, y 5 |
+| LB | `zone`: `hook` or `curl-flat` | at the zone's landmark x, y 5 |
+| S | deep zone | at the landmark x, y 12 |
+
+- **Role depths** (*tuned*): DL 1, CB 7, NB/DB 5, LB 5, S 10. NB and DB share a row here but still run at CB speed.
+- **Counting receivers** on a side runs from the sideline in, among the receivers split from the formation; a backfield RB isn't counted. A zone's side is the field side after the flip.
+- **No default:** a role and assignment the table lacks has no default spot: a DL dropping into a zone, a plain `rush` with no gap, a CB `rush <gap>`, a zone the table doesn't give that role, or a corner or nickel zone with no receiver to line up over. The puzzle gives him a full `look`.
+- **`look`** overrides the default: `on` is the anchor (a letter, a lineman, `QB`, `ball` or `field`, the field's middle), `x` the yards from the anchor's pre-snap x in field direction (positive = the offense's right, against the formation as flipped), `y` the yards off the ball. Each field left out keeps the defender's default, so `man H` with `look: { y: 1 }` lines up 1 yd outside H at 1 yd deep on every hash and flip: press.
+- A look spot is never nudged: each must be inside the sidelines and at least 1 yd from every other defender's, or the puzzle is invalid.
+- Where a defender lines up feeds three rules: man leverage (Man, above), man protection by area (Protection › Man) and a gapless rusher's gap (Protection › A rusher's gap).
 
 ## The QB
 

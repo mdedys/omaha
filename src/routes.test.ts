@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { Blockers, Design, Letter, RouteCall } from "./engine/contract";
 import { loadPuzzle } from "./engine";
 import { engine as v1 } from "./engine/v1";
-import gunTrey from "../public/puzzles/1.json";
+import { puzzleOne as gunTrey } from "./pinnedPuzzleOne";
 import {
   changeProtection,
   chooseRoute,

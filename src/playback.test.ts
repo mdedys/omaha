@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest";
 import type { Design, Rep, RouteCall } from "./engine/contract";
 import { loadPuzzle } from "./engine";
-import puzzleOne from "../public/puzzles/1.json";
+import { puzzleOne } from "./pinnedPuzzleOne";
 import { cubicBezier, playback, timeline } from "./playback";
 
 const { puzzle, engine } = await loadPuzzle(puzzleOne);
