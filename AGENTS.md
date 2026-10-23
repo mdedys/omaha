@@ -60,6 +60,10 @@ The decisions table in `design/README.md` is settled for UX; raise a question in
 
 ## Agent skills
 
+### PR evidence
+
+Before opening or updating any PR, including with `/push-pr`, run the `pr-evidence` skill (`.agents/skills/pr-evidence/`). The `## 🧾 Proof` section it writes replaces the PR template's `📸 Visuals` section.
+
 ### Issue tracker
 
 GitHub Issues on `mdedys/omaha` via the `gh` CLI; external PRs are not a triage surface. See `docs/agents/issue-tracker.md`.
